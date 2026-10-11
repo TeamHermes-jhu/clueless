@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package clueless.v1.cards;
+
+enum Characters {
+  CHARACTERS_UNSPECIFIED = 0;
+
+  CHARACTERS_WHITE = 1;
+  CHARACTERS_GREEN = 2;
+  CHARACTERS_PEACOCK = 3;
+  CHARACTERS_PLUM = 4;
+  CHARACTERS_SCARLET = 5;
+  CHARACTERS_MUSTARD = 6;
+}
