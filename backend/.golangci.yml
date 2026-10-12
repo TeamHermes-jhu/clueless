@@ -11,12 +11,15 @@ linters:
     - forcetypeassert # Questionable (often we actually want panic).
     - gocyclo # Prefer gocognit.
     - gomodguard
+    - gochecknoglobals
     - exhaustruct
+    - exhaustruct_v5
     - interfacebloat # Questionable.
     - ireturn # Questionable (is returning unexported types better?).
     - lll # Questionable (sometimes long lines improve readability).
     - nlreturn # Questionable (often no blank line before return improve readability).
     - nonamedreturns # Questionable (named return act as a documentation).
+    - noinlineerr # I like inlineerr somtimes
     - perfsprint # Questionable (force performance over readability and sometimes safety).
     - varnamelen
     - wrapcheck # Questionable (see https://github.com/tomarrell/wrapcheck/issues/1).
@@ -342,6 +345,9 @@ linters:
           - gosec
           - maintidx
           - reassign
+      - path: cmd/\w+.go
+        linters:
+          - gochecknoinits # cmd SHOULD have inits to initalize the cli.
       - source: "[Cc]onst" # Define global const-vars like: var SomeGlobal = []int{42} // Const.
         linters:
           - gochecknoglobals
