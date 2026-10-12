@@ -11,4 +11,7 @@ test:
 	cd ./backend/ && go test ./...
 
 server:
-	cd ./backend/ && go build -o server .
+	cd ./backend/ && go build -o bin/server .
+
+clean:
+	rm -rf ./backend/bin/
