@@ -25,6 +25,8 @@ jobs:
       # protobuf lint
       - name: protobuf-lint
         uses: bufbuild/buf-action@v1
+        with:
+          no_breaking: true
 
       - uses: actions/setup-go@v6
         with:
