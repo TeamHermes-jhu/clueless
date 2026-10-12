@@ -12,3 +12,5 @@ plugins:
   - remote: buf.build/connectrpc/go
     out: backend/internal/gen
     opt: paths=source_relative
+inputs:
+  - directory: proto
