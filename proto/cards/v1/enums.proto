@@ -1,6 +1,6 @@
 edition = "2024";
 
-package clueless.cards.v1;
+package cards.v1;
 
 import "google/protobuf/go_features.proto";
 
