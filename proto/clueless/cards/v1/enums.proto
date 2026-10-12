@@ -1,0 +1,46 @@
+edition = "2024";
+
+package clueless.cards.v1;
+
+import "google/protobuf/go_features.proto";
+
+// go generated protobuf double prefixes enums by default
+// Characters_CHARACTERS_WHITE instead of Characters_WHITE
+// this option corrects that little annoying habit.
+option features.(pb.go).strip_enum_prefix = STRIP_ENUM_PREFIX_STRIP;
+
+enum Characters {
+  CHARACTERS_UNSPECIFIED = 0;
+
+  CHARACTERS_WHITE = 1;
+  CHARACTERS_GREEN = 2;
+  CHARACTERS_PEACOCK = 3;
+  CHARACTERS_PLUM = 4;
+  CHARACTERS_SCARLET = 5;
+  CHARACTERS_MUSTARD = 6;
+}
+
+enum Weapons {
+  WEAPONS_UNSPECIFIED = 0;
+
+  WEAPONS_CANDLESTICK = 1;
+  WEAPONS_DAGGER = 2;
+  WEAPONS_LEAD_PIPE = 3;
+  WEAPONS_REVOLVER = 4;
+  WEAPONS_ROPE = 5;
+  WEAPONS_WRENCH = 6;
+}
+
+enum Rooms {
+  ROOMS_UNSPECIFIED = 0;
+
+  ROOMS_STUDY = 1;
+  ROOMS_HALL = 2;
+  ROOMS_LOUNGE = 3;
+  ROOMS_LIBRARY = 4;
+  ROOMS_BILLIARD_ROOM = 5;
+  ROOMS_DINING_ROOM = 6;
+  ROOMS_CONSERVATORY = 7;
+  ROOMS_BALLROOM = 8;
+  ROOMS_KITCHEN = 9;
+}

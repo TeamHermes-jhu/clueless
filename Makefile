@@ -12,3 +12,9 @@ test:
 
 server:
 	cd ./backend/ && go build -o server .
+
+proto:
+	buf generate
+
+proto-lint:
+	buf lint
