@@ -23,9 +23,8 @@ jobs:
       - uses: actions/checkout@v7
 
       # protobuf lint
-      - uses: bufbuild/buf-setup-action@v1
       - name: protobuf-lint
-        uses: bufbuild/buf-lint-action@v1
+        uses: bufbuild/buf-action@v1
 
       - uses: actions/setup-go@v6
         with:
