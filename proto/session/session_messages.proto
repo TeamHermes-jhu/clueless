@@ -1,0 +1,43 @@
+// Messages definitions related to session management in the game
+
+edition = "2024";
+
+package proto.session;
+
+import "google/protobuf/go_features.proto";
+
+option features.(pb.go).strip_enum_prefix = STRIP_ENUM_PREFIX_STRIP;
+
+enum SessionStatus {
+    SESSION_STATUS_UNKNOWN = 0; // Default value, unknown status
+    SESSION_STATUS_WAITING = 1; // Session is waiting for players to join
+    SESSION_STATUS_ACTIVE = 2; // Session is currently active (game in progress)
+    SESSION_STATUS_INACTIVE = 3; // Session is currently inactive (game paused or ended)
+}
+
+message Session {
+    int32 session_id = 1; // Unique identifier for the session
+    enum SessionStatus status = 2; // Indicates the current status of the session
+    repeated Player players = 3; // List of player IDs participating in the session
+    Player host = 4; // The player who created the session and is hosting it
+    bool is_private = 5; // Indicates if the session is private (true) or public (false)
+    optional string session_passcode = 6; // Passcode for joining the session, if it is private
+    int32 min_players = 7; // Minimum number of players required to start the session
+    int32 max_players = 8; // Maximum number of players allowed in the session
+}
+
+message SessionList {
+    repeated Session sessions = 1; // List of sessions
+}
+
+message SessionJoinRequest {
+    Session session = 1; // The session the player is attempting to join
+    Player player = 2; // The player attempting to join the session
+    optional string session_passcode_given = 3; // Passcode entered by the player for joining the session, if it is private
+}
+
+message Player {
+    int32 player_id = 1; // Unique identifier for the player
+    string player_name = 2; // Name of the player
+}
+
