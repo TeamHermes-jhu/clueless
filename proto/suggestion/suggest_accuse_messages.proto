@@ -1,1 +1,42 @@
-// Suggestion and Accusation Messages
+// Message definitions relating to suggestions and accusations in the game
+
+edition = "2024";
+
+package proto.suggestion;
+
+import "cards.v1.enums.proto";
+
+// Message representing a suggestion made by a player in the game
+message SuggestionMessage {
+    int32 suggestion_id = 1; // Unique identifier for the suggestion
+    int32 player_id = 2; // ID of the player making the suggestion
+
+    cards.v1.enums.Characters character = 3; // Character being suggested
+    cards.v1.enums.Weapons weapon = 4; // Weapon being suggested
+    cards.v1.enums.Rooms room = 5; // Room being suggested
+}
+
+// Message representing an accusation made by a player in the game
+message AccusationMessage {
+    int32 accusation_id = 1; // Unique identifier for the accusation
+    SuggestionMessage suggestion = 2; // The suggestion being accused
+}
+
+// Message representing the response to a suggestion
+message SuggestionResponseMessage {
+    int32 suggestion_id = 1; // Unique identifier for the suggestion being responded to
+    int32 responder_id = 2; // ID of the player responding to the suggestion
+    bool has_card = 3; // True if the responder has a card to show, false otherwise
+
+    oneof { // The card shown in response to the suggestion, if any
+        cards.v1.enums.Characters character = 3; // Character card shown in response
+        cards.v1.enums.Weapons weapon = 4; // Weapon card shown in response
+        cards.v1.enums.Rooms room = 5; // Room card shown in response
+    }
+}
+
+// Message representing the response to an accusation
+message AccusationResponseMessage {
+    int32 accusation_id = 1; // Unique identifier for the accusation being responded to
+    bool is_correct = 2; // True if the accusation is correct, false otherwise
+}
