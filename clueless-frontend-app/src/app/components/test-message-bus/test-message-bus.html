@@ -1,0 +1,6 @@
+<button routerLink="/">Back</button>
+<ul>
+  @for (message of messages(); track $index) {
+    <li>{{ message }}</li>
+  }
+</ul>

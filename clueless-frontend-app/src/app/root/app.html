@@ -1,2 +1,5 @@
-<h1>Hello World!</h1>
+@if (onMainPage()) {
+  <h1>Hello World!</h1>
+  <button routerLink="/test-message-bus">Next Page</button>
+}
 <router-outlet />
