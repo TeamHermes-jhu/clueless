@@ -1,5 +1,6 @@
 import { Injectable } from "@angular/core";
-import { AppEvent, EventProducer, MessageType } from "../common/events/event-types/AppEvents";
+import type { AppEvent} from "../common/events/event-types/AppEvents";
+import { EventProducer, MessageType } from "../common/events/event-types/AppEvents";
 import { AbstractServiceAdapter } from "./AbstractServiceAdapter";
 
 type JsonObject = Record<string, unknown>;

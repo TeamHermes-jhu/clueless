@@ -1,7 +1,8 @@
 // src/events/replay-event-bus.ts
-import { Observable, ReplaySubject, filter, share, takeUntil } from 'rxjs';
-import { EventByType, EventPayload, EventType } from '../event-types/AppEvents';
-import { EventEnvelope, EventMetadata } from './event-envelope';
+import type { Observable} from 'rxjs';
+import { ReplaySubject, filter, share, takeUntil } from 'rxjs';
+import type { EventByType, EventPayload, EventType } from '../event-types/AppEvents';
+import type { EventEnvelope, EventMetadata } from './event-envelope';
 
 // Event bus that replays recent events to new subscribers
 // Useful for late-joining components that need historical context
@@ -11,8 +12,8 @@ export class ReplayEventBus {
     private events$: Observable<EventEnvelope>;
 
     constructor(
-        private source: string = 'default',
-        private bufferSize: number = 100,
+        private source = 'default',
+        private bufferSize = 100,
         private windowTime?: number  // Optional time window in ms
     ) {
         // ReplaySubject buffers events and replays them to new subscribers

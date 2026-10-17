@@ -1,4 +1,4 @@
-import { AppEvent } from '../event-types/AppEvents';
+import type { AppEvent } from '../event-types/AppEvents';
 
 // Metadata attached to every event
 export interface EventMetadata {

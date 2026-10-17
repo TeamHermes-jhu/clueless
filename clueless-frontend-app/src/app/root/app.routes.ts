@@ -1,4 +1,4 @@
-import { Routes } from '@angular/router';
+import type { Routes } from '@angular/router';
 import { TestMessageBus } from '../components/test-message-bus/test-message-bus';
 
 export const routes: Routes = [

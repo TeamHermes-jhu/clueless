@@ -1,6 +1,7 @@
-import { Observable, Subject, filter, map, share, takeUntil } from 'rxjs';
-import { EventByType, EventPayload, EventType } from '../event-types/AppEvents';
-import { EventEnvelope, EventMetadata } from './event-envelope';
+import type { Observable } from 'rxjs';
+import { Subject, filter, map, share, takeUntil } from 'rxjs';
+import type { EventByType, EventPayload, EventType } from '../event-types/AppEvents';
+import type { EventEnvelope, EventMetadata } from './event-envelope';
 
 export class EventBus {
     private subject = new Subject<EventEnvelope>();
@@ -12,7 +13,7 @@ export class EventBus {
         share()
     );
 
-    constructor(private source: string = 'default') {}
+    constructor(private source = 'default') {}
 
     // Publish an event with automatic metadata generation
     publish<T extends EventType>(
@@ -71,14 +72,14 @@ export class EventBus {
         );
     }
 
-    private generateEventId(): string {
-        return `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
-    }
-
     // Cleanup subscriptions
     destroy(): void {
         this.destroy$.next();
         this.destroy$.complete();
         this.subject.complete();
+    }
+
+    private generateEventId(): string {
+        return `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
     }
 }

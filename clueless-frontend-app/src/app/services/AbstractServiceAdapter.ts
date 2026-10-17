@@ -1,27 +1,30 @@
-import { inject, Injectable, OnDestroy } from "@angular/core";
-import { Observable, retry, Subscription, throwError, timer } from 'rxjs';
-import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
+import type { OnDestroy } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
+import type { Observable, Subscription } from 'rxjs';
+import { retry, throwError, timer } from 'rxjs';
+import type { WebSocketSubject } from 'rxjs/webSocket';
+import { webSocket } from 'rxjs/webSocket';
 import { EventBus } from "../common/events/event-bus/event-bus";
 import { EventHandlerRegistry } from "../common/events/event-bus/event-handler";
-import { AppEvent } from "../common/events/event-types/AppEvents";
+import type { AppEvent } from "../common/events/event-types/AppEvents";
 
 @Injectable()
 export abstract class AbstractServiceAdapter implements OnDestroy {
+    private static readonly MAX_CONNECT_ATTEMPTS = 3;
+    private static readonly RETRY_DELAY_MS = 5000;
 
     protected readonly eventBus = inject(EventBus);
     protected handlers: EventHandlerRegistry;
     private socket$: WebSocketSubject<unknown>;
     private inbound: Subscription;
 
-    private static readonly MAX_CONNECT_ATTEMPTS = 3;
-    private static readonly RETRY_DELAY_MS = 5000;
     private failedAttempts = 0;
 
     constructor(host: string, port: number, path: string) {
         const verifiedPath = path.startsWith('/') ? path : `/${path}`;
         this.socket$ = webSocket<unknown>({
             url: `ws://${host}:${port}${verifiedPath}`,
-            deserializer: (e: MessageEvent) => e.data,
+            deserializer: (e: MessageEvent<unknown>) => e.data,
             openObserver: { next: () => { this.failedAttempts = 0; } },
         });
         this.handlers = new EventHandlerRegistry(this.eventBus);
@@ -32,6 +35,20 @@ export abstract class AbstractServiceAdapter implements OnDestroy {
             next: (raw) => this.publish(raw),
             error: (err) => this.onConnectionFailed(err),
         });
+    }
+
+    sendMessage(message: unknown) {
+        this.socket$.next(message);
+    }
+
+    closeConnection() {
+        this.inbound.unsubscribe();
+        this.socket$.complete();
+    }
+
+    ngOnDestroy(): void {
+        this.handlers.clear();
+        this.closeConnection();
     }
 
     // Called on connection fail. Override to handle failure further.
@@ -53,23 +70,6 @@ export abstract class AbstractServiceAdapter implements OnDestroy {
         return timer(AbstractServiceAdapter.RETRY_DELAY_MS);
     }
 
-    // Convert one raw websocket frame into an event the bus understands.
-    protected abstract parse(raw: unknown): AppEvent | null;
-
-    sendMessage(message: unknown) {
-        this.socket$.next(message);
-    }
-
-    closeConnection() {
-        this.inbound.unsubscribe();
-        this.socket$.complete();
-    }
-
-    ngOnDestroy(): void {
-        this.handlers.clear();
-        this.closeConnection();
-    }
-
     private publish(raw: unknown): void {
         let event: AppEvent | null;
         try {
@@ -82,4 +82,7 @@ export abstract class AbstractServiceAdapter implements OnDestroy {
             this.eventBus.publish(event.type, event.payload);
         }
     }
+
+    // Convert one raw websocket frame into an event the bus understands.
+    protected abstract parse(raw: unknown): AppEvent | null;
 }

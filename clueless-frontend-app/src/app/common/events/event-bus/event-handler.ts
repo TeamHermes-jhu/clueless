@@ -1,8 +1,8 @@
 // src/events/event-handler.ts
-import { Subscription } from 'rxjs';
-import { EventByType, EventPayload, EventType } from '../event-types/AppEvents';
-import { EventBus } from './event-bus';
-import { EventEnvelope } from './event-envelope';
+import type { Subscription } from 'rxjs';
+import type { EventByType, EventPayload, EventType } from '../event-types/AppEvents';
+import type { EventBus } from './event-bus';
+import type { EventEnvelope } from './event-envelope';
 
 // Handler function signature
 type EventHandler<T extends EventType> = (
@@ -13,7 +13,7 @@ type EventHandler<T extends EventType> = (
 // Registration for cleanup
 interface HandlerRegistration {
     eventType: EventType;
-    handler: EventHandler<any>;
+    handler: EventHandler<EventType>;
     subscription: Subscription;
 }
 
@@ -30,12 +30,14 @@ export class EventHandlerRegistry {
         handler: EventHandler<T>
     ): this {
         const subscription = this.eventBus.subscribe(type).subscribe({
-        next: async (envelope) => {
+        next: (envelope) => {
+            void (async () => {
             try {
-            await handler(envelope.event.payload, envelope.metadata);
+                await handler(envelope.event.payload, envelope.metadata);
             } catch (error) {
-            console.error(`Error in handler for ${type}:`, error);
+                console.error(`Error in handler for ${type}:`, error);
             }
+            })();
         },
         });
 
