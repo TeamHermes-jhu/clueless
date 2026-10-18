@@ -7,8 +7,8 @@ package proto.server;
 import "google/protobuf/duration.proto";
 import "google/protobuf/go_features.proto";
 import "google/protobuf/timestamp.proto";
-import "proto/cards/v1/enums.proto";
-import "proto/session/session_messages.proto";
+import "cards/v1/enums.proto";
+import "session/v1/session_messages.proto";
 
 option features.(pb.go).strip_enum_prefix = STRIP_ENUM_PREFIX_STRIP;
 
