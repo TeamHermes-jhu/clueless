@@ -11,7 +11,13 @@ test:
 	cd ./backend/ && go test ./...
 
 server:
-	cd ./backend/ && go build -o bin/server .
+	cd ./backend/ && go build -o server .
+
+proto:
+	buf generate
+
+proto-lint:
+	buf lint
 
 clean:
 	rm -rf ./backend/bin/
