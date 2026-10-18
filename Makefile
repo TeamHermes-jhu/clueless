@@ -18,7 +18,6 @@ proto:
 
 proto-lint:
 	buf lint
-	cd ./backend/ && go build -o bin/server .
 
 clean:
 	rm -rf ./backend/bin/
