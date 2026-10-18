@@ -1,0 +1,57 @@
+
+edition = "2024";
+
+package proto.session.v1;
+
+import "session_messages.proto";
+import "cards/v1/enums.proto";
+
+// Represents a player's location on the board.
+message PlayerLocation {
+    int32 player_id = 1;
+    proto.session.v1.Rooms room = 2
+}
+
+// Represents the cards held by a player.
+message PlayerCards {
+    int32 player_id = 1;
+    repeated string cards = 2;
+}
+
+// Contains public information about a player.
+message PlayerState {
+    proto.session.v1.Player player = 1;
+    PlayerLocation location = 2;
+    bool is_connected = 3;
+}
+
+// Sent to all players when a player joins.
+message PlayerJoined {
+    int32 session_id = 1;
+    proto.session.v1.Player player = 2;
+}
+
+// Sent to all players when a player disconnects.
+message PlayerDisconnected {
+    int32 session_id = 1;
+    proto.session.v1.Player player = 2;
+}
+
+// Global message sent to all connected players.
+//
+// Contains player locations, connection states, and cards belonging to disconnected players.
+message GlobalGameState {
+    int32 session_id = 1;
+    repeated PlayerState players = 2;
+    repeated PlayerCards disconnected_player_cards = 3;
+    int32 current_turn_player_id = 4;
+}
+
+// Individual message sent privately to one player.
+//
+// Contains the cards in that player's hand.
+message IndividualGameState {
+    int32 session_id = 1;
+    int32 player_id = 2;
+    repeated string cards = 3;
+}
