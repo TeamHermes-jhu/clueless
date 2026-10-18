@@ -9,7 +9,7 @@ import "cards/v1/enums.proto";
 // Represents a player's location on the board.
 message PlayerLocation {
     int32 player_id = 1;
-    proto.cards.v1.Rooms room = 2;
+    cards.v1.Rooms room = 2;
 }
 
 // Represents the cards held by a player.
@@ -20,7 +20,7 @@ message PlayerCards {
 
 // Contains public information about a player.
 message PlayerState {
-    proto.session.v1.Player player = 1;
+    session.v1.Player player = 1;
     PlayerLocation location = 2;
     bool is_connected = 3;
 }
@@ -28,13 +28,13 @@ message PlayerState {
 // Sent to all players when a player joins.
 message PlayerJoined {
     int32 session_id = 1;
-    proto.session.v1.Player player = 2;
+    session.v1.Player player = 2;
 }
 
 // Sent to all players when a player disconnects.
 message PlayerDisconnected {
     int32 session_id = 1;
-    proto.session.v1.Player player = 2;
+    session.v1.Player player = 2;
 }
 
 // Global message sent to all connected players.
