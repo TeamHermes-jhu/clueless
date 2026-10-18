@@ -29,7 +29,6 @@ message SessionList {
 message SessionJoinRequest {
   Session session = 1; // The session the player is attempting to join
   Player player = 2; // The player attempting to join the session
-  string session_passcode_given = 3; // Passcode entered by the player for joining the session, if it is private
 }
 
 message Player {
