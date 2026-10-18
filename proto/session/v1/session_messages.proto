@@ -18,9 +18,8 @@ message Session {
   int32 session_id = 1; // Unique identifier for the session
   SessionStatus status = 2; // Indicates the current status of the session
   repeated Player players = 3; // List of player IDs participating in the session
-  string session_passcode = 4; // Passcode for joining the session, if it is private
-  int32 min_players = 5; // Minimum number of players required to start the session
-  int32 max_players = 6; // Maximum number of players allowed in the session
+  int32 min_players = 4; // Minimum number of players required to start the session
+  int32 max_players = 5; // Maximum number of players allowed in the session
 }
 
 message SessionList {
