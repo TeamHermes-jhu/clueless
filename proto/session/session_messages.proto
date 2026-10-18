@@ -2,7 +2,7 @@
 
 edition = "2024";
 
-package proto.session;
+package proto.session.v1;
 
 import "google/protobuf/go_features.proto";
 
