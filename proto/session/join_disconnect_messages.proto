@@ -1,7 +1,7 @@
 
 edition = "2024";
 
-package proto.joindisconnect;
+package proto.session.v1;
 
 import "session_messages.proto";
 
