@@ -13,10 +13,6 @@ import "suggestion/v1/suggest_accuse_messages.proto"
 
 option features.(pb.go).strip_enum_prefix = STRIP_ENUM_PREFIX_STRIP;
 
-
-
-
-
 // Should we have a card message for a single card?
 message Card {
     oneof card {
@@ -25,10 +21,6 @@ message Card {
         cards.v1.Rooms room = 3; // Room card
     }
 }
-
-
-
-
 
 enum GameOverReason {
     GAME_OVER_REASON_UNSPECIFIED = 0;
@@ -73,10 +65,6 @@ message PlayerEliminatedMessage {
     int32 players_remaining = 3;
 }
 
-
-
-
-
 // Subject to feedback/deletion/modification
 enum ErrorCode {
     ERROR_CODE_UNSPECIFIED = 0;
@@ -99,10 +87,6 @@ enum ErrorCode {
     ERROR_CODE_INVALID_SUGGESTION = 17; // Suggestion doesn't follow the rules (e.g. room is not the player's current room)
     ERROR_CODE_ACTION_ALREADY_TAKEN = 18; // The player already did this action this turn
 }
-
-
-
-
 
 enum NotificationCategory {
     NOTIFICATION_CATEGORY_UNSPECIFIED = 0;
