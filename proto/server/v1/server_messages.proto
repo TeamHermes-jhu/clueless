@@ -9,6 +9,7 @@ import "google/protobuf/go_features.proto";
 import "google/protobuf/timestamp.proto";
 import "cards/v1/enums.proto";
 import "session/v1/session_messages.proto";
+import "suggestion/v1/suggest_accuse_messages.proto"
 
 option features.(pb.go).strip_enum_prefix = STRIP_ENUM_PREFIX_STRIP;
 
@@ -68,7 +69,7 @@ message GameSummaryMessage {
 // The eliminated player leaves the turn rotation (can still disprove suggestions?)
 message PlayerEliminatedMessage {
     session.v1.Player player = 1;
-    int32 accusation_id = 2; // replace with type from accusation proto messages?
+    suggestion.v1.AccusationMessage accusation = 2;
     int32 players_remaining = 3;
 }
 
