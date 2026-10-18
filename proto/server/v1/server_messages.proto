@@ -76,28 +76,6 @@ message PlayerEliminatedMessage {
 
 
 
-// Do we need server side suggestion outcome messages?
-
-// Broadcast, Public version of a suggestion's outcome. Contains NO card information.
-message SuggestionOutcomeMessage {
-    int32 suggestion_id = 1; // The suggestion this outcome belongs to
-    bool was_disproved = 2; // True if a player showed a card, false if nobody could
-    session.v1.Player responder = 3; // Who disproved it, unset if was_disproved is false
-}
-
-// Individual, Sent only to the player who must disprove a suggestion
-// The server checks their hand and lists the cards they are allowed to show, so UI can restrict?
-// Players with no matching card are skipped by the server and never receive this
-message DisproveOptionsMessage {
-    int32 suggestion_id = 1; // The suggestion to disprove
-    session.v1.Player suggester = 2; // Who made the suggestion
-    repeated Card matching_cards = 3; // Cards in this player's hand that disprove it (never empty?)
-}
-
-
-
-
-
 // Subject to feedback/deletion/modification
 enum ErrorCode {
     ERROR_CODE_UNSPECIFIED = 0;
