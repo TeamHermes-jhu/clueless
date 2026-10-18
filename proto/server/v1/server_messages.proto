@@ -2,7 +2,7 @@
 
 edition = "2024";
 
-package proto.server;
+package server.v1;
 
 import "google/protobuf/duration.proto";
 import "google/protobuf/go_features.proto";
@@ -17,7 +17,7 @@ option features.(pb.go).strip_enum_prefix = STRIP_ENUM_PREFIX_STRIP;
 
 
 // Should we have a card message for a single card?
-message CardInfo {
+message Card {
     oneof card {
         cards.v1.Characters character = 1; // Character card
         cards.v1.Weapons weapon = 2; // Weapon card
@@ -40,7 +40,7 @@ enum GameOverReason {
 // Broadcasted
 message GameOverMessage {
     GameOverReason reason = 1;
-    proto.session.Player winner = 2; // Unset if there is no winner
+    session.v1.Player winner = 2; // Unset if there is no winner
     cards.v1.Characters solution_character = 3;
     cards.v1.Weapons solution_weapon = 4;
     cards.v1.Rooms solution_room = 5;
@@ -48,14 +48,12 @@ message GameOverMessage {
 
 // Per player results shown post game
 message PlayerSummary {
-    proto.session.Player player = 1;
+    session.v1.Player player = 1;
     cards.v1.Characters character = 2;
-    repeated CardInfo hand = 3; // Their cards
+    repeated Card hand = 3; // Their cards
     int32 moves_made = 4;
-    int32 suggestions_made = 5;
-    int32 accusations_made = 6;
-    bool was_eliminated = 7; // True if they were eliminated by a wrong accusation
-    bool disconnected = 8; // True if they left before the game ended
+    bool is_eliminated = 5; // True if they were eliminated by a wrong accusation
+    bool is_disconnected = 6; // True if they left before the game ended
 }
 
 // Broadcast, sent right after GameOverMessage
@@ -69,7 +67,7 @@ message GameSummaryMessage {
 // Broadcast, sent to all players when a player is eliminated after an incorrect accusation
 // The eliminated player leaves the turn rotation (can still disprove suggestions?)
 message PlayerEliminatedMessage {
-    proto.session.Player player = 1;
+    session.v1.Player player = 1;
     int32 accusation_id = 2; // replace with type from accusation proto messages?
     int32 players_remaining = 3;
 }
@@ -80,18 +78,11 @@ message PlayerEliminatedMessage {
 
 // Do we need server side suggestion outcome messages?
 
-// Individual, Sent only to the player who made the suggestion, containing the card that was shown to them
-message CardRevealedMessage {
-    int32 suggestion_id = 1; // The suggestion being answered
-    int32 responder_id = 2; // ID of the player who showed the card
-    CardInfo card = 3; // The card that was shown
-}
-
 // Broadcast, Public version of a suggestion's outcome. Contains NO card information.
 message SuggestionOutcomeMessage {
     int32 suggestion_id = 1; // The suggestion this outcome belongs to
     bool was_disproved = 2; // True if a player showed a card, false if nobody could
-    proto.session.Player responder = 3; // Who disproved it, unset if was_disproved is false
+    session.v1.Player responder = 3; // Who disproved it, unset if was_disproved is false
 }
 
 // Individual, Sent only to the player who must disprove a suggestion
@@ -99,8 +90,8 @@ message SuggestionOutcomeMessage {
 // Players with no matching card are skipped by the server and never receive this
 message DisproveOptionsMessage {
     int32 suggestion_id = 1; // The suggestion to disprove
-    proto.session.Player suggester = 2; // Who made the suggestion
-    repeated CardInfo matching_cards = 3; // Cards in this player's hand that disprove it (never empty?)
+    session.v1.Player suggester = 2; // Who made the suggestion
+    repeated Card matching_cards = 3; // Cards in this player's hand that disprove it (never empty?)
 }
 
 
@@ -130,22 +121,6 @@ enum ErrorCode {
     ERROR_CODE_ACTION_ALREADY_TAKEN = 18; // The player already did this action this turn
 }
 
-// Describes one invalid field in a rejected request
-message FieldViolation {
-    string field = 1; // Name of the offending field (e.g. "player_name")
-    string description = 2;
-}
-
-// Individual, sent only to the player whose request was rejected
-message ActionRejectedMessage {
-    ErrorCode code = 1;
-    string detail = 2; // Readable explanation to display
-    string request_type = 3; // Name of the rejected message (e.g. "SuggestionMessage"); empty if unknown
-    int32 related_id = 4; // ID from the rejected request (e.g. suggestion_id); 0 if none
-    bool connection_will_close = 5; // True if the error is fatal and the server will drop the connection
-    repeated FieldViolation violations = 6; // Per field problems, mainly for validation errors
-}
-
 
 
 
@@ -160,6 +135,7 @@ enum NotificationCategory {
     NOTIFICATION_CATEGORY_SESSION = 5; // Players joining, leaving, etc.
     NOTIFICATION_CATEGORY_TURN = 6; // Turn changes and skips
     NOTIFICATION_CATEGORY_GAME = 7; // Game start, end, and other game wide events
+    NOTIFICATION_CATEGORY_ERROR = 8;
 }
 
 // Broadcast or Individual, A human readable line for the game log
@@ -167,84 +143,13 @@ message NotificationMessage {
     NotificationCategory category = 1;
     string text = 2; // To display
     google.protobuf.Timestamp timestamp = 3; // When the event happened (server time)
-    proto.session.Player subject = 4; // The player this is about, if any
+    session.v1.Player subject = 4; // The player this is about, if any
 }
 
 // Should we have a simple all chat? Would demonstrate sending chat messages between subsystems for skeletal increment.
 // Client to Server, then Broadcast: Text chat between players
 message ChatMessage {
-    proto.session.Player sender = 1; // Filled in by the server
+    session.v1.Player sender = 1; // Filled in by the server
     string text = 2; // The chat text
     google.protobuf.Timestamp timestamp = 3; // Set by the server on receipt
-}
-
-
-
-
-// Misc. turn flow message (idk, maybe if someone is afk, taking too long, or disconnected)
-enum TurnSkipReason {
-    TURN_SKIP_REASON_UNSPECIFIED = 0;
-
-    TURN_SKIP_REASON_PLAYER_DISCONNECTED = 1; // Player left during their turn
-    TURN_SKIP_REASON_TURN_TIMEOUT = 2; // Player ran out of time (only if turn timers are added)
-}
-
-// Broadcast, The server skipped a player's turn
-message TurnSkippedMessage {
-    proto.session.Player skipped_player = 1;
-    TurnSkipReason reason = 2;
-}
-
-
-
-
-
-// Server to Client, Periodic liveness check
-message HeartbeatRequestMessage {
-    int64 sequence = 1; // Incrementing number the client echoes back
-}
-
-// Client to Server, Reply to a HeartbeatRequestMessage
-message HeartbeatResponseMessage {
-    int64 sequence = 1; // The sequence number from the matching HeartbeatRequestMessage
-}
-
-enum ConnectionHealth {
-    CONNECTION_HEALTH_UNSPECIFIED = 0;
-
-    CONNECTION_HEALTH_HEALTHY = 1; // Player is responding normally
-    CONNECTION_HEALTH_UNRESPONSIVE = 2; // Player has missed heartbeats and may be dropped
-}
-
-// Broadcast, Warns other players that someone may be about to be disconnected
-// TODO: idk this might not be needed, give me feedback
-message ConnectionHealthMessage {
-    proto.session.Player player = 1;
-    ConnectionHealth health = 2; // Their current state
-    int32 seconds_until_dropped = 3;
-}
-
-// Individual, Sent right after a client connects
-message ServerHelloMessage {
-    string protocol_version = 1; // Version of the shared message definitions
-    string server_version = 2; // Version of the server build, TODO: Probably not needed
-    int32 heartbeat_interval_seconds = 3; // How often the server sends a HeartbeatRequestMessage
-    int32 heartbeat_timeout_seconds = 4; // How long without a HeartbeatResponseMessage before a player is dropped
-    int32 max_name_length = 5; // Longest allowed player name
-    int32 max_chat_length = 6; // Longest allowed chat message
-    google.protobuf.Timestamp server_time = 7; // Server clock for timestamps, etc.
-}
-
-enum ShutdownReason {
-    SHUTDOWN_REASON_UNSPECIFIED = 0;
-
-    SHUTDOWN_REASON_SERVER_ERROR = 1; // Unrecoverable server problems
-    // Could add more but idk
-}
-
-// Broadcast, Sent to every connected client when the server is about to stop
-message ServerShutdownMessage {
-    ShutdownReason reason = 1;
-    int32 seconds_until_shutdown = 2; // Countdown; 0 means immediately
-    string detail = 3; // Readable explanation to display
 }
