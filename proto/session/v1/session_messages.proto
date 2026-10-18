@@ -12,18 +12,15 @@ enum SessionStatus {
   SESSION_STATUS_UNSPECIFIED = 0; // Default value, unknown status
   SESSION_STATUS_WAITING = 1; // Session is waiting for players to join
   SESSION_STATUS_ACTIVE = 2; // Session is currently active (game in progress)
-  SESSION_STATUS_INACTIVE = 3; // Session is currently inactive (game paused or ended)
 }
 
 message Session {
   int32 session_id = 1; // Unique identifier for the session
   SessionStatus status = 2; // Indicates the current status of the session
   repeated Player players = 3; // List of player IDs participating in the session
-  Player host = 4; // The player who created the session and is hosting it
-  bool is_private = 5; // Indicates if the session is private (true) or public (false)
-  string session_passcode = 6; // Passcode for joining the session, if it is private
-  int32 min_players = 7; // Minimum number of players required to start the session
-  int32 max_players = 8; // Maximum number of players allowed in the session
+  string session_passcode = 4; // Passcode for joining the session, if it is private
+  int32 min_players = 5; // Minimum number of players required to start the session
+  int32 max_players = 6; // Maximum number of players allowed in the session
 }
 
 message SessionList {
