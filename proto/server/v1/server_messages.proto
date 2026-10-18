@@ -12,8 +12,6 @@ import "proto/session/session_messages.proto";
 
 option features.(pb.go).strip_enum_prefix = STRIP_ENUM_PREFIX_STRIP;
 
-// TODO: SHOULD ALL ENUMS GO IN "proto/cards/v1/enums.proto"?
-
 
 
 
