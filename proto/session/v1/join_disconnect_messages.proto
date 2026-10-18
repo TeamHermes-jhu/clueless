@@ -4,13 +4,12 @@ edition = "2024";
 package proto.session.v1;
 
 import "session_messages.proto";
+import "cards/v1/enums.proto";
 
 // Represents a player's location on the board.
 message PlayerLocation {
     int32 player_id = 1;
-    int32 row = 2;
-    int32 column = 3;
-    optional string room_id = 4;
+    proto.session.v1.Room location = 2
 }
 
 // Represents the cards held by a player.
@@ -21,7 +20,7 @@ message PlayerCards {
 
 // Contains public information about a player.
 message PlayerState {
-    proto.session.Player player = 1;
+    proto.session.v1.Player player = 1;
     PlayerLocation location = 2;
     bool is_connected = 3;
 }
