@@ -123,11 +123,3 @@ message NotificationMessage {
     google.protobuf.Timestamp timestamp = 3; // When the event happened (server time)
     session.v1.Player subject = 4; // The player this is about, if any
 }
-
-// Should we have a simple all chat? Would demonstrate sending chat messages between subsystems for skeletal increment.
-// Client to Server, then Broadcast: Text chat between players
-message ChatMessage {
-    session.v1.Player sender = 1; // Filled in by the server
-    string text = 2; // The chat text
-    google.protobuf.Timestamp timestamp = 3; // Set by the server on receipt
-}
