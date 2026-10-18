@@ -9,7 +9,7 @@ import "cards/v1/enums.proto";
 // Represents a player's location on the board.
 message PlayerLocation {
     int32 player_id = 1;
-    proto.session.v1.Rooms room = 2
+    proto.cards.v1.Rooms room = 2;
 }
 
 // Represents the cards held by a player.
