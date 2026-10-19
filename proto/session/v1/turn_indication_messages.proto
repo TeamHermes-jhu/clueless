@@ -1,0 +1,47 @@
+edition = "2024";
+
+package session.v1;
+
+import "session/v1/session_messages.proto";
+
+// Indicates the current phase of a turn.
+enum TurnType {
+  TURN_TYPE_UNSPECIFIED = 0;
+  TURN_TYPE_MOVEMENT = 1;
+  TURN_TYPE_SUGGESTION = 2;
+  TURN_TYPE_DISPROVE = 3;
+  TURN_TYPE_ACCUSATION = 4;
+}
+
+// Actions that a player may be allowed to perform.
+enum PlayerAction {
+  PLAYER_ACTION_UNSPECIFIED = 0;
+  PLAYER_ACTION_MOVE = 1;
+  PLAYER_ACTION_SUGGEST = 2;
+  PLAYER_ACTION_DISPROVE = 3;
+  PLAYER_ACTION_END_TURN = 4;
+  PLAYER_ACTION_ACCUSE = 5;
+}
+
+// Defines the actions available to a specific player.
+message PlayerTurnActions {
+  int32 player_id = 1;
+  repeated PlayerAction allowed_actions = 2;
+}
+
+// Global message sent to all players whenever the current turn or available actions change.
+message TurnIndication {
+  int32 session_id = 1;
+
+  // player responsible for the current action.
+  Player current_player = 2;
+
+  // current phase of the turn.
+  TurnType turn_type = 3;
+
+  // actions permitted for each player
+  repeated PlayerTurnActions player_actions = 4;
+
+  // sequential turn counter.
+  int32 turn_number = 5;
+}
