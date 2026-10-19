@@ -2,18 +2,16 @@ import type { TextMessageRecieve, TextMessageSend } from './ClientEvents';
 
 // Must include EVERY event type here
 export enum MessageType {
-    TextMessageRecieve,
-    TextMessageSend
+  TextMessageRecieve,
+  TextMessageSend,
 }
 
 export enum EventProducer {
   SERVER,
-  CLIENT
+  CLIENT,
 }
 
-export type AppEvent = 
-  | TextMessageRecieve 
-  | TextMessageSend;
+export type AppEvent = TextMessageRecieve | TextMessageSend;
 
 export type EventType = AppEvent['type'];
 
