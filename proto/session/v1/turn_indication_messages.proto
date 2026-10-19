@@ -7,7 +7,7 @@ import "session/v1/session_messages.proto";
 
 // Indicates the current phase of a turn.
 enum TurnType {
-    TURN_TYPE_UNKNOWN = 0;
+    TURN_TYPE_UNSPECIFIED = 0;
     TURN_TYPE_MOVEMENT = 1;
     TURN_TYPE_SUGGESTION = 2;
     TURN_TYPE_DISPROVE = 3;
@@ -16,7 +16,7 @@ enum TurnType {
 
 // Actions that a player may be allowed to perform.
 enum PlayerAction {
-    PLAYER_ACTION_UNKNOWN = 0;
+    PLAYER_ACTION_UNSPECIFIED = 0;
     PLAYER_ACTION_MOVE = 1;
     PLAYER_ACTION_SUGGEST = 2;
     PLAYER_ACTION_DISPROVE = 3;
