@@ -15,8 +15,8 @@ export class App {
   // Hide the main page content while a routed page is shown.
   protected readonly onMainPage = toSignal(
     inject(Router).events.pipe(
-      filter(e => e instanceof NavigationEnd),
-      map(e => e.urlAfterRedirects === '/'),
+      filter((e) => e instanceof NavigationEnd),
+      map((e) => e.urlAfterRedirects === '/'),
     ),
     { initialValue: true },
   );

@@ -1,0 +1,27 @@
+{
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "prettier.requireConfig": true,
+  "eslint.workingDirectories": ["./frontend"],
+  "js/ts.tsdk.path": "frontend/node_modules/typescript/lib",
+  "js/ts.preferences.importModuleSpecifier": "relative",
+  "angular.suggest.includeAutomaticOptionalChainCompletions": true,
+  "css.validate": true,
+  "scss.validate": true,
+  "html.autoClosingTags": true,
+  "emmet.includeLanguages": { "html": "html" },
+
+  "[go]": {
+    "editor.defaultFormatter": "golang.go"
+  },
+  "gopls": {
+    "formatting.gofumpt": true
+  },
+  "go.lintTool": "golangci-lint",
+  "go.lintFlags": ["--config=${workspaceFolder}/backend/.golangci.yml"]
+}

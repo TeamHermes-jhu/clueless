@@ -12,5 +12,5 @@
   "css.validate": true,
   "scss.validate": true,
   "html.autoClosingTags": true,
-  "emmet.includeLanguages": { "html": "html" },
+  "emmet.includeLanguages": { "html": "html" }
 }
