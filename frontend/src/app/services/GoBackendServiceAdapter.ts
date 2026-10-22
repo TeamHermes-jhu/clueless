@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import type { DescMessage, MessageShape } from '@bufbuild/protobuf';
 import { createRegistry, fromBinary, fromJsonString, toBinary } from '@bufbuild/protobuf';
-import { anyPack, anyUnpack, AnySchema } from '@bufbuild/protobuf/wkt';
+import { anyPack, AnySchema, anyUnpack } from '@bufbuild/protobuf/wkt';
 import type { AppEvent } from '../common/events/event-types/AppEvents';
 import { EventProducer, MessageType } from '../common/events/event-types/AppEvents';
 import {
@@ -35,9 +35,6 @@ const PROTO_MESSAGES: readonly (readonly [DescMessage, ProtoAppEvent['type']])[]
 const registry = createRegistry(...PROTO_MESSAGES.map(([schema]) => schema));
 const eventTypes = new Map(PROTO_MESSAGES.map(([schema, type]) => [schema.typeName, type]));
 
-// Talks to the Go backend. Every frame is a google.protobuf.Any wrapping one generated
-// message: binary frames hold the encoded Any, and text frames hold its JSON form
-// (e.g. {"@type": "type.googleapis.com/session.v1.Session", ...}), which is handy for testing.
 @Injectable({ providedIn: 'root' })
 export class GoBackendServiceAdapter extends AbstractServiceAdapter {
   constructor() {

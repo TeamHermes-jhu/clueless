@@ -14,5 +14,5 @@ export class TestMessageBus {
   // Injected so the websocket connections are opened when this page loads.
   private readonly postmanAdapter = inject(PostmanTestServiceAdapter);
 
-  protected readonly messages = this.store.messages;
+  protected readonly messages = this.store.getAll();
 }

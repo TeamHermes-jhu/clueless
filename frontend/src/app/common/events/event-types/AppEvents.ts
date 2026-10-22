@@ -6,13 +6,11 @@ export enum MessageType {
   TextMessageRecieve,
   TextMessageSend,
 
-  // Protobuf messages from gen/session
+  // Protobuf messages
   Session,
   SessionList,
   SessionJoinRequest,
   Player,
-
-  // Protobuf messages from gen/suggestion
   SuggestionMessage,
   AccusationMessage,
   SuggestionResponseMessage,
