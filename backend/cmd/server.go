@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/spf13/cobra"
 
@@ -16,7 +15,7 @@ var serveCmd = &cobra.Command{
 	Short: "Run the backend server.",
 	Long:  `Starts the backend server.`,
 	RunE: func(cmd *cobra.Command, _ []string) error {
-		ctx, cancel := context.WithTimeout(cmd.Context(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(cmd.Context(), commandTimeout)
 		defer cancel()
 
 		if err := secrets.Bootstrap(ctx, "secrets.env"); err != nil {
@@ -28,6 +27,7 @@ var serveCmd = &cobra.Command{
 		fmt.Println("EXAMPLE_SECRET loaded:", os.Getenv("EXAMPLE_SECRET") != "")
 
 		fmt.Println("The server has started")
+
 		return nil
 	},
 }
