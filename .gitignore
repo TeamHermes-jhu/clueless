@@ -1,4 +1,6 @@
-*.env
+*.env*
+!.env.example
+!secrets.env.example
 bin/
 shell.nix
 
