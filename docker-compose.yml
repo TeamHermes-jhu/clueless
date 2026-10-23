@@ -1,0 +1,22 @@
+# Local MongoDB for secrets store
+
+# Start:  docker compose up -d
+# Stop:  docker compose down
+
+# Username and password below are throwaway values
+
+services:
+  mongo:
+    image: mongo:8
+    container_name: clueless-mongo
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: localdevpassword
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
