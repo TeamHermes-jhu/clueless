@@ -70,3 +70,33 @@ func TestLoadRejectsInvalidDotenv(t *testing.T) {
 		t.Error("expected an error for invalid .env text, got nil")
 	}
 }
+
+func TestOverridesWinOverStoredValues(t *testing.T) {
+	t.Setenv("SECRETS_TEST_OVERRIDDEN", "")
+
+	_ = os.Unsetenv("SECRETS_TEST_OVERRIDDEN")
+
+	m := secrets.NewManager(fakeProvider{dotenv: "SECRETS_TEST_OVERRIDDEN=from-store\n"}).
+		WithOverrides(map[string]string{"SECRETS_TEST_OVERRIDDEN": "from-override"})
+	if err := m.LoadIntoEnv(context.Background(), "dev"); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if got := os.Getenv("SECRETS_TEST_OVERRIDDEN"); got != "from-override" {
+		t.Errorf("got %q, want %q", got, "from-override")
+	}
+}
+
+func TestRealEnvironmentBeatsOverrides(t *testing.T) {
+	t.Setenv("SECRETS_TEST_PRIORITY", "from-shell")
+
+	m := secrets.NewManager(fakeProvider{dotenv: "SECRETS_TEST_PRIORITY=from-store\n"}).
+		WithOverrides(map[string]string{"SECRETS_TEST_PRIORITY": "from-override"})
+	if err := m.LoadIntoEnv(context.Background(), "dev"); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if got := os.Getenv("SECRETS_TEST_PRIORITY"); got != "from-shell" {
+		t.Errorf("got %q, want %q", got, "from-shell")
+	}
+}
