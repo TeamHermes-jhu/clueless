@@ -12,3 +12,10 @@ plugins:
   - remote: buf.build/connectrpc/go
     out: backend/internal/gen
     opt: paths=source_relative
+  - local:
+      [
+        "node",
+        "frontend/node_modules/@bufbuild/protoc-gen-es/bin/protoc-gen-es",
+      ]
+    out: frontend/src/app/common/events/event-types/gen
+    opt: target=ts
