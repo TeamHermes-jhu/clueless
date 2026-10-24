@@ -34,14 +34,19 @@ const (
 const bootstrapTimeout = 5 * time.Second
 
 // Bootstrap reads bootstrap file (if it exists), connects to secret store, and loads secrets into process environment.
-func Bootstrap(ctx context.Context, bootstrapFile string) error {
+func Bootstrap(ctx context.Context, bootstrapFile, overrideFile string) error {
 	provider, environment, err := openProvider(bootstrapFile)
 	if err != nil {
 		return err
 	}
 	defer closeQuietly(provider)
 
-	return NewManager(provider).LoadIntoEnv(ctx, environment)
+	overrides, err := readOverrides(overrideFile)
+	if err != nil {
+		return err
+	}
+
+	return NewManager(provider).WithOverrides(overrides).LoadIntoEnv(ctx, environment)
 }
 
 // Push checks that dotenv is valid and uploads it to secret store under given environment name, replacing whatever was stored there.
@@ -104,4 +109,18 @@ func valueOrDefault(key, fallback string) string {
 	}
 
 	return fallback
+}
+
+// readOverrides reads optional override file. A missing file means no overrides.
+func readOverrides(path string) (map[string]string, error) {
+	overrides, err := godotenv.Read(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		return make(map[string]string), nil
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("read %s: %w", path, err)
+	}
+
+	return overrides, nil
 }

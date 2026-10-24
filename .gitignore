@@ -1,4 +1,4 @@
 *.env*
-!.env.example
-!secrets.env.example
+!*.env.example
 bin/
+server

@@ -18,10 +18,11 @@ var serveCmd = &cobra.Command{
 		ctx, cancel := context.WithTimeout(cmd.Context(), commandTimeout)
 		defer cancel()
 
-		if err := secrets.Bootstrap(ctx, "secrets.env"); err != nil {
+		if err := secrets.Bootstrap(ctx, secretsFile, overrideFile); err != nil {
 			return fmt.Errorf("load secrets: %w", err)
 		}
 
+		fmt.Println("SERVER_PORT:", os.Getenv("SERVER_PORT"))
 		// temp check to prove secrets loaded without printing the value
 		// TODO: delete once server uses real settings
 		fmt.Println("EXAMPLE_SECRET loaded:", os.Getenv("EXAMPLE_SECRET") != "")
