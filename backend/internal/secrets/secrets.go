@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -24,7 +25,8 @@ type Provider interface {
 
 // Manager turns stored .env text into process environment variables.
 type Manager struct {
-	provider Provider
+	provider  Provider
+	overrides map[string]string
 }
 
 // NewManager creates a Manager that reads from given Provider.
@@ -56,6 +58,8 @@ func (m *Manager) LoadIntoEnv(ctx context.Context, environment string) error {
 		return err
 	}
 
+	maps.Copy(values, m.overrides) // local overrides replace stored values
+
 	for key, value := range values {
 		if _, exists := os.LookupEnv(key); exists {
 			continue
@@ -67,4 +71,10 @@ func (m *Manager) LoadIntoEnv(ctx context.Context, environment string) error {
 	}
 
 	return nil
+}
+
+// WithOverrides sets local values that win over stored secrets.
+func (m *Manager) WithOverrides(overrides map[string]string) *Manager {
+	m.overrides = overrides
+	return m
 }
