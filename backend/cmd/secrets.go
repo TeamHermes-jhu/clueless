@@ -33,7 +33,7 @@ under the given environment name, replacing whatever was stored there.`,
 		ctx, cancel := context.WithTimeout(cmd.Context(), commandTimeout)
 		defer cancel()
 
-		if err := secrets.Push(ctx, "secrets.env", secretsPushEnv, string(raw)); err != nil {
+		if err := secrets.Push(ctx, secretsFile, secretsPushEnv, string(raw)); err != nil {
 			return fmt.Errorf("upload secrets: %w", err)
 		}
 
