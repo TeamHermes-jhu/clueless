@@ -18,7 +18,7 @@ var upgrader = websocket.Upgrader{
 }
 
 func (s *Server) handleWS(w http.ResponseWriter, r *http.Request) {
-	s.logger.Info("Initiating websocket handshake")
+	s.logger.InfoContext(r.Context(), "Initiating websocket handshake")
 
 	sessionID, playerID, err := getURLValues(r)
 	if err != nil {

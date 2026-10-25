@@ -12,6 +12,8 @@ import (
 	"github.com/TeamHermes-jhu/clueless/backend/session"
 )
 
+var errRequiredUsername = errors.New("username required")
+
 func (s *Server) joinSessionHandler(w http.ResponseWriter, r *http.Request) {
 	req, err := parseJoinRequest(r)
 	if err != nil {
@@ -77,7 +79,7 @@ func parseJoinRequest(r *http.Request) (*sessionv1.JoinRequest, error) {
 	}
 
 	if !req.HasUsername() {
-		return nil, errors.New("required: username")
+		return nil, errRequiredUsername
 	}
 
 	return &req, nil

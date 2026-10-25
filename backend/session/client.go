@@ -46,7 +46,7 @@ func (c *Client) Read() {
 
 // Write sends messages to the client.
 func (c *Client) Write() {
-	defer func() { _ = c.conn.Close() }()
+	defer c.conn.Close()
 
 	for data := range c.send {
 		if err := c.conn.WriteMessage(websocket.TextMessage, data); err != nil {
@@ -55,6 +55,7 @@ func (c *Client) Write() {
 	}
 }
 
+// Close shuts down the websocket connection gracefully.
 func (c *Client) Close(_ context.Context) {
 	c.conn.Close()
 }

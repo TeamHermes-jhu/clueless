@@ -1,4 +1,4 @@
-package server
+package server //nolint:testpackage // were touching an internal field so its fine
 
 import (
 	"fmt"
@@ -12,7 +12,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
 	"google.golang.org/protobuf/encoding/protojson"
 
 	sessionv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/session/v1"
@@ -39,6 +38,7 @@ func dial(t *testing.T, url string, origin string) (*websocket.Conn, *http.Respo
 
 func TestHandleWS_MissingQueryParams(t *testing.T) {
 	s := newTestServer()
+
 	ts := httptest.NewServer(s.mux)
 	defer ts.Close()
 
@@ -52,6 +52,7 @@ func TestHandleWS_MissingQueryParams(t *testing.T) {
 
 func TestHandleWS_InvalidSessionID(t *testing.T) {
 	s := newTestServer()
+
 	ts := httptest.NewServer(s.mux)
 	defer ts.Close()
 
@@ -67,6 +68,7 @@ func TestHandleWS_InvalidSessionID(t *testing.T) {
 
 func TestHandleWS_UnknownSession(t *testing.T) {
 	s := newTestServer()
+
 	ts := httptest.NewServer(s.mux)
 	defer ts.Close()
 
@@ -82,6 +84,7 @@ func TestHandleWS_UnknownSession(t *testing.T) {
 
 func TestHandleWS_BadOrigin(t *testing.T) {
 	s := newTestServer()
+
 	ts := httptest.NewServer(s.mux)
 	defer ts.Close()
 
@@ -99,6 +102,7 @@ func TestHandleWS_BadOrigin(t *testing.T) {
 
 func TestHandleWS_SuccessfulHandshakeAndRoundTrip(t *testing.T) {
 	s := newTestServer()
+
 	ts := httptest.NewServer(s.mux)
 	defer ts.Close()
 
@@ -108,6 +112,7 @@ func TestHandleWS_SuccessfulHandshakeAndRoundTrip(t *testing.T) {
 
 	conn, resp, err := dial(t, url, "http://localhost:8000")
 	require.NoError(t, err)
+
 	defer conn.Close()
 
 	require.Equal(t, http.StatusSwitchingProtocols, resp.StatusCode)
@@ -139,8 +144,9 @@ func joinAndGetSessionID(t *testing.T, ts *httptest.Server, username string) str
 
 	body := joinBody(t, username)
 
-	resp, err := http.Post(ts.URL+"/join_session", "application/json", strings.NewReader(string(body)))
+	resp, err := http.Post(ts.URL+"/join_session", "application/json", strings.NewReader(string(body))) //nolint:noctx // test package
 	require.NoError(t, err)
+
 	defer resp.Body.Close()
 
 	require.Equal(t, http.StatusOK, resp.StatusCode)

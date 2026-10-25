@@ -1,8 +1,7 @@
-package server
+package server //nolint:testpackage // were touching an internal field so its fine
 
 import (
 	"context"
-	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +14,7 @@ import (
 )
 
 func newTestServer() *Server {
-	l := slog.New(slog.NewTextHandler(io.Discard, nil))
+	l := slog.New(slog.DiscardHandler)
 
 	return New(l)
 }
@@ -24,13 +23,13 @@ func TestNew_RegistersRoutes(t *testing.T) {
 	s := newTestServer()
 
 	rec := httptest.NewRecorder()
-	req := httptest.NewRequest(http.MethodPost, "/join_session", nil)
+	req := httptest.NewRequest(http.MethodPost, "/join_session", nil) //nolint:gocritic,noctx // test file
 	s.mux.ServeHTTP(rec, req)
 
 	assert.NotEqual(t, http.StatusNotFound, rec.Code)
 
 	rec = httptest.NewRecorder()
-	req = httptest.NewRequest(http.MethodGet, "/not-a-real-route", nil)
+	req = httptest.NewRequest(http.MethodGet, "/not-a-real-route", nil) //nolint:gocritic,noctx // test file
 	s.mux.ServeHTTP(rec, req)
 
 	assert.Equal(t, http.StatusNotFound, rec.Code)
@@ -39,7 +38,7 @@ func TestNew_RegistersRoutes(t *testing.T) {
 func TestShutdown_NoRegisteredClients(t *testing.T) {
 	s := newTestServer()
 
-	l := slog.New(slog.NewTextHandler(io.Discard, nil))
+	l := slog.New(slog.DiscardHandler)
 	sess := session.New(l)
 	s.sessions[sess.GetID()] = sess
 

@@ -53,6 +53,8 @@ linters:
       exclude-functions:
         - encoding/json.Marshal # Required because of errchkjson.check-error-free-encoding.
         - encoding/json.MarshalIndent # Required because of errchkjson.check-error-free-encoding.
+        - (*github.com/gorilla/websocket.Conn).Close
+        - (io.ReadCloser).Close
     errchkjson:
       check-error-free-encoding: true
       report-no-exported: true # Encoded struct must have exported fields.

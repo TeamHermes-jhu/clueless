@@ -111,7 +111,16 @@ func (s *Session) Register(c *Client) bool {
 	return <-result
 }
 
+// Shutdown gracefully shuts down the session.
 func (s *Session) Shutdown(ctx context.Context) {
+	msg := sessionv1.Envelope_builder{
+		Msg: sessionv1.Message_builder{
+			Msg: new("Server is shuttind down"),
+		}.Build(),
+	}.Build()
+
+	s.broadcastMessage(msg)
+
 	for _, client := range s.players {
 		if client != nil {
 			client.Close(ctx)
@@ -120,7 +129,8 @@ func (s *Session) Shutdown(ctx context.Context) {
 }
 
 func (s *Session) run() {
-	timer := time.NewTimer(startGameDelay)
+	ticker := time.NewTicker(1 * time.Second)
+	start := time.Now()
 
 	for {
 		select {
@@ -134,8 +144,10 @@ func (s *Session) run() {
 			s.handleUnregister(id)
 		case msg := <-s.inbound:
 			s.handleInbound(msg)
-		case <-timer.C:
-			if len(s.players) >= minimumPlayersToStart && !s.started {
+		case <-ticker.C:
+			if time.Since(start) >= startGameDelay && len(s.players) >= minimumPlayersToStart && !s.started {
+				ticker.Stop()
+
 				s.startGame()
 			}
 		case <-s.stop:

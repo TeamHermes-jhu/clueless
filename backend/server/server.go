@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -17,6 +18,11 @@ import (
 const (
 	maxSessionsCount = 20
 	bufferSize       = 1024
+
+	readHeaderTimeout = 5 * time.Second
+	readTimeout       = 10 * time.Second
+	writeTimeout      = 10 * time.Second
+	idleTimeout       = 60 * time.Second
 )
 
 // Server contains the server object and maintains
@@ -24,6 +30,7 @@ const (
 type Server struct {
 	mu       sync.Mutex
 	mux      *chi.Mux
+	srv      *http.Server
 	logger   *slog.Logger
 	sessions map[uuid.UUID]*session.Session
 }
@@ -51,16 +58,28 @@ func New(l *slog.Logger) *Server {
 func (s *Server) Serve(addr, port string) error {
 	s.logger.Info("Starting server on", "address", addr, "port", port)
 
-	return http.ListenAndServe(addr+":"+port, s.mux)
+	s.srv = &http.Server{
+		Addr:              addr + ":" + port,
+		Handler:           s.mux,
+		ReadHeaderTimeout: readHeaderTimeout,
+		ReadTimeout:       readTimeout,
+		WriteTimeout:      writeTimeout,
+		IdleTimeout:       idleTimeout,
+	}
+
+	return s.srv.ListenAndServe()
 }
 
 // Shutdown initiates graceful shutdown of the server.
 func (s *Server) Shutdown(ctx context.Context) error {
-	// notify sessions to shutdown
 	s.logger.InfoContext(ctx, "Got shutdown signal")
 
 	for _, sess := range s.sessions {
 		sess.Shutdown(ctx)
+	}
+
+	if s.srv != nil {
+		return s.srv.Shutdown(ctx)
 	}
 
 	return nil

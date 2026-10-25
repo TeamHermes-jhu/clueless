@@ -1,4 +1,4 @@
-package server
+package server //nolint:testpackage // were touching an internal field so its fine
 
 import (
 	"bytes"
@@ -17,7 +17,7 @@ import (
 func doJoin(t *testing.T, s *Server, body []byte) *httptest.ResponseRecorder {
 	t.Helper()
 
-	req := httptest.NewRequest(http.MethodPost, "/join_session", bytes.NewReader(body))
+	req := httptest.NewRequest(http.MethodPost, "/join_session", bytes.NewReader(body)) //nolint:noctx // its a test package
 	rec := httptest.NewRecorder()
 
 	s.mux.ServeHTTP(rec, req)
