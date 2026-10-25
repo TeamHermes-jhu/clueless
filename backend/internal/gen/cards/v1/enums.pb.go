@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.36.12
 // 	protoc        (unknown)
-// source: proto/clueless/v1/cards/enums.proto
+// source: cards/v1/enums.proto
 
-package cards
+package cardsv1
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -66,11 +66,11 @@ func (x Characters) String() string {
 }
 
 func (Characters) Descriptor() protoreflect.EnumDescriptor {
-	return file_proto_clueless_v1_cards_enums_proto_enumTypes[0].Descriptor()
+	return file_cards_v1_enums_proto_enumTypes[0].Descriptor()
 }
 
 func (Characters) Type() protoreflect.EnumType {
-	return &file_proto_clueless_v1_cards_enums_proto_enumTypes[0]
+	return &file_cards_v1_enums_proto_enumTypes[0]
 }
 
 func (x Characters) Number() protoreflect.EnumNumber {
@@ -122,11 +122,11 @@ func (x Weapons) String() string {
 }
 
 func (Weapons) Descriptor() protoreflect.EnumDescriptor {
-	return file_proto_clueless_v1_cards_enums_proto_enumTypes[1].Descriptor()
+	return file_cards_v1_enums_proto_enumTypes[1].Descriptor()
 }
 
 func (Weapons) Type() protoreflect.EnumType {
-	return &file_proto_clueless_v1_cards_enums_proto_enumTypes[1]
+	return &file_cards_v1_enums_proto_enumTypes[1]
 }
 
 func (x Weapons) Number() protoreflect.EnumNumber {
@@ -187,22 +187,96 @@ func (x Rooms) String() string {
 }
 
 func (Rooms) Descriptor() protoreflect.EnumDescriptor {
-	return file_proto_clueless_v1_cards_enums_proto_enumTypes[2].Descriptor()
+	return file_cards_v1_enums_proto_enumTypes[2].Descriptor()
 }
 
 func (Rooms) Type() protoreflect.EnumType {
-	return &file_proto_clueless_v1_cards_enums_proto_enumTypes[2]
+	return &file_cards_v1_enums_proto_enumTypes[2]
 }
 
 func (x Rooms) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-var File_proto_clueless_v1_cards_enums_proto protoreflect.FileDescriptor
+type Halls int32
 
-const file_proto_clueless_v1_cards_enums_proto_rawDesc = "" +
+const (
+	Halls_UNSPECIFIED Halls = 0
+	Halls_ONE         Halls = 1
+	Halls_TWO         Halls = 2
+	Halls_THREE       Halls = 3
+	Halls_FOUR        Halls = 4
+	Halls_FIVE        Halls = 5
+	Halls_SIX         Halls = 6
+	Halls_SEVEN       Halls = 7
+	Halls_EIGHT       Halls = 8
+	Halls_NINE        Halls = 9
+	Halls_TEN         Halls = 10
+	Halls_ELEVEN      Halls = 11
+	Halls_TWELVE      Halls = 12
+)
+
+// Enum value maps for Halls.
+var (
+	Halls_name = map[int32]string{
+		0:  "HALLS_UNSPECIFIED",
+		1:  "HALLS_ONE",
+		2:  "HALLS_TWO",
+		3:  "HALLS_THREE",
+		4:  "HALLS_FOUR",
+		5:  "HALLS_FIVE",
+		6:  "HALLS_SIX",
+		7:  "HALLS_SEVEN",
+		8:  "HALLS_EIGHT",
+		9:  "HALLS_NINE",
+		10: "HALLS_TEN",
+		11: "HALLS_ELEVEN",
+		12: "HALLS_TWELVE",
+	}
+	Halls_value = map[string]int32{
+		"HALLS_UNSPECIFIED": 0,
+		"HALLS_ONE":         1,
+		"HALLS_TWO":         2,
+		"HALLS_THREE":       3,
+		"HALLS_FOUR":        4,
+		"HALLS_FIVE":        5,
+		"HALLS_SIX":         6,
+		"HALLS_SEVEN":       7,
+		"HALLS_EIGHT":       8,
+		"HALLS_NINE":        9,
+		"HALLS_TEN":         10,
+		"HALLS_ELEVEN":      11,
+		"HALLS_TWELVE":      12,
+	}
+)
+
+func (x Halls) Enum() *Halls {
+	p := new(Halls)
+	*p = x
+	return p
+}
+
+func (x Halls) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Halls) Descriptor() protoreflect.EnumDescriptor {
+	return file_cards_v1_enums_proto_enumTypes[3].Descriptor()
+}
+
+func (Halls) Type() protoreflect.EnumType {
+	return &file_cards_v1_enums_proto_enumTypes[3]
+}
+
+func (x Halls) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+var File_cards_v1_enums_proto protoreflect.FileDescriptor
+
+const file_cards_v1_enums_proto_rawDesc = "" +
 	"\n" +
-	"#proto/clueless/v1/cards/enums.proto\x12\x11clueless.v1.cards\x1a!google/protobuf/go_features.proto*\xb1\x01\n" +
+	"\x14cards/v1/enums.proto\x12\bcards.v1\x1a!google/protobuf/go_features.proto*\xb1\x01\n" +
 	"\n" +
 	"Characters\x12\x1a\n" +
 	"\x16CHARACTERS_UNSPECIFIED\x10\x00\x12\x14\n" +
@@ -231,17 +305,36 @@ const file_proto_clueless_v1_cards_enums_proto_rawDesc = "" +
 	"\x11ROOMS_DINING_ROOM\x10\x06\x12\x16\n" +
 	"\x12ROOMS_CONSERVATORY\x10\a\x12\x12\n" +
 	"\x0eROOMS_BALLROOM\x10\b\x12\x11\n" +
-	"\rROOMS_KITCHEN\x10\tB\xe0\x01\n" +
-	"\x15com.clueless.v1.cardsB\n" +
-	"EnumsProtoZOgithub.com/TeamHermes-jhu/clueless/backend/internal/gen/proto/clueless/v1/cards\xa2\x02\x03CVC\xaa\x02\x11Clueless.V1.Cards\xca\x02\x11Clueless\\V1\\Cards\xe2\x02\x1dClueless\\V1\\Cards\\GPBMetadata\xea\x02\x13Clueless::V1::Cards\x92\x03\x05\xd2>\x02\x18\x03b\beditionsp\xe9\a"
+	"\rROOMS_KITCHEN\x10\t*\xe1\x01\n" +
+	"\x05Halls\x12\x15\n" +
+	"\x11HALLS_UNSPECIFIED\x10\x00\x12\r\n" +
+	"\tHALLS_ONE\x10\x01\x12\r\n" +
+	"\tHALLS_TWO\x10\x02\x12\x0f\n" +
+	"\vHALLS_THREE\x10\x03\x12\x0e\n" +
+	"\n" +
+	"HALLS_FOUR\x10\x04\x12\x0e\n" +
+	"\n" +
+	"HALLS_FIVE\x10\x05\x12\r\n" +
+	"\tHALLS_SIX\x10\x06\x12\x0f\n" +
+	"\vHALLS_SEVEN\x10\a\x12\x0f\n" +
+	"\vHALLS_EIGHT\x10\b\x12\x0e\n" +
+	"\n" +
+	"HALLS_NINE\x10\t\x12\r\n" +
+	"\tHALLS_TEN\x10\n" +
+	"\x12\x10\n" +
+	"\fHALLS_ELEVEN\x10\v\x12\x10\n" +
+	"\fHALLS_TWELVE\x10\fB\xab\x01\n" +
+	"\fcom.cards.v1B\n" +
+	"EnumsProtoZHgithub.com/TeamHermes-jhu/clueless/backend/internal/gen/cards/v1;cardsv1\xa2\x02\x03CXX\xaa\x02\bCards.V1\xca\x02\bCards\\V1\xe2\x02\x14Cards\\V1\\GPBMetadata\xea\x02\tCards::V1\x92\x03\x05\xd2>\x02\x18\x03b\beditionsp\xe9\a"
 
-var file_proto_clueless_v1_cards_enums_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_proto_clueless_v1_cards_enums_proto_goTypes = []any{
-	(Characters)(0), // 0: clueless.v1.cards.Characters
-	(Weapons)(0),    // 1: clueless.v1.cards.Weapons
-	(Rooms)(0),      // 2: clueless.v1.cards.Rooms
+var file_cards_v1_enums_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
+var file_cards_v1_enums_proto_goTypes = []any{
+	(Characters)(0), // 0: cards.v1.Characters
+	(Weapons)(0),    // 1: cards.v1.Weapons
+	(Rooms)(0),      // 2: cards.v1.Rooms
+	(Halls)(0),      // 3: cards.v1.Halls
 }
-var file_proto_clueless_v1_cards_enums_proto_depIdxs = []int32{
+var file_cards_v1_enums_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
 	0, // [0:0] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -249,26 +342,26 @@ var file_proto_clueless_v1_cards_enums_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_proto_clueless_v1_cards_enums_proto_init() }
-func file_proto_clueless_v1_cards_enums_proto_init() {
-	if File_proto_clueless_v1_cards_enums_proto != nil {
+func init() { file_cards_v1_enums_proto_init() }
+func file_cards_v1_enums_proto_init() {
+	if File_cards_v1_enums_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_clueless_v1_cards_enums_proto_rawDesc), len(file_proto_clueless_v1_cards_enums_proto_rawDesc)),
-			NumEnums:      3,
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_cards_v1_enums_proto_rawDesc), len(file_cards_v1_enums_proto_rawDesc)),
+			NumEnums:      4,
 			NumMessages:   0,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_proto_clueless_v1_cards_enums_proto_goTypes,
-		DependencyIndexes: file_proto_clueless_v1_cards_enums_proto_depIdxs,
-		EnumInfos:         file_proto_clueless_v1_cards_enums_proto_enumTypes,
+		GoTypes:           file_cards_v1_enums_proto_goTypes,
+		DependencyIndexes: file_cards_v1_enums_proto_depIdxs,
+		EnumInfos:         file_cards_v1_enums_proto_enumTypes,
 	}.Build()
-	File_proto_clueless_v1_cards_enums_proto = out.File
-	file_proto_clueless_v1_cards_enums_proto_goTypes = nil
-	file_proto_clueless_v1_cards_enums_proto_depIdxs = nil
+	File_cards_v1_enums_proto = out.File
+	file_cards_v1_enums_proto_goTypes = nil
+	file_cards_v1_enums_proto_depIdxs = nil
 }

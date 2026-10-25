@@ -5,20 +5,23 @@ edition = "2024";
 package session.v1;
 
 import "google/protobuf/go_features.proto";
+import "cards/v1/enums.proto";
 
 option features.(pb.go).strip_enum_prefix = STRIP_ENUM_PREFIX_STRIP;
 
 enum SessionStatus {
   SESSION_STATUS_UNSPECIFIED = 0; // Default value, unknown status
-  SESSION_STATUS_WAITING = 1; // Session is waiting for players to join
+  SESSION_STATUS_WAITING = 1;     // Session is waiting for players to join
   SESSION_STATUS_ACTIVE = 2; // Session is currently active (game in progress)
 }
 
 message Session {
-  int32 session_id = 1; // Unique identifier for the session
+  int32 session_id = 1;     // Unique identifier for the session
   SessionStatus status = 2; // Indicates the current status of the session
-  repeated Player players = 3; // List of player IDs participating in the session
-  int32 min_players = 4; // Minimum number of players required to start the session
+  repeated Player players =
+      3; // List of player IDs participating in the session
+  int32 min_players =
+      4; // Minimum number of players required to start the session
   int32 max_players = 5; // Maximum number of players allowed in the session
 }
 
@@ -26,12 +29,34 @@ message SessionList {
   repeated Session sessions = 1; // List of sessions
 }
 
-message SessionJoinRequest {
-  Session session = 1; // The session the player is attempting to join
-  Player player = 2; // The player attempting to join the session
+message JoinRequest { string username = 1; }
+
+message JoinResponse {
+  string session_id = 1;
+  string username = 2;
 }
 
 message Player {
-  int32 player_id = 1; // Unique identifier for the player
+  int32 player_id = 1;    // Unique identifier for the player
   string player_name = 2; // Name of the player
+}
+
+message Move {
+  string player_id = 1;
+  oneof move_to {
+    cards.v1.Rooms room = 2;
+    cards.v1.Halls hall = 3;
+  }
+}
+
+message Error { string error = 1; }
+
+message Message { string msg = 1; }
+
+message Envelope {
+  oneof payload {
+    Move move = 1;
+    Message msg = 2;
+    Error error = 3;
+  }
 }

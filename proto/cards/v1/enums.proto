@@ -44,3 +44,20 @@ enum Rooms {
   ROOMS_BALLROOM = 8;
   ROOMS_KITCHEN = 9;
 }
+
+enum Halls {
+  HALLS_UNSPECIFIED = 0;
+
+  HALLS_ONE = 1;
+  HALLS_TWO = 2;
+  HALLS_THREE = 3;
+  HALLS_FOUR = 4;
+  HALLS_FIVE = 5;
+  HALLS_SIX = 6;
+  HALLS_SEVEN = 7;
+  HALLS_EIGHT = 8;
+  HALLS_NINE = 9;
+  HALLS_TEN = 10;
+  HALLS_ELEVEN = 11;
+  HALLS_TWELVE = 12;
+}

@@ -13,7 +13,7 @@ linters:
     - gomodguard
     - gochecknoglobals
     - exhaustruct
-    - exhaustruct_v5
+    - exhaustive
     - interfacebloat # Questionable.
     - ireturn # Questionable (is returning unexported types better?).
     - lll # Questionable (sometimes long lines improve readability).
