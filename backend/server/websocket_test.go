@@ -26,13 +26,11 @@ func wsURL(t *testing.T, ts *httptest.Server, query string) string {
 	return "ws" + strings.TrimPrefix(ts.URL, "http") + "/ws?" + query
 }
 
-func dial(t *testing.T, url string, origin string) (*websocket.Conn, *http.Response, error) {
+func dial(t *testing.T, url string) (*websocket.Conn, *http.Response, error) {
 	t.Helper()
 
 	header := http.Header{}
-	if origin != "" {
-		header.Set("Origin", origin)
-	}
+	header.Set("Origin", "localhost:8000")
 
 	return websocket.DefaultDialer.Dial(url, header)
 }
@@ -43,7 +41,7 @@ func TestHandleWS_MissingQueryParams(t *testing.T) {
 	ts := httptest.NewServer(s.mux)
 	defer ts.Close()
 
-	conn, resp, err := dial(t, wsURL(t, ts, ""), "http://localhost:8000")
+	conn, resp, err := dial(t, wsURL(t, ts, ""))
 	require.Error(t, err)
 	require.Nil(t, conn)
 	require.NotNil(t, resp)
@@ -59,7 +57,7 @@ func TestHandleWS_InvalidSessionID(t *testing.T) {
 
 	url := wsURL(t, ts, "session=not-a-uuid&player=alice")
 
-	conn, resp, err := dial(t, url, "http://localhost:8000")
+	conn, resp, err := dial(t, url)
 	require.Error(t, err)
 	require.Nil(t, conn)
 	require.NotNil(t, resp)
@@ -75,7 +73,7 @@ func TestHandleWS_UnknownSession(t *testing.T) {
 
 	url := wsURL(t, ts, "session=00000000-0000-0000-0000-000000000000&player=alice")
 
-	conn, resp, err := dial(t, url, "http://localhost:8000")
+	conn, resp, err := dial(t, url)
 	require.Error(t, err)
 	require.Nil(t, conn)
 	require.NotNil(t, resp)
@@ -93,7 +91,7 @@ func TestHandleWS_SuccessfulHandshakeAndRoundTrip(t *testing.T) {
 
 	url := wsURL(t, ts, fmt.Sprintf("session=%s&player=alice", sessionID))
 
-	conn, resp, err := dial(t, url, "http://localhost:8000")
+	conn, resp, err := dial(t, url)
 	require.NoError(t, err)
 
 	defer conn.Close()
