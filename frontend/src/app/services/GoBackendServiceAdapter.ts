@@ -6,14 +6,14 @@ import { Rooms } from '../common/events/event-types/gen/cards/v1/enums_pb';
 import type { AppEvent } from '../common/events/event-types/AppEvents';
 import { EventProducer, MessageType } from '../common/events/event-types/AppEvents';
 import {
-  EnvelopeSchema,
   MoveSchema,
   PlayerSchema,
   JoinRequestSchema,
   SessionListSchema,
   SessionSchema,
 } from '../common/events/event-types/gen/session/v1/session_pb';
-import type { Envelope } from '../common/events/event-types/gen/session/v1/session_pb';
+import { EnvelopeSchema } from '../common/events/event-types/gen/envelope/v1/envelope_pb';
+import type { Envelope } from '../common/events/event-types/gen/envelope/v1/envelope_pb';
 import {
   AccusationRequestSchema,
   AccusationResponseSchema,

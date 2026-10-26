@@ -6,7 +6,6 @@ package session.v1;
 
 import "cards/v1/enums.proto";
 import "google/protobuf/go_features.proto";
-import "suggestion/v1/suggestion.proto";
 
 option features.(pb.go).strip_enum_prefix = STRIP_ENUM_PREFIX_STRIP;
 
@@ -56,14 +55,4 @@ message Error {
 
 message Message {
   string msg = 1;
-}
-
-message Envelope {
-  oneof payload {
-    Move move = 1;
-    Message msg = 2;
-    suggestion.v1.SuggestionRequest suggest = 3;
-    suggestion.v1.AccusationRequest accuse = 4;
-    Error error = 5;
-  }
 }

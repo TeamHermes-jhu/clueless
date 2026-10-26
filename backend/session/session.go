@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/encoding/protojson"
 
+	envelopev1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/envelope/v1"
 	sessionv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/session/v1"
 )
 
@@ -228,9 +229,9 @@ func (s *Session) handleUnregister(id string) {
 func (s *Session) handleInbound(msg inboundMessage) {
 	s.logger.Info("Received inbound message request", "player_id", msg.from)
 
-	var env sessionv1.Envelope
+	var env envelopev1.Envelope
 	if err := protojson.Unmarshal(msg.data, &env); err != nil {
-		s.sendTo(msg.from, sessionv1.Envelope_builder{
+		s.sendTo(msg.from, envelopev1.Envelope_builder{
 			Error: sessionv1.Error_builder{
 				Error: new("malformed message"),
 			}.Build(),
@@ -240,7 +241,7 @@ func (s *Session) handleInbound(msg inboundMessage) {
 	}
 
 	if !s.started {
-		s.sendTo(msg.from, sessionv1.Envelope_builder{
+		s.sendTo(msg.from, envelopev1.Envelope_builder{
 			Error: sessionv1.Error_builder{
 				Error: new("error game not started"),
 			}.Build(),
@@ -250,7 +251,7 @@ func (s *Session) handleInbound(msg inboundMessage) {
 	}
 
 	if msg.from != s.currentPlayer() {
-		s.sendTo(msg.from, sessionv1.Envelope_builder{
+		s.sendTo(msg.from, envelopev1.Envelope_builder{
 			Error: sessionv1.Error_builder{
 				Error: new("not your turn"),
 			}.Build(),
@@ -260,17 +261,17 @@ func (s *Session) handleInbound(msg inboundMessage) {
 	}
 
 	switch env.WhichPayload() {
-	case sessionv1.Envelope_Move_case:
+	case envelopev1.Envelope_Move_case:
 		s.move(env.GetMove())
 
 		return
 
-	case sessionv1.Envelope_Suggest_case:
+	case envelopev1.Envelope_Suggest_case:
 		s.suggest(env.GetSuggest())
 
 		return
 
-	case sessionv1.Envelope_Accuse_case:
+	case envelopev1.Envelope_Accuse_case:
 		s.accuse(env.GetAccuse())
 
 		return
@@ -286,7 +287,7 @@ func (s *Session) handleInbound(msg inboundMessage) {
 // 	}
 // }
 
-func (s *Session) sendTo(id string, env *sessionv1.Envelope) {
+func (s *Session) sendTo(id string, env *envelopev1.Envelope) {
 	s.logger.Info("Sending message", "player_id", id, "message_type", env.WhichPayload().String())
 
 	c, ok := s.players[id]
@@ -313,7 +314,7 @@ func (s *Session) currentPlayer() string {
 func (s *Session) broadcastMessage(msg string) {
 	s.logger.Info("Broadcasting message")
 
-	env := sessionv1.Envelope_builder{
+	env := envelopev1.Envelope_builder{
 		Msg: sessionv1.Message_builder{
 			Msg: new(msg),
 		}.Build(),
