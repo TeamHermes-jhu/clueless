@@ -1,0 +1,4 @@
+bin
+.golangci.yml
+.env
+.git

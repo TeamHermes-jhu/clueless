@@ -19,5 +19,8 @@ proto:
 proto-lint:
 	buf lint
 
+app:
+	docker compose up --build
+
 clean:
 	rm -rf ./backend/bin/
