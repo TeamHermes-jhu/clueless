@@ -8,7 +8,8 @@ const angular = require('angular-eslint');
 
 module.exports = defineConfig([
   {
-    ignores: ['dist/', '.angular/', 'coverage/', 'node_modules/'],
+    // gen/ holds protobuf output from `buf generate`; fix the .proto files instead.
+    ignores: ['dist/', '.angular/', 'coverage/', 'node_modules/', '**/gen/'],
   },
 
   // ---------- TypeScript files ----------

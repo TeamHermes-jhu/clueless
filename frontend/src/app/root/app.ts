@@ -1,13 +1,13 @@
 import { Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
-import { JoinSessionService } from '../services/JoinSessionService';
 import { GoBackendServiceAdapter } from '../services/GoBackendServiceAdapter';
+import { JoinSessionService } from '../services/JoinSessionService';
 
 @Component({
-  imports: [RouterOutlet, RouterLink, FormsModule],
+  imports: [RouterOutlet, FormsModule],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',
@@ -42,7 +42,7 @@ export class App {
     this.joinSessionService.join(name).subscribe({
       next: (response) => {
         this.golangAdapter.joinSession(response.sessionId, response.username);
-        this.router.navigateByUrl('/test-message-bus');
+        void this.router.navigateByUrl('/test-message-bus');
       },
       error: (err) => {
         console.error('Failed to join session:', err);

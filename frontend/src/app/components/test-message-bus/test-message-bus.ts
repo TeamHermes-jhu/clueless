@@ -1,12 +1,19 @@
 import { Component, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { create } from '@bufbuild/protobuf';
+import { MessageService } from 'primeng/api';
+import { Toast } from 'primeng/toast';
 import { TextMessageStore } from '../../common/data-stores/TextMessageStore';
-import { PostmanTestServiceAdapter } from '../../services/PostmanTestServiceAdapter';
-import { GoBackendServiceAdapter } from '../../services/GoBackendServiceAdapter';
-import { Rooms, Characters, Weapons } from '../../common/events/event-types/gen/cards/v1/enums_pb';
+import { EventBus } from '../../common/events/event-bus/event-bus';
+import { MessageType } from '../../common/events/event-types/AppEvents';
+import { Characters, Rooms, Weapons } from '../../common/events/event-types/gen/cards/v1/enums_pb';
 import { MoveSchema } from '../../common/events/event-types/gen/session/v1/session_pb';
-import { SuggestionRequestSchema, AccusationRequestSchema } from '../../common/events/event-types/gen/suggestion/v1/suggestion_pb';
+import {
+  AccusationRequestSchema,
+  SuggestionRequestSchema,
+} from '../../common/events/event-types/gen/suggestion/v1/suggestion_pb';
+import { GoBackendServiceAdapter } from '../../services/GoBackendServiceAdapter';
 
 interface Action {
   label: string;
@@ -14,7 +21,8 @@ interface Action {
 }
 
 @Component({
-  imports: [RouterLink],
+  imports: [RouterLink, Toast],
+  providers: [MessageService],
   selector: 'app-test-message-bus',
   templateUrl: './test-message-bus.html',
 })
@@ -23,7 +31,8 @@ export class TestMessageBus {
   private readonly store = inject(TextMessageStore);
   // Injected so the websocket connections are opened when this page loads.
   // private readonly postmanAdapter = inject(PostmanTestServiceAdapter);
-  private readonly golangAdapter = inject(GoBackendServiceAdapter)
+  private readonly golangAdapter = inject(GoBackendServiceAdapter);
+  private readonly messageService = inject(MessageService);
 
   protected readonly messages = this.store.getAll();
   protected readonly connected = this.golangAdapter.connected;
@@ -34,6 +43,15 @@ export class TestMessageBus {
     { label: 'Suggest', send: () => this.sendSuggest() },
     { label: 'Accuse', send: () => this.sendAccuse() },
   ];
+
+  constructor() {
+    inject(EventBus)
+      .on(MessageType.Error)
+      .pipe(takeUntilDestroyed())
+      .subscribe(({ error }) => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: error });
+      });
+  }
 
   private sendMove(): void {
     const playerId = this.golangAdapter.playerId();
@@ -89,4 +107,3 @@ export class TestMessageBus {
     });
   }
 }
-
