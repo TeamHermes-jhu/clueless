@@ -1,3 +1,4 @@
 *.env
 bin/
 gen/
+shell.nix

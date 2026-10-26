@@ -1,21 +1,25 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import type { DescMessage, MessageShape } from '@bufbuild/protobuf';
-import { createRegistry, fromBinary, fromJsonString, toBinary } from '@bufbuild/protobuf';
+import { create, createRegistry, fromBinary, fromJsonString, toBinary, toJsonString } from '@bufbuild/protobuf';
 import { anyPack, AnySchema, anyUnpack } from '@bufbuild/protobuf/wkt';
+import { Rooms } from '../common/events/event-types/gen/cards/v1/enums_pb';
 import type { AppEvent } from '../common/events/event-types/AppEvents';
 import { EventProducer, MessageType } from '../common/events/event-types/AppEvents';
 import {
+  EnvelopeSchema,
+  MoveSchema,
   PlayerSchema,
-  SessionJoinRequestSchema,
+  JoinRequestSchema,
   SessionListSchema,
   SessionSchema,
-} from '../common/events/event-types/gen/session/v1/session_messages_pb';
+} from '../common/events/event-types/gen/session/v1/session_pb';
+import type { Envelope } from '../common/events/event-types/gen/session/v1/session_pb';
 import {
-  AccusationMessageSchema,
-  AccusationResponseMessageSchema,
-  SuggestionMessageSchema,
-  SuggestionResponseMessageSchema,
-} from '../common/events/event-types/gen/suggestion/v1/suggest_accuse_messages_pb';
+  AccusationRequestSchema,
+  AccusationResponseSchema,
+  SuggestionRequestSchema,
+  SuggestionResponseSchema,
+} from '../common/events/event-types/gen/suggestion/v1/suggestion_pb';
 import type { ProtoAppEvent } from '../common/events/event-types/ProtoEvents';
 import { AbstractServiceAdapter } from './AbstractServiceAdapter';
 
@@ -24,12 +28,8 @@ import { AbstractServiceAdapter } from './AbstractServiceAdapter';
 const PROTO_MESSAGES: readonly (readonly [DescMessage, ProtoAppEvent['type']])[] = [
   [SessionSchema, MessageType.Session],
   [SessionListSchema, MessageType.SessionList],
-  [SessionJoinRequestSchema, MessageType.SessionJoinRequest],
+  [JoinRequestSchema, MessageType.JoinRequest],
   [PlayerSchema, MessageType.Player],
-  [SuggestionMessageSchema, MessageType.SuggestionMessage],
-  [AccusationMessageSchema, MessageType.AccusationMessage],
-  [SuggestionResponseMessageSchema, MessageType.SuggestionResponseMessage],
-  [AccusationResponseMessageSchema, MessageType.AccusationResponseMessage],
 ];
 
 const registry = createRegistry(...PROTO_MESSAGES.map(([schema]) => schema));
@@ -37,32 +37,45 @@ const eventTypes = new Map(PROTO_MESSAGES.map(([schema, type]) => [schema.typeNa
 
 @Injectable({ providedIn: 'root' })
 export class GoBackendServiceAdapter extends AbstractServiceAdapter {
+  private readonly currentPlayerId = signal<string | null>(null);
+  readonly playerId = this.currentPlayerId.asReadonly();
+
   constructor() {
-    super('localhost', 8080, '/ws');
+    super('localhost', 8000, '/ws');
   }
 
-  // Wrap a generated message in an Any and send it as a binary frame.
-  sendProto<Desc extends DescMessage>(schema: Desc, message: MessageShape<Desc>): void {
-    this.sendMessage(toBinary(AnySchema, anyPack(schema, message)));
+  joinSession(sessionId: string, username: string): void {
+    this.currentPlayerId.set(username);
+    this.connect({ session: sessionId, player: username});
+  }
+
+  sendEnvelope(payload: Envelope['payload']): void {
+    this.sendMessage(toJsonString(EnvelopeSchema, create(EnvelopeSchema, { payload })))
   }
 
   protected override parse(raw: unknown): AppEvent | null {
-    let any;
-    if (raw instanceof ArrayBuffer) {
-      any = fromBinary(AnySchema, new Uint8Array(raw));
-    } else if (typeof raw === 'string') {
-      any = fromJsonString(AnySchema, raw, { registry });
-    } else {
-      console.warn('GoBackendServiceAdapter ignored a frame that is neither text nor binary:', raw);
-      return null;
+    if (typeof raw !== 'string') {
+        console.warn('GoBackendServiceAdapter ignored a non-text frame', raw);
+        return null;
     }
 
-    const message = anyUnpack(any, registry);
-    const type = message && eventTypes.get(message.$typeName);
-    if (!message || type === undefined) {
-      console.warn('GoBackendServiceAdapter ignored unknown message type:', any.typeUrl);
-      return null;
+    const envelope = fromJsonString(EnvelopeSchema, raw);
+
+    switch (envelope.payload.case) {
+      case 'move':
+        return { type: 'move', producer: EventProducer.SERVER, payload: envelope.payload.value };
+      case 'suggest':
+        return { type: 'suggest', producer: EventProducer.SERVER, payload: envelope.payload.value };
+      case 'accuse':
+        return { type: 'accuse', producer: EventProducer.SERVER, payload: envelope.payload.value };
+      case 'msg':
+        return { type: 'msg', producer: EventProducer.SERVER, payload: envelope.payload.value };
+      case 'error':
+        return { type: 'error', producer: EventProducer.SERVER, payload: envelope.payload.value };
+      default:
+        console.warn('GoBackendServiceAdapter ignored a payloadless envelope', raw);
+        return null;
     }
-    return { type, producer: EventProducer.SERVER, payload: message } as ProtoAppEvent;
   }
 }
+

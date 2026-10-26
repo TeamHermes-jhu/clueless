@@ -9,7 +9,7 @@ export enum MessageType {
   // Protobuf messages
   Session,
   SessionList,
-  SessionJoinRequest,
+  JoinRequest,
   Player,
   SuggestionMessage,
   AccusationMessage,

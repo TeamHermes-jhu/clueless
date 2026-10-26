@@ -4,6 +4,7 @@ package session
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -18,6 +19,8 @@ const (
 	minimumPlayersToStart = 2
 
 	startGameDelay = time.Second * 20
+
+	gameTimerFmt = "%d/6 players. Game starts in %ds"
 )
 
 type inboundMessage struct {
@@ -113,13 +116,7 @@ func (s *Session) Register(c *Client) bool {
 
 // Shutdown gracefully shuts down the session.
 func (s *Session) Shutdown(ctx context.Context) {
-	msg := sessionv1.Envelope_builder{
-		Msg: sessionv1.Message_builder{
-			Msg: new("Server is shuttind down"),
-		}.Build(),
-	}.Build()
-
-	s.broadcastMessage(msg)
+	s.broadcastMessage("Server is shutting down")
 
 	for _, client := range s.players {
 		if client != nil {
@@ -129,13 +126,24 @@ func (s *Session) Shutdown(ctx context.Context) {
 }
 
 func (s *Session) run() {
-	ticker := time.NewTicker(1 * time.Second)
-	start := time.Now()
+	var (
+		ticker  *time.Ticker
+		tickerC <-chan time.Time
+		start   time.Time
+		end     time.Time
+	)
 
 	for {
 		select {
 		case req := <-s.join:
 			s.handleJoin(req)
+
+			if ticker == nil && len(s.players) >= minimumPlayersToStart {
+				start = time.Now()
+				end = start.Add(startGameDelay)
+				ticker = time.NewTicker(time.Second)
+				tickerC = ticker.C
+			}
 		case q := <-s.query:
 			q.result <- s.hasPlayer(q.id)
 		case req := <-s.register:
@@ -144,11 +152,14 @@ func (s *Session) run() {
 			s.handleUnregister(id)
 		case msg := <-s.inbound:
 			s.handleInbound(msg)
-		case <-ticker.C:
-			if time.Since(start) >= startGameDelay && len(s.players) >= minimumPlayersToStart && !s.started {
-				ticker.Stop()
+		case tick := <-tickerC:
+			if len(s.players) >= minimumPlayersToStart && !s.started {
+				s.broadcastMessage(fmt.Sprintf(gameTimerFmt, len(s.players), int(end.Sub(tick).Seconds())))
 
-				s.startGame()
+				if time.Since(start) >= startGameDelay {
+					ticker.Stop()
+					s.startGame()
+				}
 			}
 		case <-s.stop:
 			return
@@ -180,6 +191,8 @@ func (s *Session) handleJoin(req joinRequest) {
 
 	if len(s.players) == maxPlayers {
 		s.startGame()
+
+		return
 	}
 }
 
@@ -200,13 +213,6 @@ func (s *Session) handleRegister(req registerRequest) {
 
 	s.players[req.client.id] = req.client
 	req.result <- true
-}
-
-func (s *Session) startGame() {
-	s.logger.Info("Game is starting!", "players", len(s.players))
-	s.started = true
-
-	s.turnOrder = s.joinOrder
 }
 
 func (s *Session) handleUnregister(id string) {
@@ -255,23 +261,30 @@ func (s *Session) handleInbound(msg inboundMessage) {
 
 	switch env.WhichPayload() {
 	case sessionv1.Envelope_Move_case:
-		to := env.GetMove().GetRoom().String()
+		s.move(env.GetMove())
 
-		if env.GetMove().WhichMoveTo() == sessionv1.Move_Hall_case {
-			to = env.GetMove().GetRoom().String()
-		}
+		return
 
-		s.broadcastMessage(sessionv1.Envelope_builder{
-			Msg: sessionv1.Message_builder{
-				Msg: new("player " + env.GetMove().GetPlayerId() + "has moved to " + to),
-			}.Build(),
-		}.Build())
+	case sessionv1.Envelope_Suggest_case:
+		s.suggest(env.GetSuggest())
+
+		return
+
+	case sessionv1.Envelope_Accuse_case:
+		s.accuse(env.GetAccuse())
 
 		return
 
 	default:
 	}
 }
+
+// func (s *Session) advanceTurn() {
+// 	s.turnIdx++
+// 	if s.turnIdx >= len(s.players) {
+// 		s.turnIdx = 0
+// 	}
+// }
 
 func (s *Session) sendTo(id string, env *sessionv1.Envelope) {
 	s.logger.Info("Sending message", "player_id", id, "message_type", env.WhichPayload().String())
@@ -297,8 +310,14 @@ func (s *Session) currentPlayer() string {
 	return s.turnOrder[s.turnIdx]
 }
 
-func (s *Session) broadcastMessage(env *sessionv1.Envelope) {
-	s.logger.Info("Broadcasting message", "message_type", env.WhichPayload().String())
+func (s *Session) broadcastMessage(msg string) {
+	s.logger.Info("Broadcasting message")
+
+	env := sessionv1.Envelope_builder{
+		Msg: sessionv1.Message_builder{
+			Msg: new(msg),
+		}.Build(),
+	}.Build()
 
 	for id := range s.players {
 		s.sendTo(id, env)

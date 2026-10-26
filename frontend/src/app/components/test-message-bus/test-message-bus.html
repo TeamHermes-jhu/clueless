@@ -1,4 +1,11 @@
 <button routerLink="/">Back</button>
+
+@if (connected()) {
+  @for (action of actions; track action.label) {
+    <button (click)="action.send()">{{ action.label }}</button>
+  }
+}
+
 <ul>
   @for (message of messages(); track $index) {
     <li>{{ message }}</li>

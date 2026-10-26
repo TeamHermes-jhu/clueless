@@ -2,15 +2,18 @@ import type { EventProducer, MessageType } from './AppEvents';
 import type {
   Player,
   Session,
-  SessionJoinRequest,
+  JoinRequest,
   SessionList,
-} from './gen/session/v1/session_messages_pb';
+  Move,
+  Message,
+  Error,
+} from './gen/session/v1/session_pb';
 import type {
-  AccusationMessage,
-  AccusationResponseMessage,
-  SuggestionMessage,
-  SuggestionResponseMessage,
-} from './gen/suggestion/v1/suggest_accuse_messages_pb';
+  AccusationRequest,
+  AccusationResponse,
+  SuggestionRequest,
+  SuggestionResponse,
+} from './gen/suggestion/v1/suggestion_pb';
 
 // Events whose payload is a generated protobuf message received from the Go backend.
 export interface SessionEvent {
@@ -25,10 +28,10 @@ export interface SessionListEvent {
   payload: SessionList;
 }
 
-export interface SessionJoinRequestEvent {
-  type: MessageType.SessionJoinRequest;
+export interface JoinRequestEvent {
+  type: MessageType.JoinRequest;
   producer: EventProducer.SERVER;
-  payload: SessionJoinRequest;
+  payload: JoinRequest;
 }
 
 export interface PlayerEvent {
@@ -38,35 +41,57 @@ export interface PlayerEvent {
 }
 
 export interface SuggestionEvent {
-  type: MessageType.SuggestionMessage;
+  type: 'suggest',
   producer: EventProducer.SERVER;
-  payload: SuggestionMessage;
+  payload: SuggestionRequest;
 }
 
 export interface AccusationEvent {
-  type: MessageType.AccusationMessage;
+  type: 'accuse',
   producer: EventProducer.SERVER;
-  payload: AccusationMessage;
+  payload: AccusationRequest;
 }
 
 export interface SuggestionResponseEvent {
   type: MessageType.SuggestionResponseMessage;
   producer: EventProducer.SERVER;
-  payload: SuggestionResponseMessage;
+  payload: SuggestionResponse;
 }
 
 export interface AccusationResponseEvent {
   type: MessageType.AccusationResponseMessage;
   producer: EventProducer.SERVER;
-  payload: AccusationResponseMessage;
+  payload: AccusationResponse;
+}
+
+export interface MoveResponseEvent {
+  type: 'move';
+  producer: EventProducer.SERVER;
+  payload: Move;
+}
+
+export interface MessageEvent {
+  type: 'msg';
+  producer: EventProducer.SERVER;
+  payload: Message;
+}
+
+export interface ErrorEvent {
+  type: 'error';
+  producer: EventProducer.SERVER;
+  payload: Error;
 }
 
 export type ProtoAppEvent =
   | SessionEvent
   | SessionListEvent
-  | SessionJoinRequestEvent
+  | JoinRequestEvent
   | PlayerEvent
   | SuggestionEvent
   | AccusationEvent
   | SuggestionResponseEvent
-  | AccusationResponseEvent;
+  | AccusationResponseEvent
+  | MoveResponseEvent
+  | MessageEvent
+  | ErrorEvent;
+
