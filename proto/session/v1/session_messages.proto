@@ -4,6 +4,7 @@ edition = "2024";
 
 package session.v1;
 
+import "cards/v1/enums.proto";
 import "google/protobuf/go_features.proto";
 
 option features.(pb.go).strip_enum_prefix = STRIP_ENUM_PREFIX_STRIP;
@@ -26,12 +27,40 @@ message SessionList {
   repeated Session sessions = 1; // List of sessions
 }
 
-message SessionJoinRequest {
-  Session session = 1; // The session the player is attempting to join
-  Player player = 2; // The player attempting to join the session
+message JoinRequest {
+  string username = 1;
+}
+
+message JoinResponse {
+  string session_id = 1;
+  string username = 2;
 }
 
 message Player {
   int32 player_id = 1; // Unique identifier for the player
   string player_name = 2; // Name of the player
+}
+
+message Move {
+  string player_id = 1;
+  oneof move_to {
+    cards.v1.Rooms room = 2;
+    cards.v1.Halls hall = 3;
+  }
+}
+
+message Error {
+  string error = 1;
+}
+
+message Message {
+  string msg = 1;
+}
+
+message Envelope {
+  oneof payload {
+    Move move = 1;
+    Message msg = 2;
+    Error error = 3;
+  }
 }

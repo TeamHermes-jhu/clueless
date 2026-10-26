@@ -1,20 +1,86 @@
 package cmd
 
 import (
-	"fmt"
+	"context"
+	"errors"
+	"log/slog"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/spf13/cobra"
+
+	"github.com/TeamHermes-jhu/clueless/backend/server"
+)
+
+const (
+	defaultShutdownTime = 15 * time.Second
 )
 
 var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Run the backend server.",
 	Long:  `Starts the backend server.`,
-	Run: func(_ *cobra.Command, _ []string) {
-		fmt.Println("The server has started")
-	},
+	Run:   RunServer,
 }
 
 func init() {
+	serveCmd.Flags().String("addr", "", "address to run server on")
+	serveCmd.Flags().String("port", "8000", "port to run server on")
+
 	rootCmd.AddCommand(serveCmd)
+}
+
+// RunServer sets up the server on the port and serves.
+func RunServer(cmd *cobra.Command, _ []string) {
+	l := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
+	addr, err := cmd.Flags().GetString("addr")
+	if err != nil {
+		l.Error("Error getting flag", "flag", "addr")
+
+		return
+	}
+
+	port, err := cmd.Flags().GetString("port")
+	if err != nil {
+		l.Error("Error getting flag", "flag", "port")
+
+		return
+	}
+
+	s := server.New(l)
+
+	serverErr := make(chan error, 1)
+
+	go func() {
+		if err := s.Serve(addr, port); !errors.Is(err, http.ErrServerClosed) {
+			serverErr <- err
+		}
+	}()
+
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+
+	select {
+	case err := <-serverErr:
+		l.Info("Server error", "error", err)
+	case sig := <-stop:
+		l.Info("Received shutdown signal", "signal", sig)
+	}
+
+	l.Info("Server is shutting down")
+
+	ctx, cancel := context.WithTimeout(context.Background(), defaultShutdownTime)
+	defer cancel()
+
+	if err := s.Shutdown(ctx); err != nil {
+		l.Error("Server shutdwn error", "error", err)
+
+		return
+	}
+
+	l.Info("Server shutdown sucessfully")
 }

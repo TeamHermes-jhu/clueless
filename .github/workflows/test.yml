@@ -1,0 +1,43 @@
+name: test
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  checks: write
+  contents: write
+  pull-requests: write
+
+jobs:
+  run-testers:
+    name: run-testers
+    runs-on: ubuntu-latest
+
+    steps:
+      # checkout the repo
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+
+      # go test
+      - name: Install dependencies
+        run: |
+          cd backend/
+          go get .
+      - name: Build:
+        run: |
+          cd backend/
+          go build -v ./...
+      - name: Test
+        run: |
+          cd backend/
+          go test 
+
