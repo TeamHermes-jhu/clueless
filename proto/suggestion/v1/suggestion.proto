@@ -7,9 +7,9 @@ package suggestion.v1;
 import "cards/v1/enums.proto";
 
 // Message representing a suggestion made by a player in the game
-message SuggestionMessage {
+message SuggestionRequest {
   int32 suggestion_id = 1; // Unique identifier for the suggestion
-  int32 player_id = 2; // ID of the player making the suggestion
+  string player_id = 2; // ID of the player making the suggestion
 
   cards.v1.Characters character = 3; // Character being suggested
   cards.v1.Weapons weapon = 4; // Weapon being suggested
@@ -17,13 +17,13 @@ message SuggestionMessage {
 }
 
 // Message representing an accusation made by a player in the game
-message AccusationMessage {
+message AccusationRequest {
   int32 accusation_id = 1; // Unique identifier for the accusation
-  SuggestionMessage suggestion = 2; // The suggestion being accused
+  SuggestionRequest suggestion = 2; // The suggestion being accused
 }
 
 // Message representing the response to a suggestion
-message SuggestionResponseMessage {
+message SuggestionResponse {
   int32 suggestion_id = 1; // Unique identifier for the suggestion being responded to
   int32 responder_id = 2; // ID of the player responding to the suggestion
   bool has_card = 3; // True if the responder has a card to show, false otherwise
@@ -36,7 +36,7 @@ message SuggestionResponseMessage {
 }
 
 // Message representing the response to an accusation
-message AccusationResponseMessage {
+message AccusationResponse {
   int32 accusation_id = 1; // Unique identifier for the accusation being responded to
   bool is_correct = 2; // True if the accusation is correct, false otherwise
 }

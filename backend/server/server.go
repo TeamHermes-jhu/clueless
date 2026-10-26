@@ -42,6 +42,7 @@ func New(l *slog.Logger) *Server {
 	mux.Use(middleware.RequestID)
 	mux.Use(slogMiddleware(l))
 	mux.Use(middleware.Recoverer)
+	mux.Use(corsMiddleware("http://localhost:4200"))
 
 	s := &Server{
 		mux:      mux,

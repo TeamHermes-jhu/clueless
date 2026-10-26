@@ -4,7 +4,7 @@
 // versions:
 // 	protoc-gen-go v1.36.12
 // 	protoc        (unknown)
-// source: session/v1/session_messages.proto
+// source: session/v1/session.proto
 
 package sessionv1
 
@@ -57,11 +57,11 @@ func (x SessionStatus) String() string {
 }
 
 func (SessionStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_session_v1_session_messages_proto_enumTypes[0].Descriptor()
+	return file_session_v1_session_proto_enumTypes[0].Descriptor()
 }
 
 func (SessionStatus) Type() protoreflect.EnumType {
-	return &file_session_v1_session_messages_proto_enumTypes[0]
+	return &file_session_v1_session_proto_enumTypes[0]
 }
 
 func (x SessionStatus) Number() protoreflect.EnumNumber {
@@ -83,7 +83,7 @@ type Session struct {
 
 func (x *Session) Reset() {
 	*x = Session{}
-	mi := &file_session_v1_session_messages_proto_msgTypes[0]
+	mi := &file_session_v1_session_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -95,7 +95,7 @@ func (x *Session) String() string {
 func (*Session) ProtoMessage() {}
 
 func (x *Session) ProtoReflect() protoreflect.Message {
-	mi := &file_session_v1_session_messages_proto_msgTypes[0]
+	mi := &file_session_v1_session_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -260,7 +260,7 @@ type SessionList struct {
 
 func (x *SessionList) Reset() {
 	*x = SessionList{}
-	mi := &file_session_v1_session_messages_proto_msgTypes[1]
+	mi := &file_session_v1_session_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -272,7 +272,7 @@ func (x *SessionList) String() string {
 func (*SessionList) ProtoMessage() {}
 
 func (x *SessionList) ProtoReflect() protoreflect.Message {
-	mi := &file_session_v1_session_messages_proto_msgTypes[1]
+	mi := &file_session_v1_session_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -321,7 +321,7 @@ type JoinRequest struct {
 
 func (x *JoinRequest) Reset() {
 	*x = JoinRequest{}
-	mi := &file_session_v1_session_messages_proto_msgTypes[2]
+	mi := &file_session_v1_session_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -333,7 +333,7 @@ func (x *JoinRequest) String() string {
 func (*JoinRequest) ProtoMessage() {}
 
 func (x *JoinRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_session_v1_session_messages_proto_msgTypes[2]
+	mi := &file_session_v1_session_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -400,7 +400,7 @@ type JoinResponse struct {
 
 func (x *JoinResponse) Reset() {
 	*x = JoinResponse{}
-	mi := &file_session_v1_session_messages_proto_msgTypes[3]
+	mi := &file_session_v1_session_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -412,7 +412,7 @@ func (x *JoinResponse) String() string {
 func (*JoinResponse) ProtoMessage() {}
 
 func (x *JoinResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_session_v1_session_messages_proto_msgTypes[3]
+	mi := &file_session_v1_session_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -511,7 +511,7 @@ type Player struct {
 
 func (x *Player) Reset() {
 	*x = Player{}
-	mi := &file_session_v1_session_messages_proto_msgTypes[4]
+	mi := &file_session_v1_session_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -523,7 +523,7 @@ func (x *Player) String() string {
 func (*Player) ProtoMessage() {}
 
 func (x *Player) ProtoReflect() protoreflect.Message {
-	mi := &file_session_v1_session_messages_proto_msgTypes[4]
+	mi := &file_session_v1_session_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -619,7 +619,7 @@ type Move struct {
 
 func (x *Move) Reset() {
 	*x = Move{}
-	mi := &file_session_v1_session_messages_proto_msgTypes[5]
+	mi := &file_session_v1_session_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -631,7 +631,7 @@ func (x *Move) String() string {
 func (*Move) ProtoMessage() {}
 
 func (x *Move) ProtoReflect() protoreflect.Message {
-	mi := &file_session_v1_session_messages_proto_msgTypes[5]
+	mi := &file_session_v1_session_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -782,7 +782,7 @@ func (b0 Move_builder) Build() *Move {
 type case_Move_MoveTo protoreflect.FieldNumber
 
 func (x case_Move_MoveTo) String() string {
-	md := file_session_v1_session_messages_proto_msgTypes[5].Descriptor()
+	md := file_session_v1_session_proto_msgTypes[5].Descriptor()
 	if x == 0 {
 		return "not set"
 	}
@@ -816,7 +816,7 @@ type Error struct {
 
 func (x *Error) Reset() {
 	*x = Error{}
-	mi := &file_session_v1_session_messages_proto_msgTypes[6]
+	mi := &file_session_v1_session_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -828,7 +828,7 @@ func (x *Error) String() string {
 func (*Error) ProtoMessage() {}
 
 func (x *Error) ProtoReflect() protoreflect.Message {
-	mi := &file_session_v1_session_messages_proto_msgTypes[6]
+	mi := &file_session_v1_session_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -894,7 +894,7 @@ type Message struct {
 
 func (x *Message) Reset() {
 	*x = Message{}
-	mi := &file_session_v1_session_messages_proto_msgTypes[7]
+	mi := &file_session_v1_session_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -906,7 +906,7 @@ func (x *Message) String() string {
 func (*Message) ProtoMessage() {}
 
 func (x *Message) ProtoReflect() protoreflect.Message {
-	mi := &file_session_v1_session_messages_proto_msgTypes[7]
+	mi := &file_session_v1_session_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -961,227 +961,12 @@ func (b0 Message_builder) Build() *Message {
 	return m0
 }
 
-type Envelope struct {
-	state              protoimpl.MessageState `protogen:"opaque.v1"`
-	xxx_hidden_Payload isEnvelope_Payload     `protobuf_oneof:"payload"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
-}
+var File_session_v1_session_proto protoreflect.FileDescriptor
 
-func (x *Envelope) Reset() {
-	*x = Envelope{}
-	mi := &file_session_v1_session_messages_proto_msgTypes[8]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Envelope) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Envelope) ProtoMessage() {}
-
-func (x *Envelope) ProtoReflect() protoreflect.Message {
-	mi := &file_session_v1_session_messages_proto_msgTypes[8]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-func (x *Envelope) GetMove() *Move {
-	if x != nil {
-		if x, ok := x.xxx_hidden_Payload.(*envelope_Move); ok {
-			return x.Move
-		}
-	}
-	return nil
-}
-
-func (x *Envelope) GetMsg() *Message {
-	if x != nil {
-		if x, ok := x.xxx_hidden_Payload.(*envelope_Msg); ok {
-			return x.Msg
-		}
-	}
-	return nil
-}
-
-func (x *Envelope) GetError() *Error {
-	if x != nil {
-		if x, ok := x.xxx_hidden_Payload.(*envelope_Error); ok {
-			return x.Error
-		}
-	}
-	return nil
-}
-
-func (x *Envelope) SetMove(v *Move) {
-	if v == nil {
-		x.xxx_hidden_Payload = nil
-		return
-	}
-	x.xxx_hidden_Payload = &envelope_Move{v}
-}
-
-func (x *Envelope) SetMsg(v *Message) {
-	if v == nil {
-		x.xxx_hidden_Payload = nil
-		return
-	}
-	x.xxx_hidden_Payload = &envelope_Msg{v}
-}
-
-func (x *Envelope) SetError(v *Error) {
-	if v == nil {
-		x.xxx_hidden_Payload = nil
-		return
-	}
-	x.xxx_hidden_Payload = &envelope_Error{v}
-}
-
-func (x *Envelope) HasPayload() bool {
-	if x == nil {
-		return false
-	}
-	return x.xxx_hidden_Payload != nil
-}
-
-func (x *Envelope) HasMove() bool {
-	if x == nil {
-		return false
-	}
-	_, ok := x.xxx_hidden_Payload.(*envelope_Move)
-	return ok
-}
-
-func (x *Envelope) HasMsg() bool {
-	if x == nil {
-		return false
-	}
-	_, ok := x.xxx_hidden_Payload.(*envelope_Msg)
-	return ok
-}
-
-func (x *Envelope) HasError() bool {
-	if x == nil {
-		return false
-	}
-	_, ok := x.xxx_hidden_Payload.(*envelope_Error)
-	return ok
-}
-
-func (x *Envelope) ClearPayload() {
-	x.xxx_hidden_Payload = nil
-}
-
-func (x *Envelope) ClearMove() {
-	if _, ok := x.xxx_hidden_Payload.(*envelope_Move); ok {
-		x.xxx_hidden_Payload = nil
-	}
-}
-
-func (x *Envelope) ClearMsg() {
-	if _, ok := x.xxx_hidden_Payload.(*envelope_Msg); ok {
-		x.xxx_hidden_Payload = nil
-	}
-}
-
-func (x *Envelope) ClearError() {
-	if _, ok := x.xxx_hidden_Payload.(*envelope_Error); ok {
-		x.xxx_hidden_Payload = nil
-	}
-}
-
-const Envelope_Payload_not_set_case case_Envelope_Payload = 0
-const Envelope_Move_case case_Envelope_Payload = 1
-const Envelope_Msg_case case_Envelope_Payload = 2
-const Envelope_Error_case case_Envelope_Payload = 3
-
-func (x *Envelope) WhichPayload() case_Envelope_Payload {
-	if x == nil {
-		return Envelope_Payload_not_set_case
-	}
-	switch x.xxx_hidden_Payload.(type) {
-	case *envelope_Move:
-		return Envelope_Move_case
-	case *envelope_Msg:
-		return Envelope_Msg_case
-	case *envelope_Error:
-		return Envelope_Error_case
-	default:
-		return Envelope_Payload_not_set_case
-	}
-}
-
-type Envelope_builder struct {
-	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
-
-	// Fields of oneof xxx_hidden_Payload:
-	Move  *Move
-	Msg   *Message
-	Error *Error
-	// -- end of xxx_hidden_Payload
-}
-
-func (b0 Envelope_builder) Build() *Envelope {
-	m0 := &Envelope{}
-	b, x := &b0, m0
-	_, _ = b, x
-	if b.Move != nil {
-		x.xxx_hidden_Payload = &envelope_Move{b.Move}
-	}
-	if b.Msg != nil {
-		x.xxx_hidden_Payload = &envelope_Msg{b.Msg}
-	}
-	if b.Error != nil {
-		x.xxx_hidden_Payload = &envelope_Error{b.Error}
-	}
-	return m0
-}
-
-type case_Envelope_Payload protoreflect.FieldNumber
-
-func (x case_Envelope_Payload) String() string {
-	md := file_session_v1_session_messages_proto_msgTypes[8].Descriptor()
-	if x == 0 {
-		return "not set"
-	}
-	return protoimpl.X.MessageFieldStringOf(md, protoreflect.FieldNumber(x))
-}
-
-type isEnvelope_Payload interface {
-	isEnvelope_Payload()
-}
-
-type envelope_Move struct {
-	Move *Move `protobuf:"bytes,1,opt,name=move,oneof"`
-}
-
-type envelope_Msg struct {
-	Msg *Message `protobuf:"bytes,2,opt,name=msg,oneof"`
-}
-
-type envelope_Error struct {
-	Error *Error `protobuf:"bytes,3,opt,name=error,oneof"`
-}
-
-func (*envelope_Move) isEnvelope_Payload() {}
-
-func (*envelope_Msg) isEnvelope_Payload() {}
-
-func (*envelope_Error) isEnvelope_Payload() {}
-
-var File_session_v1_session_messages_proto protoreflect.FileDescriptor
-
-const file_session_v1_session_messages_proto_rawDesc = "" +
+const file_session_v1_session_proto_rawDesc = "" +
 	"\n" +
-	"!session/v1/session_messages.proto\x12\n" +
-	"session.v1\x1a!google/protobuf/go_features.proto\x1a\x14cards/v1/enums.proto\"\xcb\x01\n" +
+	"\x18session/v1/session.proto\x12\n" +
+	"session.v1\x1a\x14cards/v1/enums.proto\x1a!google/protobuf/go_features.proto\"\xcb\x01\n" +
 	"\aSession\x12\x1d\n" +
 	"\n" +
 	"session_id\x18\x01 \x01(\x05R\tsessionId\x121\n" +
@@ -1211,23 +996,18 @@ const file_session_v1_session_messages_proto_rawDesc = "" +
 	"\x05Error\x12\x14\n" +
 	"\x05error\x18\x01 \x01(\tR\x05error\"\x1b\n" +
 	"\aMessage\x12\x10\n" +
-	"\x03msg\x18\x01 \x01(\tR\x03msg\"\x91\x01\n" +
-	"\bEnvelope\x12&\n" +
-	"\x04move\x18\x01 \x01(\v2\x10.session.v1.MoveH\x00R\x04move\x12'\n" +
-	"\x03msg\x18\x02 \x01(\v2\x13.session.v1.MessageH\x00R\x03msg\x12)\n" +
-	"\x05error\x18\x03 \x01(\v2\x11.session.v1.ErrorH\x00R\x05errorB\t\n" +
-	"\apayload*f\n" +
+	"\x03msg\x18\x01 \x01(\tR\x03msg*f\n" +
 	"\rSessionStatus\x12\x1e\n" +
 	"\x1aSESSION_STATUS_UNSPECIFIED\x10\x00\x12\x1a\n" +
 	"\x16SESSION_STATUS_WAITING\x10\x01\x12\x19\n" +
-	"\x15SESSION_STATUS_ACTIVE\x10\x02B\xc3\x01\n" +
-	"\x0ecom.session.v1B\x14SessionMessagesProtoZLgithub.com/TeamHermes-jhu/clueless/backend/internal/gen/session/v1;sessionv1\xa2\x02\x03SXX\xaa\x02\n" +
+	"\x15SESSION_STATUS_ACTIVE\x10\x02B\xbb\x01\n" +
+	"\x0ecom.session.v1B\fSessionProtoZLgithub.com/TeamHermes-jhu/clueless/backend/internal/gen/session/v1;sessionv1\xa2\x02\x03SXX\xaa\x02\n" +
 	"Session.V1\xca\x02\n" +
 	"Session\\V1\xe2\x02\x16Session\\V1\\GPBMetadata\xea\x02\vSession::V1\x92\x03\x05\xd2>\x02\x18\x03b\beditionsp\xe9\a"
 
-var file_session_v1_session_messages_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_session_v1_session_messages_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
-var file_session_v1_session_messages_proto_goTypes = []any{
+var file_session_v1_session_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_session_v1_session_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_session_v1_session_proto_goTypes = []any{
 	(SessionStatus)(0),   // 0: session.v1.SessionStatus
 	(*Session)(nil),      // 1: session.v1.Session
 	(*SessionList)(nil),  // 2: session.v1.SessionList
@@ -1237,56 +1017,47 @@ var file_session_v1_session_messages_proto_goTypes = []any{
 	(*Move)(nil),         // 6: session.v1.Move
 	(*Error)(nil),        // 7: session.v1.Error
 	(*Message)(nil),      // 8: session.v1.Message
-	(*Envelope)(nil),     // 9: session.v1.Envelope
-	(v1.Rooms)(0),        // 10: cards.v1.Rooms
-	(v1.Halls)(0),        // 11: cards.v1.Halls
+	(v1.Rooms)(0),        // 9: cards.v1.Rooms
+	(v1.Halls)(0),        // 10: cards.v1.Halls
 }
-var file_session_v1_session_messages_proto_depIdxs = []int32{
+var file_session_v1_session_proto_depIdxs = []int32{
 	0,  // 0: session.v1.Session.status:type_name -> session.v1.SessionStatus
 	5,  // 1: session.v1.Session.players:type_name -> session.v1.Player
 	1,  // 2: session.v1.SessionList.sessions:type_name -> session.v1.Session
-	10, // 3: session.v1.Move.room:type_name -> cards.v1.Rooms
-	11, // 4: session.v1.Move.hall:type_name -> cards.v1.Halls
-	6,  // 5: session.v1.Envelope.move:type_name -> session.v1.Move
-	8,  // 6: session.v1.Envelope.msg:type_name -> session.v1.Message
-	7,  // 7: session.v1.Envelope.error:type_name -> session.v1.Error
-	8,  // [8:8] is the sub-list for method output_type
-	8,  // [8:8] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	9,  // 3: session.v1.Move.room:type_name -> cards.v1.Rooms
+	10, // 4: session.v1.Move.hall:type_name -> cards.v1.Halls
+	5,  // [5:5] is the sub-list for method output_type
+	5,  // [5:5] is the sub-list for method input_type
+	5,  // [5:5] is the sub-list for extension type_name
+	5,  // [5:5] is the sub-list for extension extendee
+	0,  // [0:5] is the sub-list for field type_name
 }
 
-func init() { file_session_v1_session_messages_proto_init() }
-func file_session_v1_session_messages_proto_init() {
-	if File_session_v1_session_messages_proto != nil {
+func init() { file_session_v1_session_proto_init() }
+func file_session_v1_session_proto_init() {
+	if File_session_v1_session_proto != nil {
 		return
 	}
-	file_session_v1_session_messages_proto_msgTypes[5].OneofWrappers = []any{
+	file_session_v1_session_proto_msgTypes[5].OneofWrappers = []any{
 		(*move_Room)(nil),
 		(*move_Hall)(nil),
-	}
-	file_session_v1_session_messages_proto_msgTypes[8].OneofWrappers = []any{
-		(*envelope_Move)(nil),
-		(*envelope_Msg)(nil),
-		(*envelope_Error)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_session_v1_session_messages_proto_rawDesc), len(file_session_v1_session_messages_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_session_v1_session_proto_rawDesc), len(file_session_v1_session_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   9,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_session_v1_session_messages_proto_goTypes,
-		DependencyIndexes: file_session_v1_session_messages_proto_depIdxs,
-		EnumInfos:         file_session_v1_session_messages_proto_enumTypes,
-		MessageInfos:      file_session_v1_session_messages_proto_msgTypes,
+		GoTypes:           file_session_v1_session_proto_goTypes,
+		DependencyIndexes: file_session_v1_session_proto_depIdxs,
+		EnumInfos:         file_session_v1_session_proto_enumTypes,
+		MessageInfos:      file_session_v1_session_proto_msgTypes,
 	}.Build()
-	File_session_v1_session_messages_proto = out.File
-	file_session_v1_session_messages_proto_goTypes = nil
-	file_session_v1_session_messages_proto_depIdxs = nil
+	File_session_v1_session_proto = out.File
+	file_session_v1_session_proto_goTypes = nil
+	file_session_v1_session_proto_depIdxs = nil
 }

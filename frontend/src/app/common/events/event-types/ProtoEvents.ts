@@ -1,72 +1,79 @@
-import type { EventProducer, MessageType } from './AppEvents';
+import { EventProducer, MessageType } from './AppEvents';
+import type { Envelope } from './gen/envelope/v1/envelope_pb';
 import type {
+  Error,
+  JoinRequest,
+  JoinResponse,
+  Message,
+  Move,
   Player,
   Session,
-  SessionJoinRequest,
   SessionList,
-} from './gen/session/v1/session_messages_pb';
+} from './gen/session/v1/session_pb';
 import type {
-  AccusationMessage,
-  AccusationResponseMessage,
-  SuggestionMessage,
-  SuggestionResponseMessage,
-} from './gen/suggestion/v1/suggest_accuse_messages_pb';
+  AccusationRequest,
+  AccusationResponse,
+  SuggestionRequest,
+  SuggestionResponse,
+} from './gen/suggestion/v1/suggestion_pb';
+
+// Maps every server MessageType to the generated protobuf message it carries.
+export interface ProtoPayloadMap {
+  [MessageType.Envelope]: Envelope;
+  [MessageType.Player]: Player;
+  [MessageType.Session]: Session;
+  [MessageType.SessionList]: SessionList;
+  [MessageType.JoinRequest]: JoinRequest;
+  [MessageType.JoinResponse]: JoinResponse;
+  [MessageType.Move]: Move;
+  [MessageType.Message]: Message;
+  [MessageType.Error]: Error;
+  [MessageType.SuggestionRequest]: SuggestionRequest;
+  [MessageType.SuggestionResponse]: SuggestionResponse;
+  [MessageType.AccusationRequest]: AccusationRequest;
+  [MessageType.AccusationResponse]: AccusationResponse;
+}
+
+export type ProtoMessageType = keyof ProtoPayloadMap;
 
 // Events whose payload is a generated protobuf message received from the Go backend.
-export interface SessionEvent {
-  type: MessageType.Session;
-  producer: EventProducer.SERVER;
-  payload: Session;
-}
+export type ProtoAppEvent = {
+  [T in ProtoMessageType]: {
+    type: T;
+    producer: EventProducer.SERVER;
+    payload: ProtoPayloadMap[T];
+  };
+}[ProtoMessageType];
 
-export interface SessionListEvent {
-  type: MessageType.SessionList;
-  producer: EventProducer.SERVER;
-  payload: SessionList;
-}
+type EnvelopeCase = NonNullable<Envelope['payload']['case']>;
+type EnvelopeValue<K extends EnvelopeCase> = Extract<Envelope['payload'], { case: K }>['value'];
 
-export interface SessionJoinRequestEvent {
-  type: MessageType.SessionJoinRequest;
-  producer: EventProducer.SERVER;
-  payload: SessionJoinRequest;
-}
+// For each case in Envelope oneof, map to correct to MessageType
+type MessageTypeFor<P> = {
+  [T in ProtoMessageType]: [ProtoPayloadMap[T]] extends [P]
+    ? [P] extends [ProtoPayloadMap[T]]
+      ? T
+      : never
+    : never;
+}[ProtoMessageType];
 
-export interface PlayerEvent {
-  type: MessageType.Player;
-  producer: EventProducer.SERVER;
-  payload: Player;
-}
+export const ENVELOPE_MESSAGE_TYPES = {
+  move: MessageType.Move,
+  msg: MessageType.Message,
+  suggest: MessageType.SuggestionRequest,
+  accuse: MessageType.AccusationRequest,
+  error: MessageType.Error,
+} as const satisfies { [K in EnvelopeCase]: MessageTypeFor<EnvelopeValue<K>> };
 
-export interface SuggestionEvent {
-  type: MessageType.SuggestionMessage;
-  producer: EventProducer.SERVER;
-  payload: SuggestionMessage;
-}
+// Converts a received Envelope into its bus event, or null if it has no payload.
+export function envelopeToEvent(envelope: Envelope): ProtoAppEvent | null {
+  if (envelope.payload.case === undefined) {
+    return null;
+  }
 
-export interface AccusationEvent {
-  type: MessageType.AccusationMessage;
-  producer: EventProducer.SERVER;
-  payload: AccusationMessage;
+  return {
+    type: ENVELOPE_MESSAGE_TYPES[envelope.payload.case],
+    producer: EventProducer.SERVER,
+    payload: envelope.payload.value,
+  } as ProtoAppEvent;
 }
-
-export interface SuggestionResponseEvent {
-  type: MessageType.SuggestionResponseMessage;
-  producer: EventProducer.SERVER;
-  payload: SuggestionResponseMessage;
-}
-
-export interface AccusationResponseEvent {
-  type: MessageType.AccusationResponseMessage;
-  producer: EventProducer.SERVER;
-  payload: AccusationResponseMessage;
-}
-
-export type ProtoAppEvent =
-  | SessionEvent
-  | SessionListEvent
-  | SessionJoinRequestEvent
-  | PlayerEvent
-  | SuggestionEvent
-  | AccusationEvent
-  | SuggestionResponseEvent
-  | AccusationResponseEvent;

@@ -1,5 +1,5 @@
-import type { OnDestroy } from '@angular/core';
-import { inject, Injectable } from '@angular/core';
+import type { OnDestroy, Signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import type { Observable, Subscription } from 'rxjs';
 import { retry, throwError, timer } from 'rxjs';
 import type { WebSocketSubject } from 'rxjs/webSocket';
@@ -20,25 +20,45 @@ export abstract class AbstractServiceAdapter implements OnDestroy {
 
   protected readonly eventBus = inject(EventBus);
   protected handlers: EventHandlerRegistry;
-  private socket$: WebSocketSubject<unknown>;
-  private inbound: Subscription;
+
+  private socket$: WebSocketSubject<unknown> | undefined;
+  private inbound: Subscription | undefined;
+
+  private readonly isConnected = signal(false);
+  readonly connected: Signal<boolean> = this.isConnected;
+
+  private readonly host: string;
+  private readonly port: number;
+  private readonly path: string;
 
   private failedAttempts = 0;
 
   constructor(host: string, port: number, path: string) {
-    const verifiedPath = path.startsWith('/') ? path : `/${path}`;
+    this.host = host;
+    this.port = port;
+    this.path = path.startsWith('/') ? path : `/${path}`;
+    this.handlers = new EventHandlerRegistry(this.eventBus);
+  }
+
+  connect(query?: Record<string, string>): void {
+    if (this.socket$) {
+      return;
+    }
+
+    const queryString = query ? `?${new URLSearchParams(query).toString()}` : '';
+
     this.socket$ = webSocket<unknown>({
-      url: `ws://${host}:${port}${verifiedPath}`,
+      url: `ws://${this.host}:${this.port}${this.path}${queryString}`,
       binaryType: 'arraybuffer',
       deserializer: (e: MessageEvent<unknown>) => e.data,
       serializer: (value) => (isWireData(value) ? value : JSON.stringify(value)),
       openObserver: {
         next: () => {
           this.failedAttempts = 0;
+          this.isConnected.set(true);
         },
       },
     });
-    this.handlers = new EventHandlerRegistry(this.eventBus);
 
     this.inbound = this.socket$
       .pipe(retry({ delay: (err) => this.scheduleReconnect(err) }))
@@ -49,12 +69,17 @@ export abstract class AbstractServiceAdapter implements OnDestroy {
   }
 
   sendMessage(message: unknown) {
+    if (!this.socket$) {
+      console.error(`${this.constructor.name}.sendMessage called before connect().`);
+      return;
+    }
     this.socket$.next(message);
   }
 
   closeConnection() {
-    this.inbound.unsubscribe();
-    this.socket$.complete();
+    this.inbound?.unsubscribe();
+    this.socket$?.complete();
+    this.isConnected.set(false);
   }
 
   ngOnDestroy(): void {
@@ -64,6 +89,7 @@ export abstract class AbstractServiceAdapter implements OnDestroy {
 
   // Called on connection fail. Override to handle failure further.
   protected onConnectionFailed(err: unknown): void {
+    this.isConnected.set(false);
     console.error(
       `${this.constructor.name} could not connect after ${AbstractServiceAdapter.MAX_CONNECT_ATTEMPTS} attempts; giving up.`,
       err,

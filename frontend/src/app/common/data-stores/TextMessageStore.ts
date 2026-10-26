@@ -9,14 +9,11 @@ export class TextMessageStore extends AbstractStore<string> {
   static readonly STORAGE_KEY = 'clueless.textMessages';
 
   constructor() {
-    super(
-      inject(EventBus)
-        .on(MessageType.TextMessageRecieve)
-        .pipe(map((payload) => payload.message)),
-      {
-        key: TextMessageStore.STORAGE_KEY,
-        isItem: (value): value is string => typeof value === 'string',
-      },
-    );
+    const eventBus = inject(EventBus);
+
+    super(eventBus.on(MessageType.Message).pipe(map((payload) => payload.msg)), {
+      key: TextMessageStore.STORAGE_KEY,
+      isItem: (value): value is string => typeof value === 'string',
+    });
   }
 }

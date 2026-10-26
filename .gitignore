@@ -1,3 +1,6 @@
 *.env
 bin/
-gen/
+shell.nix
+
+# Go build outputs
+backend/*.exe

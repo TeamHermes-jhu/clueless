@@ -56,11 +56,3 @@ message Error {
 message Message {
   string msg = 1;
 }
-
-message Envelope {
-  oneof payload {
-    Move move = 1;
-    Message msg = 2;
-    Error error = 3;
-  }
-}

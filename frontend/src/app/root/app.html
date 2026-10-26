@@ -1,5 +1,11 @@
 @if (onMainPage()) {
-  <h1>Hello World!</h1>
-  <button routerLink="/test-message-bus">Next Page</button>
+  <h1>Welcome to Clueless!</h1>
+
+  <input type="text" placeholder="Enter username" [(ngModel)]="username" />
+  <button (click)="onJoinClick()">Join</button>
+
+  @if (joinError()) {
+    <p>{{ joinError() }}</p>
+  }
 }
 <router-outlet />

@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
+import { create } from '@bufbuild/protobuf';
 import type { AppEvent } from '../common/events/event-types/AppEvents';
 import { EventProducer, MessageType } from '../common/events/event-types/AppEvents';
+import { MessageSchema } from '../common/events/event-types/gen/session/v1/session_pb';
 import { AbstractServiceAdapter } from './AbstractServiceAdapter';
 
 type JsonObject = Record<string, unknown>;
@@ -32,15 +34,15 @@ export class PostmanTestServiceAdapter extends AbstractServiceAdapter {
     }
     const payload = data['payload'];
 
-    // Allow the enum name ("TextMessageRecieve") or its numeric value (0) from Postman.
+    // Allow the enum name ("Message") or its numeric value from Postman.
     const type =
       typeof data['type'] === 'string'
         ? MessageType[data['type'] as keyof typeof MessageType]
         : data['type'];
 
     switch (type) {
-      case MessageType.TextMessageRecieve:
-        return typeof payload['message'] === 'string' ? this.textMessage(payload['message']) : null;
+      case MessageType.Message:
+        return typeof payload['msg'] === 'string' ? this.textMessage(payload['msg']) : null;
       default:
         console.warn('PostmanTestServiceAdapter ignored unknown message type:', data['type']);
         return null;
@@ -49,9 +51,9 @@ export class PostmanTestServiceAdapter extends AbstractServiceAdapter {
 
   private textMessage(message: string): AppEvent {
     return {
-      type: MessageType.TextMessageRecieve,
+      type: MessageType.Message,
       producer: EventProducer.SERVER,
-      payload: { message },
+      payload: create(MessageSchema, { msg: message }),
     };
   }
 }

@@ -1,20 +1,23 @@
-import type { TextMessageRecieve, TextMessageSend } from './ClientEvents';
 import type { ProtoAppEvent } from './ProtoEvents';
 
 // Must include EVERY event type here
 export enum MessageType {
-  TextMessageRecieve,
-  TextMessageSend,
+  // List all client only messages here
 
-  // Protobuf messages
+  // List all server messages here
+  Envelope,
+  Player,
   Session,
   SessionList,
-  SessionJoinRequest,
-  Player,
-  SuggestionMessage,
-  AccusationMessage,
-  SuggestionResponseMessage,
-  AccusationResponseMessage,
+  JoinRequest,
+  JoinResponse,
+  Move,
+  Message,
+  Error,
+  SuggestionRequest,
+  SuggestionResponse,
+  AccusationRequest,
+  AccusationResponse,
 }
 
 export enum EventProducer {
@@ -22,7 +25,7 @@ export enum EventProducer {
   CLIENT,
 }
 
-export type AppEvent = TextMessageRecieve | TextMessageSend | ProtoAppEvent;
+export type AppEvent = ProtoAppEvent;
 
 export type EventType = AppEvent['type'];
 

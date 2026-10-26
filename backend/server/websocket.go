@@ -12,8 +12,8 @@ import (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  bufferSize,
 	WriteBufferSize: bufferSize,
-	CheckOrigin: func(r *http.Request) bool {
-		return r.Header.Get("Origin") == "http://localhost:8000"
+	CheckOrigin: func(_ *http.Request) bool {
+		return true // accept any origin for now
 	},
 }
 

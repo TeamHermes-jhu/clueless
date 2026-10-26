@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/encoding/protojson"
 
+	envelopev1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/envelope/v1"
 	sessionv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/session/v1"
 )
 
@@ -119,7 +120,7 @@ func TestHandleWS_SuccessfulHandshakeAndRoundTrip(t *testing.T) {
 
 	// A message sent before the game has started should come back as an
 	// error envelope, proving the read/write pumps are wired up.
-	env := sessionv1.Envelope_builder{
+	env := envelopev1.Envelope_builder{
 		Msg: sessionv1.Message_builder{Msg: new("hello")}.Build(),
 	}.Build()
 
@@ -132,7 +133,7 @@ func TestHandleWS_SuccessfulHandshakeAndRoundTrip(t *testing.T) {
 	_, reply, err := conn.ReadMessage()
 	require.NoError(t, err)
 
-	var replyEnv sessionv1.Envelope
+	var replyEnv envelopev1.Envelope
 	require.NoError(t, protojson.Unmarshal(reply, &replyEnv))
 	assert.Equal(t, "error game not started", replyEnv.GetError().GetError())
 }

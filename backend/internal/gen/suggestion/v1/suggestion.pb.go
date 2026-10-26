@@ -4,7 +4,7 @@
 // versions:
 // 	protoc-gen-go v1.36.12
 // 	protoc        (unknown)
-// source: suggestion/v1/suggest_accuse_messages.proto
+// source: suggestion/v1/suggestion.proto
 
 package suggestionv1
 
@@ -24,10 +24,10 @@ const (
 )
 
 // Message representing a suggestion made by a player in the game
-type SuggestionMessage struct {
+type SuggestionRequest struct {
 	state                   protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_SuggestionId int32                  `protobuf:"varint,1,opt,name=suggestion_id,json=suggestionId"`
-	xxx_hidden_PlayerId     int32                  `protobuf:"varint,2,opt,name=player_id,json=playerId"`
+	xxx_hidden_PlayerId     *string                `protobuf:"bytes,2,opt,name=player_id,json=playerId"`
 	xxx_hidden_Character    v1.Characters          `protobuf:"varint,3,opt,name=character,enum=cards.v1.Characters"`
 	xxx_hidden_Weapon       v1.Weapons             `protobuf:"varint,4,opt,name=weapon,enum=cards.v1.Weapons"`
 	xxx_hidden_Room         v1.Rooms               `protobuf:"varint,5,opt,name=room,enum=cards.v1.Rooms"`
@@ -37,21 +37,21 @@ type SuggestionMessage struct {
 	sizeCache               protoimpl.SizeCache
 }
 
-func (x *SuggestionMessage) Reset() {
-	*x = SuggestionMessage{}
-	mi := &file_suggestion_v1_suggest_accuse_messages_proto_msgTypes[0]
+func (x *SuggestionRequest) Reset() {
+	*x = SuggestionRequest{}
+	mi := &file_suggestion_v1_suggestion_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *SuggestionMessage) String() string {
+func (x *SuggestionRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SuggestionMessage) ProtoMessage() {}
+func (*SuggestionRequest) ProtoMessage() {}
 
-func (x *SuggestionMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_suggestion_v1_suggest_accuse_messages_proto_msgTypes[0]
+func (x *SuggestionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_suggestion_v1_suggestion_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -62,21 +62,24 @@ func (x *SuggestionMessage) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *SuggestionMessage) GetSuggestionId() int32 {
+func (x *SuggestionRequest) GetSuggestionId() int32 {
 	if x != nil {
 		return x.xxx_hidden_SuggestionId
 	}
 	return 0
 }
 
-func (x *SuggestionMessage) GetPlayerId() int32 {
+func (x *SuggestionRequest) GetPlayerId() string {
 	if x != nil {
-		return x.xxx_hidden_PlayerId
+		if x.xxx_hidden_PlayerId != nil {
+			return *x.xxx_hidden_PlayerId
+		}
+		return ""
 	}
-	return 0
+	return ""
 }
 
-func (x *SuggestionMessage) GetCharacter() v1.Characters {
+func (x *SuggestionRequest) GetCharacter() v1.Characters {
 	if x != nil {
 		if protoimpl.X.Present(&(x.XXX_presence[0]), 2) {
 			return x.xxx_hidden_Character
@@ -85,7 +88,7 @@ func (x *SuggestionMessage) GetCharacter() v1.Characters {
 	return v1.Characters(0)
 }
 
-func (x *SuggestionMessage) GetWeapon() v1.Weapons {
+func (x *SuggestionRequest) GetWeapon() v1.Weapons {
 	if x != nil {
 		if protoimpl.X.Present(&(x.XXX_presence[0]), 3) {
 			return x.xxx_hidden_Weapon
@@ -94,7 +97,7 @@ func (x *SuggestionMessage) GetWeapon() v1.Weapons {
 	return v1.Weapons(0)
 }
 
-func (x *SuggestionMessage) GetRoom() v1.Rooms {
+func (x *SuggestionRequest) GetRoom() v1.Rooms {
 	if x != nil {
 		if protoimpl.X.Present(&(x.XXX_presence[0]), 4) {
 			return x.xxx_hidden_Room
@@ -103,103 +106,103 @@ func (x *SuggestionMessage) GetRoom() v1.Rooms {
 	return v1.Rooms(0)
 }
 
-func (x *SuggestionMessage) SetSuggestionId(v int32) {
+func (x *SuggestionRequest) SetSuggestionId(v int32) {
 	x.xxx_hidden_SuggestionId = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 5)
 }
 
-func (x *SuggestionMessage) SetPlayerId(v int32) {
-	x.xxx_hidden_PlayerId = v
+func (x *SuggestionRequest) SetPlayerId(v string) {
+	x.xxx_hidden_PlayerId = &v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 5)
 }
 
-func (x *SuggestionMessage) SetCharacter(v v1.Characters) {
+func (x *SuggestionRequest) SetCharacter(v v1.Characters) {
 	x.xxx_hidden_Character = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 5)
 }
 
-func (x *SuggestionMessage) SetWeapon(v v1.Weapons) {
+func (x *SuggestionRequest) SetWeapon(v v1.Weapons) {
 	x.xxx_hidden_Weapon = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 3, 5)
 }
 
-func (x *SuggestionMessage) SetRoom(v v1.Rooms) {
+func (x *SuggestionRequest) SetRoom(v v1.Rooms) {
 	x.xxx_hidden_Room = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 4, 5)
 }
 
-func (x *SuggestionMessage) HasSuggestionId() bool {
+func (x *SuggestionRequest) HasSuggestionId() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
 }
 
-func (x *SuggestionMessage) HasPlayerId() bool {
+func (x *SuggestionRequest) HasPlayerId() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
 }
 
-func (x *SuggestionMessage) HasCharacter() bool {
+func (x *SuggestionRequest) HasCharacter() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 2)
 }
 
-func (x *SuggestionMessage) HasWeapon() bool {
+func (x *SuggestionRequest) HasWeapon() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 3)
 }
 
-func (x *SuggestionMessage) HasRoom() bool {
+func (x *SuggestionRequest) HasRoom() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 4)
 }
 
-func (x *SuggestionMessage) ClearSuggestionId() {
+func (x *SuggestionRequest) ClearSuggestionId() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
 	x.xxx_hidden_SuggestionId = 0
 }
 
-func (x *SuggestionMessage) ClearPlayerId() {
+func (x *SuggestionRequest) ClearPlayerId() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
-	x.xxx_hidden_PlayerId = 0
+	x.xxx_hidden_PlayerId = nil
 }
 
-func (x *SuggestionMessage) ClearCharacter() {
+func (x *SuggestionRequest) ClearCharacter() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 2)
 	x.xxx_hidden_Character = v1.Characters_UNSPECIFIED
 }
 
-func (x *SuggestionMessage) ClearWeapon() {
+func (x *SuggestionRequest) ClearWeapon() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 3)
 	x.xxx_hidden_Weapon = v1.Weapons_UNSPECIFIED
 }
 
-func (x *SuggestionMessage) ClearRoom() {
+func (x *SuggestionRequest) ClearRoom() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 4)
 	x.xxx_hidden_Room = v1.Rooms_UNSPECIFIED
 }
 
-type SuggestionMessage_builder struct {
+type SuggestionRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
 	SuggestionId *int32
-	PlayerId     *int32
+	PlayerId     *string
 	Character    *v1.Characters
 	Weapon       *v1.Weapons
 	Room         *v1.Rooms
 }
 
-func (b0 SuggestionMessage_builder) Build() *SuggestionMessage {
-	m0 := &SuggestionMessage{}
+func (b0 SuggestionRequest_builder) Build() *SuggestionRequest {
+	m0 := &SuggestionRequest{}
 	b, x := &b0, m0
 	_, _ = b, x
 	if b.SuggestionId != nil {
@@ -208,7 +211,7 @@ func (b0 SuggestionMessage_builder) Build() *SuggestionMessage {
 	}
 	if b.PlayerId != nil {
 		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 1, 5)
-		x.xxx_hidden_PlayerId = *b.PlayerId
+		x.xxx_hidden_PlayerId = b.PlayerId
 	}
 	if b.Character != nil {
 		protoimpl.X.SetPresentNonAtomic(&(x.XXX_presence[0]), 2, 5)
@@ -226,31 +229,31 @@ func (b0 SuggestionMessage_builder) Build() *SuggestionMessage {
 }
 
 // Message representing an accusation made by a player in the game
-type AccusationMessage struct {
+type AccusationRequest struct {
 	state                   protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_AccusationId int32                  `protobuf:"varint,1,opt,name=accusation_id,json=accusationId"`
-	xxx_hidden_Suggestion   *SuggestionMessage     `protobuf:"bytes,2,opt,name=suggestion"`
+	xxx_hidden_Suggestion   *SuggestionRequest     `protobuf:"bytes,2,opt,name=suggestion"`
 	XXX_raceDetectHookData  protoimpl.RaceDetectHookData
 	XXX_presence            [1]uint32
 	unknownFields           protoimpl.UnknownFields
 	sizeCache               protoimpl.SizeCache
 }
 
-func (x *AccusationMessage) Reset() {
-	*x = AccusationMessage{}
-	mi := &file_suggestion_v1_suggest_accuse_messages_proto_msgTypes[1]
+func (x *AccusationRequest) Reset() {
+	*x = AccusationRequest{}
+	mi := &file_suggestion_v1_suggestion_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *AccusationMessage) String() string {
+func (x *AccusationRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*AccusationMessage) ProtoMessage() {}
+func (*AccusationRequest) ProtoMessage() {}
 
-func (x *AccusationMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_suggestion_v1_suggest_accuse_messages_proto_msgTypes[1]
+func (x *AccusationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_suggestion_v1_suggestion_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -261,61 +264,61 @@ func (x *AccusationMessage) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *AccusationMessage) GetAccusationId() int32 {
+func (x *AccusationRequest) GetAccusationId() int32 {
 	if x != nil {
 		return x.xxx_hidden_AccusationId
 	}
 	return 0
 }
 
-func (x *AccusationMessage) GetSuggestion() *SuggestionMessage {
+func (x *AccusationRequest) GetSuggestion() *SuggestionRequest {
 	if x != nil {
 		return x.xxx_hidden_Suggestion
 	}
 	return nil
 }
 
-func (x *AccusationMessage) SetAccusationId(v int32) {
+func (x *AccusationRequest) SetAccusationId(v int32) {
 	x.xxx_hidden_AccusationId = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 2)
 }
 
-func (x *AccusationMessage) SetSuggestion(v *SuggestionMessage) {
+func (x *AccusationRequest) SetSuggestion(v *SuggestionRequest) {
 	x.xxx_hidden_Suggestion = v
 }
 
-func (x *AccusationMessage) HasAccusationId() bool {
+func (x *AccusationRequest) HasAccusationId() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
 }
 
-func (x *AccusationMessage) HasSuggestion() bool {
+func (x *AccusationRequest) HasSuggestion() bool {
 	if x == nil {
 		return false
 	}
 	return x.xxx_hidden_Suggestion != nil
 }
 
-func (x *AccusationMessage) ClearAccusationId() {
+func (x *AccusationRequest) ClearAccusationId() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
 	x.xxx_hidden_AccusationId = 0
 }
 
-func (x *AccusationMessage) ClearSuggestion() {
+func (x *AccusationRequest) ClearSuggestion() {
 	x.xxx_hidden_Suggestion = nil
 }
 
-type AccusationMessage_builder struct {
+type AccusationRequest_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
 	AccusationId *int32
-	Suggestion   *SuggestionMessage
+	Suggestion   *SuggestionRequest
 }
 
-func (b0 AccusationMessage_builder) Build() *AccusationMessage {
-	m0 := &AccusationMessage{}
+func (b0 AccusationRequest_builder) Build() *AccusationRequest {
+	m0 := &AccusationRequest{}
 	b, x := &b0, m0
 	_, _ = b, x
 	if b.AccusationId != nil {
@@ -327,33 +330,33 @@ func (b0 AccusationMessage_builder) Build() *AccusationMessage {
 }
 
 // Message representing the response to a suggestion
-type SuggestionResponseMessage struct {
-	state                   protoimpl.MessageState           `protogen:"opaque.v1"`
-	xxx_hidden_SuggestionId int32                            `protobuf:"varint,1,opt,name=suggestion_id,json=suggestionId"`
-	xxx_hidden_ResponderId  int32                            `protobuf:"varint,2,opt,name=responder_id,json=responderId"`
-	xxx_hidden_HasCard      bool                             `protobuf:"varint,3,opt,name=has_card,json=hasCard"`
-	xxx_hidden_Card         isSuggestionResponseMessage_Card `protobuf_oneof:"card"`
+type SuggestionResponse struct {
+	state                   protoimpl.MessageState    `protogen:"opaque.v1"`
+	xxx_hidden_SuggestionId int32                     `protobuf:"varint,1,opt,name=suggestion_id,json=suggestionId"`
+	xxx_hidden_ResponderId  int32                     `protobuf:"varint,2,opt,name=responder_id,json=responderId"`
+	xxx_hidden_HasCard      bool                      `protobuf:"varint,3,opt,name=has_card,json=hasCard"`
+	xxx_hidden_Card         isSuggestionResponse_Card `protobuf_oneof:"card"`
 	XXX_raceDetectHookData  protoimpl.RaceDetectHookData
 	XXX_presence            [1]uint32
 	unknownFields           protoimpl.UnknownFields
 	sizeCache               protoimpl.SizeCache
 }
 
-func (x *SuggestionResponseMessage) Reset() {
-	*x = SuggestionResponseMessage{}
-	mi := &file_suggestion_v1_suggest_accuse_messages_proto_msgTypes[2]
+func (x *SuggestionResponse) Reset() {
+	*x = SuggestionResponse{}
+	mi := &file_suggestion_v1_suggestion_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *SuggestionResponseMessage) String() string {
+func (x *SuggestionResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SuggestionResponseMessage) ProtoMessage() {}
+func (*SuggestionResponse) ProtoMessage() {}
 
-func (x *SuggestionResponseMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_suggestion_v1_suggest_accuse_messages_proto_msgTypes[2]
+func (x *SuggestionResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_suggestion_v1_suggestion_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -364,192 +367,192 @@ func (x *SuggestionResponseMessage) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *SuggestionResponseMessage) GetSuggestionId() int32 {
+func (x *SuggestionResponse) GetSuggestionId() int32 {
 	if x != nil {
 		return x.xxx_hidden_SuggestionId
 	}
 	return 0
 }
 
-func (x *SuggestionResponseMessage) GetResponderId() int32 {
+func (x *SuggestionResponse) GetResponderId() int32 {
 	if x != nil {
 		return x.xxx_hidden_ResponderId
 	}
 	return 0
 }
 
-func (x *SuggestionResponseMessage) GetHasCard() bool {
+func (x *SuggestionResponse) GetHasCard() bool {
 	if x != nil {
 		return x.xxx_hidden_HasCard
 	}
 	return false
 }
 
-func (x *SuggestionResponseMessage) GetCharacter() v1.Characters {
+func (x *SuggestionResponse) GetCharacter() v1.Characters {
 	if x != nil {
-		if x, ok := x.xxx_hidden_Card.(*suggestionResponseMessage_Character); ok {
+		if x, ok := x.xxx_hidden_Card.(*suggestionResponse_Character); ok {
 			return x.Character
 		}
 	}
 	return v1.Characters(0)
 }
 
-func (x *SuggestionResponseMessage) GetWeapon() v1.Weapons {
+func (x *SuggestionResponse) GetWeapon() v1.Weapons {
 	if x != nil {
-		if x, ok := x.xxx_hidden_Card.(*suggestionResponseMessage_Weapon); ok {
+		if x, ok := x.xxx_hidden_Card.(*suggestionResponse_Weapon); ok {
 			return x.Weapon
 		}
 	}
 	return v1.Weapons(0)
 }
 
-func (x *SuggestionResponseMessage) GetRoom() v1.Rooms {
+func (x *SuggestionResponse) GetRoom() v1.Rooms {
 	if x != nil {
-		if x, ok := x.xxx_hidden_Card.(*suggestionResponseMessage_Room); ok {
+		if x, ok := x.xxx_hidden_Card.(*suggestionResponse_Room); ok {
 			return x.Room
 		}
 	}
 	return v1.Rooms(0)
 }
 
-func (x *SuggestionResponseMessage) SetSuggestionId(v int32) {
+func (x *SuggestionResponse) SetSuggestionId(v int32) {
 	x.xxx_hidden_SuggestionId = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 4)
 }
 
-func (x *SuggestionResponseMessage) SetResponderId(v int32) {
+func (x *SuggestionResponse) SetResponderId(v int32) {
 	x.xxx_hidden_ResponderId = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 4)
 }
 
-func (x *SuggestionResponseMessage) SetHasCard(v bool) {
+func (x *SuggestionResponse) SetHasCard(v bool) {
 	x.xxx_hidden_HasCard = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 2, 4)
 }
 
-func (x *SuggestionResponseMessage) SetCharacter(v v1.Characters) {
-	x.xxx_hidden_Card = &suggestionResponseMessage_Character{v}
+func (x *SuggestionResponse) SetCharacter(v v1.Characters) {
+	x.xxx_hidden_Card = &suggestionResponse_Character{v}
 }
 
-func (x *SuggestionResponseMessage) SetWeapon(v v1.Weapons) {
-	x.xxx_hidden_Card = &suggestionResponseMessage_Weapon{v}
+func (x *SuggestionResponse) SetWeapon(v v1.Weapons) {
+	x.xxx_hidden_Card = &suggestionResponse_Weapon{v}
 }
 
-func (x *SuggestionResponseMessage) SetRoom(v v1.Rooms) {
-	x.xxx_hidden_Card = &suggestionResponseMessage_Room{v}
+func (x *SuggestionResponse) SetRoom(v v1.Rooms) {
+	x.xxx_hidden_Card = &suggestionResponse_Room{v}
 }
 
-func (x *SuggestionResponseMessage) HasSuggestionId() bool {
+func (x *SuggestionResponse) HasSuggestionId() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
 }
 
-func (x *SuggestionResponseMessage) HasResponderId() bool {
+func (x *SuggestionResponse) HasResponderId() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
 }
 
-func (x *SuggestionResponseMessage) HasHasCard() bool {
+func (x *SuggestionResponse) HasHasCard() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 2)
 }
 
-func (x *SuggestionResponseMessage) HasCard() bool {
+func (x *SuggestionResponse) HasCard() bool {
 	if x == nil {
 		return false
 	}
 	return x.xxx_hidden_Card != nil
 }
 
-func (x *SuggestionResponseMessage) HasCharacter() bool {
+func (x *SuggestionResponse) HasCharacter() bool {
 	if x == nil {
 		return false
 	}
-	_, ok := x.xxx_hidden_Card.(*suggestionResponseMessage_Character)
+	_, ok := x.xxx_hidden_Card.(*suggestionResponse_Character)
 	return ok
 }
 
-func (x *SuggestionResponseMessage) HasWeapon() bool {
+func (x *SuggestionResponse) HasWeapon() bool {
 	if x == nil {
 		return false
 	}
-	_, ok := x.xxx_hidden_Card.(*suggestionResponseMessage_Weapon)
+	_, ok := x.xxx_hidden_Card.(*suggestionResponse_Weapon)
 	return ok
 }
 
-func (x *SuggestionResponseMessage) HasRoom() bool {
+func (x *SuggestionResponse) HasRoom() bool {
 	if x == nil {
 		return false
 	}
-	_, ok := x.xxx_hidden_Card.(*suggestionResponseMessage_Room)
+	_, ok := x.xxx_hidden_Card.(*suggestionResponse_Room)
 	return ok
 }
 
-func (x *SuggestionResponseMessage) ClearSuggestionId() {
+func (x *SuggestionResponse) ClearSuggestionId() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
 	x.xxx_hidden_SuggestionId = 0
 }
 
-func (x *SuggestionResponseMessage) ClearResponderId() {
+func (x *SuggestionResponse) ClearResponderId() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
 	x.xxx_hidden_ResponderId = 0
 }
 
-func (x *SuggestionResponseMessage) ClearHasCard() {
+func (x *SuggestionResponse) ClearHasCard() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 2)
 	x.xxx_hidden_HasCard = false
 }
 
-func (x *SuggestionResponseMessage) ClearCard() {
+func (x *SuggestionResponse) ClearCard() {
 	x.xxx_hidden_Card = nil
 }
 
-func (x *SuggestionResponseMessage) ClearCharacter() {
-	if _, ok := x.xxx_hidden_Card.(*suggestionResponseMessage_Character); ok {
+func (x *SuggestionResponse) ClearCharacter() {
+	if _, ok := x.xxx_hidden_Card.(*suggestionResponse_Character); ok {
 		x.xxx_hidden_Card = nil
 	}
 }
 
-func (x *SuggestionResponseMessage) ClearWeapon() {
-	if _, ok := x.xxx_hidden_Card.(*suggestionResponseMessage_Weapon); ok {
+func (x *SuggestionResponse) ClearWeapon() {
+	if _, ok := x.xxx_hidden_Card.(*suggestionResponse_Weapon); ok {
 		x.xxx_hidden_Card = nil
 	}
 }
 
-func (x *SuggestionResponseMessage) ClearRoom() {
-	if _, ok := x.xxx_hidden_Card.(*suggestionResponseMessage_Room); ok {
+func (x *SuggestionResponse) ClearRoom() {
+	if _, ok := x.xxx_hidden_Card.(*suggestionResponse_Room); ok {
 		x.xxx_hidden_Card = nil
 	}
 }
 
-const SuggestionResponseMessage_Card_not_set_case case_SuggestionResponseMessage_Card = 0
-const SuggestionResponseMessage_Character_case case_SuggestionResponseMessage_Card = 4
-const SuggestionResponseMessage_Weapon_case case_SuggestionResponseMessage_Card = 5
-const SuggestionResponseMessage_Room_case case_SuggestionResponseMessage_Card = 6
+const SuggestionResponse_Card_not_set_case case_SuggestionResponse_Card = 0
+const SuggestionResponse_Character_case case_SuggestionResponse_Card = 4
+const SuggestionResponse_Weapon_case case_SuggestionResponse_Card = 5
+const SuggestionResponse_Room_case case_SuggestionResponse_Card = 6
 
-func (x *SuggestionResponseMessage) WhichCard() case_SuggestionResponseMessage_Card {
+func (x *SuggestionResponse) WhichCard() case_SuggestionResponse_Card {
 	if x == nil {
-		return SuggestionResponseMessage_Card_not_set_case
+		return SuggestionResponse_Card_not_set_case
 	}
 	switch x.xxx_hidden_Card.(type) {
-	case *suggestionResponseMessage_Character:
-		return SuggestionResponseMessage_Character_case
-	case *suggestionResponseMessage_Weapon:
-		return SuggestionResponseMessage_Weapon_case
-	case *suggestionResponseMessage_Room:
-		return SuggestionResponseMessage_Room_case
+	case *suggestionResponse_Character:
+		return SuggestionResponse_Character_case
+	case *suggestionResponse_Weapon:
+		return SuggestionResponse_Weapon_case
+	case *suggestionResponse_Room:
+		return SuggestionResponse_Room_case
 	default:
-		return SuggestionResponseMessage_Card_not_set_case
+		return SuggestionResponse_Card_not_set_case
 	}
 }
 
-type SuggestionResponseMessage_builder struct {
+type SuggestionResponse_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
 	SuggestionId *int32
@@ -562,8 +565,8 @@ type SuggestionResponseMessage_builder struct {
 	// -- end of xxx_hidden_Card
 }
 
-func (b0 SuggestionResponseMessage_builder) Build() *SuggestionResponseMessage {
-	m0 := &SuggestionResponseMessage{}
+func (b0 SuggestionResponse_builder) Build() *SuggestionResponse {
+	m0 := &SuggestionResponse{}
 	b, x := &b0, m0
 	_, _ = b, x
 	if b.SuggestionId != nil {
@@ -579,51 +582,51 @@ func (b0 SuggestionResponseMessage_builder) Build() *SuggestionResponseMessage {
 		x.xxx_hidden_HasCard = *b.HasCard
 	}
 	if b.Character != nil {
-		x.xxx_hidden_Card = &suggestionResponseMessage_Character{*b.Character}
+		x.xxx_hidden_Card = &suggestionResponse_Character{*b.Character}
 	}
 	if b.Weapon != nil {
-		x.xxx_hidden_Card = &suggestionResponseMessage_Weapon{*b.Weapon}
+		x.xxx_hidden_Card = &suggestionResponse_Weapon{*b.Weapon}
 	}
 	if b.Room != nil {
-		x.xxx_hidden_Card = &suggestionResponseMessage_Room{*b.Room}
+		x.xxx_hidden_Card = &suggestionResponse_Room{*b.Room}
 	}
 	return m0
 }
 
-type case_SuggestionResponseMessage_Card protoreflect.FieldNumber
+type case_SuggestionResponse_Card protoreflect.FieldNumber
 
-func (x case_SuggestionResponseMessage_Card) String() string {
-	md := file_suggestion_v1_suggest_accuse_messages_proto_msgTypes[2].Descriptor()
+func (x case_SuggestionResponse_Card) String() string {
+	md := file_suggestion_v1_suggestion_proto_msgTypes[2].Descriptor()
 	if x == 0 {
 		return "not set"
 	}
 	return protoimpl.X.MessageFieldStringOf(md, protoreflect.FieldNumber(x))
 }
 
-type isSuggestionResponseMessage_Card interface {
-	isSuggestionResponseMessage_Card()
+type isSuggestionResponse_Card interface {
+	isSuggestionResponse_Card()
 }
 
-type suggestionResponseMessage_Character struct {
+type suggestionResponse_Character struct {
 	Character v1.Characters `protobuf:"varint,4,opt,name=character,enum=cards.v1.Characters,oneof"` // Character card shown in response
 }
 
-type suggestionResponseMessage_Weapon struct {
+type suggestionResponse_Weapon struct {
 	Weapon v1.Weapons `protobuf:"varint,5,opt,name=weapon,enum=cards.v1.Weapons,oneof"` // Weapon card shown in response
 }
 
-type suggestionResponseMessage_Room struct {
+type suggestionResponse_Room struct {
 	Room v1.Rooms `protobuf:"varint,6,opt,name=room,enum=cards.v1.Rooms,oneof"` // Room card shown in response
 }
 
-func (*suggestionResponseMessage_Character) isSuggestionResponseMessage_Card() {}
+func (*suggestionResponse_Character) isSuggestionResponse_Card() {}
 
-func (*suggestionResponseMessage_Weapon) isSuggestionResponseMessage_Card() {}
+func (*suggestionResponse_Weapon) isSuggestionResponse_Card() {}
 
-func (*suggestionResponseMessage_Room) isSuggestionResponseMessage_Card() {}
+func (*suggestionResponse_Room) isSuggestionResponse_Card() {}
 
 // Message representing the response to an accusation
-type AccusationResponseMessage struct {
+type AccusationResponse struct {
 	state                   protoimpl.MessageState `protogen:"opaque.v1"`
 	xxx_hidden_AccusationId int32                  `protobuf:"varint,1,opt,name=accusation_id,json=accusationId"`
 	xxx_hidden_IsCorrect    bool                   `protobuf:"varint,2,opt,name=is_correct,json=isCorrect"`
@@ -633,21 +636,21 @@ type AccusationResponseMessage struct {
 	sizeCache               protoimpl.SizeCache
 }
 
-func (x *AccusationResponseMessage) Reset() {
-	*x = AccusationResponseMessage{}
-	mi := &file_suggestion_v1_suggest_accuse_messages_proto_msgTypes[3]
+func (x *AccusationResponse) Reset() {
+	*x = AccusationResponse{}
+	mi := &file_suggestion_v1_suggestion_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *AccusationResponseMessage) String() string {
+func (x *AccusationResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*AccusationResponseMessage) ProtoMessage() {}
+func (*AccusationResponse) ProtoMessage() {}
 
-func (x *AccusationResponseMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_suggestion_v1_suggest_accuse_messages_proto_msgTypes[3]
+func (x *AccusationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_suggestion_v1_suggestion_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -658,63 +661,63 @@ func (x *AccusationResponseMessage) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-func (x *AccusationResponseMessage) GetAccusationId() int32 {
+func (x *AccusationResponse) GetAccusationId() int32 {
 	if x != nil {
 		return x.xxx_hidden_AccusationId
 	}
 	return 0
 }
 
-func (x *AccusationResponseMessage) GetIsCorrect() bool {
+func (x *AccusationResponse) GetIsCorrect() bool {
 	if x != nil {
 		return x.xxx_hidden_IsCorrect
 	}
 	return false
 }
 
-func (x *AccusationResponseMessage) SetAccusationId(v int32) {
+func (x *AccusationResponse) SetAccusationId(v int32) {
 	x.xxx_hidden_AccusationId = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 0, 2)
 }
 
-func (x *AccusationResponseMessage) SetIsCorrect(v bool) {
+func (x *AccusationResponse) SetIsCorrect(v bool) {
 	x.xxx_hidden_IsCorrect = v
 	protoimpl.X.SetPresent(&(x.XXX_presence[0]), 1, 2)
 }
 
-func (x *AccusationResponseMessage) HasAccusationId() bool {
+func (x *AccusationResponse) HasAccusationId() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 0)
 }
 
-func (x *AccusationResponseMessage) HasIsCorrect() bool {
+func (x *AccusationResponse) HasIsCorrect() bool {
 	if x == nil {
 		return false
 	}
 	return protoimpl.X.Present(&(x.XXX_presence[0]), 1)
 }
 
-func (x *AccusationResponseMessage) ClearAccusationId() {
+func (x *AccusationResponse) ClearAccusationId() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 0)
 	x.xxx_hidden_AccusationId = 0
 }
 
-func (x *AccusationResponseMessage) ClearIsCorrect() {
+func (x *AccusationResponse) ClearIsCorrect() {
 	protoimpl.X.ClearPresent(&(x.XXX_presence[0]), 1)
 	x.xxx_hidden_IsCorrect = false
 }
 
-type AccusationResponseMessage_builder struct {
+type AccusationResponse_builder struct {
 	_ [0]func() // Prevents comparability and use of unkeyed literals for the builder.
 
 	AccusationId *int32
 	IsCorrect    *bool
 }
 
-func (b0 AccusationResponseMessage_builder) Build() *AccusationResponseMessage {
-	m0 := &AccusationResponseMessage{}
+func (b0 AccusationResponse_builder) Build() *AccusationResponse {
+	m0 := &AccusationResponse{}
 	b, x := &b0, m0
 	_, _ = b, x
 	if b.AccusationId != nil {
@@ -728,54 +731,54 @@ func (b0 AccusationResponseMessage_builder) Build() *AccusationResponseMessage {
 	return m0
 }
 
-var File_suggestion_v1_suggest_accuse_messages_proto protoreflect.FileDescriptor
+var File_suggestion_v1_suggestion_proto protoreflect.FileDescriptor
 
-const file_suggestion_v1_suggest_accuse_messages_proto_rawDesc = "" +
+const file_suggestion_v1_suggestion_proto_rawDesc = "" +
 	"\n" +
-	"+suggestion/v1/suggest_accuse_messages.proto\x12\rsuggestion.v1\x1a\x14cards/v1/enums.proto\"\xd9\x01\n" +
-	"\x11SuggestionMessage\x12#\n" +
+	"\x1esuggestion/v1/suggestion.proto\x12\rsuggestion.v1\x1a\x14cards/v1/enums.proto\"\xd9\x01\n" +
+	"\x11SuggestionRequest\x12#\n" +
 	"\rsuggestion_id\x18\x01 \x01(\x05R\fsuggestionId\x12\x1b\n" +
-	"\tplayer_id\x18\x02 \x01(\x05R\bplayerId\x122\n" +
+	"\tplayer_id\x18\x02 \x01(\tR\bplayerId\x122\n" +
 	"\tcharacter\x18\x03 \x01(\x0e2\x14.cards.v1.CharactersR\tcharacter\x12)\n" +
 	"\x06weapon\x18\x04 \x01(\x0e2\x11.cards.v1.WeaponsR\x06weapon\x12#\n" +
 	"\x04room\x18\x05 \x01(\x0e2\x0f.cards.v1.RoomsR\x04room\"z\n" +
-	"\x11AccusationMessage\x12#\n" +
+	"\x11AccusationRequest\x12#\n" +
 	"\raccusation_id\x18\x01 \x01(\x05R\faccusationId\x12@\n" +
 	"\n" +
-	"suggestion\x18\x02 \x01(\v2 .suggestion.v1.SuggestionMessageR\n" +
-	"suggestion\"\x90\x02\n" +
-	"\x19SuggestionResponseMessage\x12#\n" +
+	"suggestion\x18\x02 \x01(\v2 .suggestion.v1.SuggestionRequestR\n" +
+	"suggestion\"\x89\x02\n" +
+	"\x12SuggestionResponse\x12#\n" +
 	"\rsuggestion_id\x18\x01 \x01(\x05R\fsuggestionId\x12!\n" +
 	"\fresponder_id\x18\x02 \x01(\x05R\vresponderId\x12\x19\n" +
 	"\bhas_card\x18\x03 \x01(\bR\ahasCard\x124\n" +
 	"\tcharacter\x18\x04 \x01(\x0e2\x14.cards.v1.CharactersH\x00R\tcharacter\x12+\n" +
 	"\x06weapon\x18\x05 \x01(\x0e2\x11.cards.v1.WeaponsH\x00R\x06weapon\x12%\n" +
 	"\x04room\x18\x06 \x01(\x0e2\x0f.cards.v1.RoomsH\x00R\x04roomB\x06\n" +
-	"\x04card\"_\n" +
-	"\x19AccusationResponseMessage\x12#\n" +
+	"\x04card\"X\n" +
+	"\x12AccusationResponse\x12#\n" +
 	"\raccusation_id\x18\x01 \x01(\x05R\faccusationId\x12\x1d\n" +
 	"\n" +
-	"is_correct\x18\x02 \x01(\bR\tisCorrectB\xd6\x01\n" +
-	"\x11com.suggestion.v1B\x1aSuggestAccuseMessagesProtoZRgithub.com/TeamHermes-jhu/clueless/backend/internal/gen/suggestion/v1;suggestionv1\xa2\x02\x03SXX\xaa\x02\rSuggestion.V1\xca\x02\rSuggestion\\V1\xe2\x02\x19Suggestion\\V1\\GPBMetadata\xea\x02\x0eSuggestion::V1b\beditionsp\xe9\a"
+	"is_correct\x18\x02 \x01(\bR\tisCorrectB\xcb\x01\n" +
+	"\x11com.suggestion.v1B\x0fSuggestionProtoZRgithub.com/TeamHermes-jhu/clueless/backend/internal/gen/suggestion/v1;suggestionv1\xa2\x02\x03SXX\xaa\x02\rSuggestion.V1\xca\x02\rSuggestion\\V1\xe2\x02\x19Suggestion\\V1\\GPBMetadata\xea\x02\x0eSuggestion::V1b\beditionsp\xe9\a"
 
-var file_suggestion_v1_suggest_accuse_messages_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
-var file_suggestion_v1_suggest_accuse_messages_proto_goTypes = []any{
-	(*SuggestionMessage)(nil),         // 0: suggestion.v1.SuggestionMessage
-	(*AccusationMessage)(nil),         // 1: suggestion.v1.AccusationMessage
-	(*SuggestionResponseMessage)(nil), // 2: suggestion.v1.SuggestionResponseMessage
-	(*AccusationResponseMessage)(nil), // 3: suggestion.v1.AccusationResponseMessage
-	(v1.Characters)(0),                // 4: cards.v1.Characters
-	(v1.Weapons)(0),                   // 5: cards.v1.Weapons
-	(v1.Rooms)(0),                     // 6: cards.v1.Rooms
+var file_suggestion_v1_suggestion_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_suggestion_v1_suggestion_proto_goTypes = []any{
+	(*SuggestionRequest)(nil),  // 0: suggestion.v1.SuggestionRequest
+	(*AccusationRequest)(nil),  // 1: suggestion.v1.AccusationRequest
+	(*SuggestionResponse)(nil), // 2: suggestion.v1.SuggestionResponse
+	(*AccusationResponse)(nil), // 3: suggestion.v1.AccusationResponse
+	(v1.Characters)(0),         // 4: cards.v1.Characters
+	(v1.Weapons)(0),            // 5: cards.v1.Weapons
+	(v1.Rooms)(0),              // 6: cards.v1.Rooms
 }
-var file_suggestion_v1_suggest_accuse_messages_proto_depIdxs = []int32{
-	4, // 0: suggestion.v1.SuggestionMessage.character:type_name -> cards.v1.Characters
-	5, // 1: suggestion.v1.SuggestionMessage.weapon:type_name -> cards.v1.Weapons
-	6, // 2: suggestion.v1.SuggestionMessage.room:type_name -> cards.v1.Rooms
-	0, // 3: suggestion.v1.AccusationMessage.suggestion:type_name -> suggestion.v1.SuggestionMessage
-	4, // 4: suggestion.v1.SuggestionResponseMessage.character:type_name -> cards.v1.Characters
-	5, // 5: suggestion.v1.SuggestionResponseMessage.weapon:type_name -> cards.v1.Weapons
-	6, // 6: suggestion.v1.SuggestionResponseMessage.room:type_name -> cards.v1.Rooms
+var file_suggestion_v1_suggestion_proto_depIdxs = []int32{
+	4, // 0: suggestion.v1.SuggestionRequest.character:type_name -> cards.v1.Characters
+	5, // 1: suggestion.v1.SuggestionRequest.weapon:type_name -> cards.v1.Weapons
+	6, // 2: suggestion.v1.SuggestionRequest.room:type_name -> cards.v1.Rooms
+	0, // 3: suggestion.v1.AccusationRequest.suggestion:type_name -> suggestion.v1.SuggestionRequest
+	4, // 4: suggestion.v1.SuggestionResponse.character:type_name -> cards.v1.Characters
+	5, // 5: suggestion.v1.SuggestionResponse.weapon:type_name -> cards.v1.Weapons
+	6, // 6: suggestion.v1.SuggestionResponse.room:type_name -> cards.v1.Rooms
 	7, // [7:7] is the sub-list for method output_type
 	7, // [7:7] is the sub-list for method input_type
 	7, // [7:7] is the sub-list for extension type_name
@@ -783,31 +786,31 @@ var file_suggestion_v1_suggest_accuse_messages_proto_depIdxs = []int32{
 	0, // [0:7] is the sub-list for field type_name
 }
 
-func init() { file_suggestion_v1_suggest_accuse_messages_proto_init() }
-func file_suggestion_v1_suggest_accuse_messages_proto_init() {
-	if File_suggestion_v1_suggest_accuse_messages_proto != nil {
+func init() { file_suggestion_v1_suggestion_proto_init() }
+func file_suggestion_v1_suggestion_proto_init() {
+	if File_suggestion_v1_suggestion_proto != nil {
 		return
 	}
-	file_suggestion_v1_suggest_accuse_messages_proto_msgTypes[2].OneofWrappers = []any{
-		(*suggestionResponseMessage_Character)(nil),
-		(*suggestionResponseMessage_Weapon)(nil),
-		(*suggestionResponseMessage_Room)(nil),
+	file_suggestion_v1_suggestion_proto_msgTypes[2].OneofWrappers = []any{
+		(*suggestionResponse_Character)(nil),
+		(*suggestionResponse_Weapon)(nil),
+		(*suggestionResponse_Room)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_suggestion_v1_suggest_accuse_messages_proto_rawDesc), len(file_suggestion_v1_suggest_accuse_messages_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_suggestion_v1_suggestion_proto_rawDesc), len(file_suggestion_v1_suggestion_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
-		GoTypes:           file_suggestion_v1_suggest_accuse_messages_proto_goTypes,
-		DependencyIndexes: file_suggestion_v1_suggest_accuse_messages_proto_depIdxs,
-		MessageInfos:      file_suggestion_v1_suggest_accuse_messages_proto_msgTypes,
+		GoTypes:           file_suggestion_v1_suggestion_proto_goTypes,
+		DependencyIndexes: file_suggestion_v1_suggestion_proto_depIdxs,
+		MessageInfos:      file_suggestion_v1_suggestion_proto_msgTypes,
 	}.Build()
-	File_suggestion_v1_suggest_accuse_messages_proto = out.File
-	file_suggestion_v1_suggest_accuse_messages_proto_goTypes = nil
-	file_suggestion_v1_suggest_accuse_messages_proto_depIdxs = nil
+	File_suggestion_v1_suggestion_proto = out.File
+	file_suggestion_v1_suggestion_proto_goTypes = nil
+	file_suggestion_v1_suggestion_proto_depIdxs = nil
 }
