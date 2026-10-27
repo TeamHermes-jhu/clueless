@@ -26,6 +26,14 @@ func (s *Session) startGame() {
 	for i, v := range r {
 		s.turnOrder[v] = s.joinOrder[i]
 	}
+	
+
+	// set the current turn
+	// put each player in their starting room
+	// put the weapons in their starting rooms
+	// set the case file (suspect, room, weapon)
+	// deal the cards to each player (shuffled)
+	// miss scarlett starts first
 }
 
 func (s *Session) move(move *sessionv1.Move) {
