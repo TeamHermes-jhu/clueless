@@ -40,7 +40,8 @@ func RunServer(cmd *cobra.Command, _ []string) {
 	l := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 	secretsCtx, cancelSecrets := context.WithTimeout(cmd.Context(), secretsLoadTimeout)
-	err := secrets.Bootstrap(secretsCtx, "secrets.env")
+	err := secrets.Bootstrap(secretsCtx, secretsFile, overrideFile)
+
 	cancelSecrets()
 
 	if err != nil {
