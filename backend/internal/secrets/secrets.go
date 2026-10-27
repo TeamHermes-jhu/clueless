@@ -31,7 +31,7 @@ type Manager struct {
 
 // NewManager creates a Manager that reads from given Provider.
 func NewManager(p Provider) *Manager {
-	return &Manager{provider: p}
+	return &Manager{provider: p, overrides: make(map[string]string)}
 }
 
 // Load fetches and parses .env contents for an environment.

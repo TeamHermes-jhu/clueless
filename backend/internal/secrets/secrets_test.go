@@ -31,7 +31,7 @@ func TestLoadIntoEnvSetsNewVariables(t *testing.T) {
 
 	_ = os.Unsetenv("SECRETS_TEST_NEW")
 
-	m := secrets.NewManager(fakeProvider{dotenv: "SECRETS_TEST_NEW=value\n"})
+	m := secrets.NewManager(fakeProvider{dotenv: "SECRETS_TEST_NEW=value\n", err: nil})
 	if err := m.LoadIntoEnv(context.Background(), "dev"); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -44,7 +44,7 @@ func TestLoadIntoEnvSetsNewVariables(t *testing.T) {
 func TestLoadIntoEnvDoesNotOverrideExisting(t *testing.T) {
 	t.Setenv("SECRETS_TEST_EXISTING", "keep")
 
-	m := secrets.NewManager(fakeProvider{dotenv: "SECRETS_TEST_EXISTING=overwritten\n"})
+	m := secrets.NewManager(fakeProvider{dotenv: "SECRETS_TEST_EXISTING=overwritten\n", err: nil})
 	if err := m.LoadIntoEnv(context.Background(), "dev"); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -56,7 +56,7 @@ func TestLoadIntoEnvDoesNotOverrideExisting(t *testing.T) {
 
 func TestLoadReturnsProviderError(t *testing.T) {
 	wantErr := errStoreUnreachable
-	m := secrets.NewManager(fakeProvider{err: wantErr})
+	m := secrets.NewManager(fakeProvider{dotenv: "", err: wantErr})
 
 	if _, err := m.Load(context.Background(), "dev"); !errors.Is(err, wantErr) {
 		t.Errorf("error = %v, want %v", err, wantErr)
@@ -64,7 +64,7 @@ func TestLoadReturnsProviderError(t *testing.T) {
 }
 
 func TestLoadRejectsInvalidDotenv(t *testing.T) {
-	m := secrets.NewManager(fakeProvider{dotenv: "THIS LINE IS NOT VALID\n=\n"})
+	m := secrets.NewManager(fakeProvider{dotenv: "THIS LINE IS NOT VALID\n=\n", err: nil})
 
 	if _, err := m.Load(context.Background(), "dev"); err == nil {
 		t.Error("expected an error for invalid .env text, got nil")
@@ -76,7 +76,7 @@ func TestOverridesWinOverStoredValues(t *testing.T) {
 
 	_ = os.Unsetenv("SECRETS_TEST_OVERRIDDEN")
 
-	m := secrets.NewManager(fakeProvider{dotenv: "SECRETS_TEST_OVERRIDDEN=from-store\n"}).
+	m := secrets.NewManager(fakeProvider{dotenv: "SECRETS_TEST_OVERRIDDEN=from-store\n", err: nil}).
 		WithOverrides(map[string]string{"SECRETS_TEST_OVERRIDDEN": "from-override"})
 	if err := m.LoadIntoEnv(context.Background(), "dev"); err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -90,7 +90,7 @@ func TestOverridesWinOverStoredValues(t *testing.T) {
 func TestRealEnvironmentBeatsOverrides(t *testing.T) {
 	t.Setenv("SECRETS_TEST_PRIORITY", "from-shell")
 
-	m := secrets.NewManager(fakeProvider{dotenv: "SECRETS_TEST_PRIORITY=from-store\n"}).
+	m := secrets.NewManager(fakeProvider{dotenv: "SECRETS_TEST_PRIORITY=from-store\n", err: nil}).
 		WithOverrides(map[string]string{"SECRETS_TEST_PRIORITY": "from-override"})
 	if err := m.LoadIntoEnv(context.Background(), "dev"); err != nil {
 		t.Fatalf("unexpected error: %v", err)
