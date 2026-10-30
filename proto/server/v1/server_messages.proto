@@ -7,9 +7,8 @@ package server.v1;
 import "cards/v1/cards.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/go_features.proto";
-import "google/protobuf/timestamp.proto";
-import "session/v1/session_messages.proto";
-import "suggestion/v1/suggest_accuse_messages.proto";
+import "session/v1/session.proto";
+import "suggestion/v1/suggestion.proto";
 
 option features.(pb.go).strip_enum_prefix = STRIP_ENUM_PREFIX_STRIP;
 
@@ -34,7 +33,7 @@ message GameOverMessage {
 message PlayerSummary {
   session.v1.Player player = 1;
   cards.v1.Characters character = 2;
-  repeated Card hand = 3; // Their cards
+  repeated cards.v1.Card hand = 3; // Their cards
   int32 moves_made = 4;
   bool is_eliminated = 5; // True if they were eliminated by a wrong accusation
   bool is_disconnected = 6; // True if they left before the game ended
@@ -52,7 +51,7 @@ message GameSummaryMessage {
 // The eliminated player leaves the turn rotation (can still disprove suggestions?)
 message PlayerEliminatedMessage {
   session.v1.Player player = 1;
-  suggestion.v1.AccusationMessage accusation = 2;
+  suggestion.v1.AccusationResponse accusation = 2;
   int32 players_remaining = 3;
 }
 
