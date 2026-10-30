@@ -23,25 +23,17 @@ enum PlayerAction {
   PLAYER_ACTION_ACCUSE = 5;
 }
 
-// Defines the actions available to a specific player.
-message PlayerTurnActions {
-  int32 player_id = 1;
-  repeated PlayerAction allowed_actions = 2;
-}
-
 // Global message sent to all players whenever the current turn or available actions change.
 message TurnIndication {
-  int32 session_id = 1;
-
   // player responsible for the current action.
-  Player current_player = 2;
+  Player current_player = 1;
 
   // current phase of the turn.
-  TurnType turn_type = 3;
+  TurnType turn_type = 2;
 
   // actions permitted for each player
-  repeated PlayerTurnActions player_actions = 4;
+  repeated PlayerAction allowed_actions = 3;
 
   // sequential turn counter.
-  int32 turn_number = 5;
+  int32 turn_number = 4;
 }
