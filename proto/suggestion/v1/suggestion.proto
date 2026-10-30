@@ -4,7 +4,7 @@ edition = "2024";
 
 package suggestion.v1;
 
-import "cards/v1/enums.proto";
+import "cards/v1/cards.proto";
 
 // Message representing a suggestion made by a player in the game
 message SuggestionRequest {

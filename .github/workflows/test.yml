@@ -32,12 +32,11 @@ jobs:
         run: |
           cd backend/
           go get .
-      - name: Build:
+      - name: Build
         run: |
           cd backend/
           go build -v ./...
       - name: Test
         run: |
           cd backend/
-          go test 
-
+          go test

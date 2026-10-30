@@ -4,7 +4,7 @@ edition = "2024";
 
 package session.v1;
 
-import "cards/v1/enums.proto";
+import "cards/v1/cards.proto";
 import "google/protobuf/go_features.proto";
 
 option features.(pb.go).strip_enum_prefix = STRIP_ENUM_PREFIX_STRIP;

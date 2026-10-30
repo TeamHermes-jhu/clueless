@@ -1,0 +1,92 @@
+// Miscellaneous server messages
+
+edition = "2024";
+
+package server.v1;
+
+import "cards/v1/cards.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/go_features.proto";
+import "session/v1/session.proto";
+import "suggestion/v1/suggestion.proto";
+
+option features.(pb.go).strip_enum_prefix = STRIP_ENUM_PREFIX_STRIP;
+
+enum GameOverReason {
+  GAME_OVER_REASON_UNSPECIFIED = 0;
+
+  GAME_OVER_REASON_CORRECT_ACCUSATION = 1; // A player made a correct accusation
+  GAME_OVER_REASON_ALL_PLAYERS_ELIMINATED = 2; // Every player made a wrong accusation, no winner
+  GAME_OVER_REASON_NOT_ENOUGH_PLAYERS = 3; // Too many players disconnected to continue (no reconnects?)
+}
+
+// Broadcasted
+message GameOverMessage {
+  GameOverReason reason = 1;
+  session.v1.Player winner = 2; // Unset if there is no winner
+  cards.v1.Characters solution_character = 3;
+  cards.v1.Weapons solution_weapon = 4;
+  cards.v1.Rooms solution_room = 5;
+}
+
+// Per player results shown post game
+message PlayerSummary {
+  session.v1.Player player = 1;
+  cards.v1.Characters character = 2;
+  repeated cards.v1.Card hand = 3; // Their cards
+  int32 moves_made = 4;
+  bool is_eliminated = 5; // True if they were eliminated by a wrong accusation
+  bool is_disconnected = 6; // True if they left before the game ended
+}
+
+// Broadcast, sent right after GameOverMessage
+message GameSummaryMessage {
+  int32 session_id = 1;
+  int32 total_turns = 2; // Total turns taken by all players
+  google.protobuf.Duration duration = 3; // How long the game lasted
+  repeated PlayerSummary players = 4; // One entry per player
+}
+
+// Broadcast, sent to all players when a player is eliminated after an incorrect accusation
+// The eliminated player leaves the turn rotation (can still disprove suggestions?)
+message PlayerEliminatedMessage {
+  session.v1.Player player = 1;
+  suggestion.v1.AccusationResponse accusation = 2;
+  int32 players_remaining = 3;
+}
+
+// Subject to feedback/deletion/modification
+enum ErrorCode {
+  ERROR_CODE_UNSPECIFIED = 0;
+
+  ERROR_CODE_MALFORMED_MESSAGE = 1; // The message could not be parsed or is missing required data
+  ERROR_CODE_NOT_YOUR_TURN = 2; // The player acted outside their turn
+  ERROR_CODE_ACTION_NOT_ALLOWED = 3; // Valid action, but not allowed in the current turn type
+  ERROR_CODE_INVALID_MOVE = 4; // The destination is not reachable from the current location
+  ERROR_CODE_HALLWAY_OCCUPIED = 5; // The target hallway already holds a character
+  ERROR_CODE_SUGGESTION_NOT_ALLOWED = 6; // Suggestion not allowed (e.g. all exits blocked)
+  ERROR_CODE_PLAYER_ELIMINATED = 7; // Eliminated players cannot take this action
+  ERROR_CODE_GAME_NOT_ACTIVE = 8; // No game is in progress
+  ERROR_CODE_SESSION_FULL = 9; // The session has reached its maximum players
+  ERROR_CODE_SESSION_NOT_FOUND = 10; // The requested session does not exist
+  ERROR_CODE_INTERNAL_ERROR = 12; // Unexpected server failure
+  ERROR_CODE_UNAUTHORIZED = 13; // Missing, invalid, or expired player identity/token
+  ERROR_CODE_RATE_LIMITED = 14; // Too many requests in a short time
+  ERROR_CODE_MESSAGE_TOO_LONG = 15; // Text exceeds the limit in ServerHelloMessage
+  ERROR_CODE_PROTOCOL_VERSION_MISMATCH = 16; // Client and server message definitions are incompatible
+  ERROR_CODE_INVALID_SUGGESTION = 17; // Suggestion doesn't follow the rules (e.g. room is not the player's current room)
+  ERROR_CODE_ACTION_ALREADY_TAKEN = 18; // The player already did this action this turn
+}
+
+enum NotificationCategory {
+  NOTIFICATION_CATEGORY_UNSPECIFIED = 0;
+
+  NOTIFICATION_CATEGORY_INFO = 1; // General information
+  NOTIFICATION_CATEGORY_MOVEMENT = 2; // A character moved
+  NOTIFICATION_CATEGORY_SUGGESTION = 3; // Suggestion related event
+  NOTIFICATION_CATEGORY_ACCUSATION = 4; // Accusation related event
+  NOTIFICATION_CATEGORY_SESSION = 5; // Players joining, leaving, etc.
+  NOTIFICATION_CATEGORY_TURN = 6; // Turn changes and skips
+  NOTIFICATION_CATEGORY_GAME = 7; // Game start, end, and other game wide events
+  NOTIFICATION_CATEGORY_ERROR = 8;
+}
