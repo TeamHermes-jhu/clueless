@@ -182,7 +182,7 @@ func (g *GameLogicManager) dealCards(playerIDs []string) {
 	allCards = removeCardFromDeck(allCards, g.caseFile.roomCard, cardRoom)
 	allCards = removeCardFromDeck(allCards, g.caseFile.weaponCard, cardWeapon)
 	// we want to deal them sequentially to players, uniformly randomly (all shuffled together)
-	
+
 	rand.Shuffle(len(allCards), func(i, j int) {
 		allCards[i], allCards[j] = allCards[j], allCards[i]
 	})
