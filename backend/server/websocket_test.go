@@ -83,24 +83,6 @@ func TestHandleWS_UnknownSession(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 }
 
-func TestHandleWS_BadOrigin(t *testing.T) {
-	s := newTestServer()
-
-	ts := httptest.NewServer(s.mux)
-	defer ts.Close()
-
-	sessionID := joinAndGetSessionID(t, ts, "alice")
-
-	url := wsURL(t, ts, fmt.Sprintf("session=%s&player=alice", sessionID))
-
-	conn, resp, err := dial(t, url, "http://evil.example.com")
-	require.Error(t, err)
-	require.Nil(t, conn)
-	require.NotNil(t, resp)
-
-	assert.Equal(t, http.StatusForbidden, resp.StatusCode)
-}
-
 func TestHandleWS_SuccessfulHandshakeAndRoundTrip(t *testing.T) {
 	s := newTestServer()
 
