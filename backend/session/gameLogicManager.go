@@ -79,7 +79,6 @@ func (s *Session) startGame() {
 
 	s.broadcastMessage("game is starting")
 
-	//nolint:gosec // rand.Perm is used for shuffling player order, not for security-sensitive purposes.
 	r := rand.Perm(len(s.players))
 
 	s.turnOrder = make([]string, len(s.joinOrder))
@@ -183,8 +182,7 @@ func (g *GameLogicManager) dealCards(playerIDs []string) {
 	allCards = removeCardFromDeck(allCards, g.caseFile.roomCard, cardRoom)
 	allCards = removeCardFromDeck(allCards, g.caseFile.weaponCard, cardWeapon)
 	// we want to deal them sequentially to players, uniformly randomly (all shuffled together)
-
-	//nolint:gosec // rand.Shuffle is used for shuffling cards, not for security-sensitive purposes.
+	
 	rand.Shuffle(len(allCards), func(i, j int) {
 		allCards[i], allCards[j] = allCards[j], allCards[i]
 	})
