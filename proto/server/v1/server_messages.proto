@@ -4,7 +4,7 @@ edition = "2024";
 
 package server.v1;
 
-import "cards/v1/enums.proto";
+import "cards/v1/cards.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/go_features.proto";
 import "google/protobuf/timestamp.proto";
@@ -12,15 +12,6 @@ import "session/v1/session_messages.proto";
 import "suggestion/v1/suggest_accuse_messages.proto";
 
 option features.(pb.go).strip_enum_prefix = STRIP_ENUM_PREFIX_STRIP;
-
-// Should we have a card message for a single card?
-message Card {
-  oneof card {
-    cards.v1.Characters character = 1; // Character card
-    cards.v1.Weapons weapon = 2; // Weapon card
-    cards.v1.Rooms room = 3; // Room card
-  }
-}
 
 enum GameOverReason {
   GAME_OVER_REASON_UNSPECIFIED = 0;
@@ -99,12 +90,4 @@ enum NotificationCategory {
   NOTIFICATION_CATEGORY_TURN = 6; // Turn changes and skips
   NOTIFICATION_CATEGORY_GAME = 7; // Game start, end, and other game wide events
   NOTIFICATION_CATEGORY_ERROR = 8;
-}
-
-// Broadcast or Individual, A human readable line for the game log
-message NotificationMessage {
-  NotificationCategory category = 1;
-  string text = 2; // To display
-  google.protobuf.Timestamp timestamp = 3; // When the event happened (server time)
-  session.v1.Player subject = 4; // The player this is about, if any
 }
