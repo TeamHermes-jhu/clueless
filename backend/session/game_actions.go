@@ -20,7 +20,7 @@ func (s *Session) startGame() {
 
 	s.broadcastMessage("game is starting")
 
-	r := rand.Perm(len(s.players)) //nolint:gosec
+	r := rand.Perm(len(s.players))
 
 	s.turnOrder = make([]string, len(s.joinOrder))
 	for i, v := range r {
