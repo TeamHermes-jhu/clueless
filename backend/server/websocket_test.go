@@ -30,7 +30,7 @@ func dial(t *testing.T, url string) (*websocket.Conn, *http.Response, error) {
 	t.Helper()
 
 	header := http.Header{}
-	header.Set("Origin", "localhost:8000")
+	header.Set("Origin", "http://localhost:8000")
 
 	return websocket.DefaultDialer.Dial(url, header)
 }

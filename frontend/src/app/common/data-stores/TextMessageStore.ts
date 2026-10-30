@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { map, merge } from 'rxjs';
+import { map } from 'rxjs';
 import { EventBus } from '../events/event-bus/event-bus';
 import { MessageType } from '../events/event-types/AppEvents';
 import { AbstractStore } from './AbstractStore';
@@ -11,15 +11,9 @@ export class TextMessageStore extends AbstractStore<string> {
   constructor() {
     const eventBus = inject(EventBus);
 
-    super(
-      merge(
-        eventBus.on(MessageType.TextMessageRecieve).pipe(map((payload) => payload.message)),
-        eventBus.on('msg').pipe(map((payload) => payload.msg)),
-      ),
-      {
-        key: TextMessageStore.STORAGE_KEY,
-        isItem: (value): value is string => typeof value === 'string',
-      },
-    );
+    super(eventBus.on(MessageType.Message).pipe(map((payload) => payload.msg)), {
+      key: TextMessageStore.STORAGE_KEY,
+      isItem: (value): value is string => typeof value === 'string',
+    });
   }
 }
