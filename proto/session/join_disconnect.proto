@@ -2,7 +2,7 @@ edition = "2024";
 
 package session;
 
-import "cards/v1/cards.proto";
+import "cards/v1/enums.proto";
 
 // Represents a player's location on the board.
 message PlayerLocation {
