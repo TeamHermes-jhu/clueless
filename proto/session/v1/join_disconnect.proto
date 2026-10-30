@@ -1,6 +1,6 @@
 edition = "2024";
 
-package session;
+package session.v1;
 
 import "cards/v1/cards.proto";
 
