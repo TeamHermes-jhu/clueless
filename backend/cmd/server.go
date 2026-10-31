@@ -39,12 +39,7 @@ func init() {
 func RunServer(cmd *cobra.Command, _ []string) {
 	l := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
-	secretsCtx, cancelSecrets := context.WithTimeout(cmd.Context(), secretsLoadTimeout)
-	err := secrets.Bootstrap(secretsCtx, secretsFile, overrideFile)
-
-	cancelSecrets()
-
-	if err != nil {
+	if err := loadSecrets(cmd.Context()); err != nil {
 		l.Error("Error loading secrets", "error", err)
 
 		return
@@ -98,4 +93,12 @@ func RunServer(cmd *cobra.Command, _ []string) {
 	}
 
 	l.Info("Server shutdown sucessfully")
+}
+
+// loadSecrets loads the application secrets into the process environment.
+func loadSecrets(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, secretsLoadTimeout)
+	defer cancel()
+
+	return secrets.Bootstrap(ctx, secretsFile, overrideFile)
 }
