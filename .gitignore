@@ -5,5 +5,5 @@ shell.nix
 
 # Go build outputs
 backend/*.exe
+backend/server/backend
 gen/
-server
