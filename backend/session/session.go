@@ -11,8 +11,10 @@ import (
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/encoding/protojson"
 
+	"github.com/TeamHermes-jhu/clueless/backend/glm"
 	envelopev1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/envelope/v1"
 	sessionv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/session/v1"
+	suggestionv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/suggestion/v1"
 )
 
 const (
@@ -59,10 +61,8 @@ type Session struct {
 	inbound          chan inboundMessage
 	stop             chan struct{}
 	joinOrder        []string
-	turnOrder        []string
-	turnIdx          int
 	started          bool
-	gameLogicManager *GameLogicManager
+	gameLogicManager *glm.GameLogicManager
 }
 
 // New creates a new session.
@@ -76,7 +76,7 @@ func New(l *slog.Logger) *Session {
 		unregister:       make(chan string),
 		inbound:          make(chan inboundMessage),
 		stop:             make(chan struct{}),
-		gameLogicManager: &GameLogicManager{},
+		gameLogicManager: &glm.GameLogicManager{},
 	}
 
 	s.logger = l.With("session_id", s.id)
@@ -252,7 +252,7 @@ func (s *Session) handleInbound(msg inboundMessage) {
 		return
 	}
 
-	if msg.from != s.currentPlayer() {
+	if msg.from != s.gameLogicManager.GetCurrentPlayer() {
 		s.sendTo(msg.from, envelopev1.Envelope_builder{
 			Error: sessionv1.Error_builder{
 				Error: new("not your turn"),
@@ -282,13 +282,6 @@ func (s *Session) handleInbound(msg inboundMessage) {
 	}
 }
 
-// func (s *Session) advanceTurn() {
-// 	s.turnIdx++
-// 	if s.turnIdx >= len(s.players) {
-// 		s.turnIdx = 0
-// 	}
-// }
-
 func (s *Session) sendTo(id string, env *envelopev1.Envelope) {
 	s.logger.Info("Sending message", "player_id", id, "message_type", env.WhichPayload().String())
 
@@ -305,12 +298,55 @@ func (s *Session) sendTo(id string, env *envelopev1.Envelope) {
 	}
 }
 
-func (s *Session) currentPlayer() string {
-	if s.turnIdx < 0 || s.turnIdx >= len(s.turnOrder) {
-		return ""
+func (s *Session) startGame() {
+	s.logger.Info("Starting game", "players", len(s.players))
+	s.started = true
+	s.broadcastMessage("game is starting")
+	s.gameLogicManager.InitializeGameState(s.joinOrder)
+
+	caseFileMessage := s.gameLogicManager.GetCaseFile()
+	s.broadcastMessage(caseFileMessage)
+
+	for _, playerID := range s.joinOrder {
+		playerHandMessage := s.gameLogicManager.GetPlayerHand(playerID)
+		s.sendTo(playerID, envelopev1.Envelope_builder{
+			Msg: sessionv1.Message_builder{
+				Msg: new(playerHandMessage),
+			}.Build(),
+		}.Build())
 	}
 
-	return s.turnOrder[s.turnIdx]
+	for _, playerID := range s.joinOrder {
+		playerLocationMessage := s.gameLogicManager.GetPlayerLocation(playerID)
+		s.broadcastMessage(playerLocationMessage)
+	}
+
+	turnMessage := s.gameLogicManager.SetTurn(0)
+	s.broadcastMessage(turnMessage)
+}
+
+func (s *Session) move(move *sessionv1.Move) {
+	moveMessage := s.gameLogicManager.Move(move)
+	s.broadcastMessage(moveMessage)
+
+	turnMessage := s.gameLogicManager.SetTurn(s.gameLogicManager.GetCurrentTurnIndex() + 1)
+	s.broadcastMessage(turnMessage)
+}
+
+func (s *Session) suggest(suggestion *suggestionv1.SuggestionRequest) {
+	suggestMessage := s.gameLogicManager.Suggest(suggestion)
+	s.broadcastMessage(suggestMessage)
+
+	turnMessage := s.gameLogicManager.SetTurn(s.gameLogicManager.GetCurrentTurnIndex() + 1)
+	s.broadcastMessage(turnMessage)
+}
+
+func (s *Session) accuse(accusation *suggestionv1.AccusationRequest) {
+	accuseMessage := s.gameLogicManager.Accuse(accusation)
+	s.broadcastMessage(accuseMessage)
+
+	turnMessage := s.gameLogicManager.SetTurn(s.gameLogicManager.GetCurrentTurnIndex() + 1)
+	s.broadcastMessage(turnMessage)
 }
 
 func (s *Session) broadcastMessage(msg string) {
