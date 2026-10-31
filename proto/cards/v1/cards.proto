@@ -61,3 +61,11 @@ enum Halls {
   HALLS_ELEVEN = 11;
   HALLS_TWELVE = 12;
 }
+
+message Card {
+  oneof card {
+    cards.v1.Characters character = 1; // Character card
+    cards.v1.Weapons weapon = 2; // Weapon card
+    cards.v1.Rooms room = 3; // Room card
+  }
+}
