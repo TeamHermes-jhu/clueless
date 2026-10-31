@@ -10,24 +10,21 @@ Install the following:
 - golangci-lint 2.14.0 (backend linting)
 - buf 1.73.0 (protobuf)
 - make (Makefile)
+- docker
 
 ## Linting
 
-Linting for the entire repo can be done with:
-`make lint`
+Linting for the entire repo can be done with: `make lint`
 
-Backend linting is definde under
-`backend/.golangci.yml`
+Backend linting is definde under `backend/.golangci.yml`
 
 ## Testing
 
-Testing for the entire repo can be done with:
-`make test`
+Testing for the entire repo can be done with: `make test`
 
 ## Github Workflows
 
-Defined under
-`.github/workflows/`
+Defined under `.github/workflows/`
 
 This has all the CICD pipelines that run for this project.
 
@@ -41,17 +38,12 @@ The backend is written primarily in Golang.
 
 All go code is stored under ./backend/
 
-### Backend Structure
+## Frontend
 
-`./backend/cmd/` -> contains the cli commands and flags
-associated with the backend server.
-`./backend/internal/` -> Where internal (not publically exported) code goes.
-`./backend/internal/gen/` -> generated code, where protos generate to.
+The frontend is written in angular.
 
-### Building/Running the Backend
+All angular code is stored under ./frontend/
 
-The backend can be built using the command:
-`make server`
+## Running the app
 
-Then run using
-`./backend/bin/server`
+App can be simply by running `make app`.
