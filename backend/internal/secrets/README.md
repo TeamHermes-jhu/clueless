@@ -9,7 +9,7 @@ The MongoDB database can be either:
 - **Atlas (cloud):** Shared team database used for normal development.
 - **Local Docker container:** Private database on your own box used for experimentation or offline work (like a sandbox).
 
-> **Note:** Run `make` commands from the repo root and `./server` commands from the `backend/` directory.
+> **Note:** Run `make` commands from the repo root and `./server/backend` commands from the `backend/` directory.
 
 > **Rule: never commit a real secret.** Check `git status` before every commit (our gitignore should catch this, but look anyway).
 
@@ -42,21 +42,21 @@ All of these live in `backend/`.
 
 1. Get Atlas cluster address and `secrets-reader` password.
    Don't paste them anywhere like Jira or GitHub.
-2. Create connection file:
+2. From repo root, create connection file:
    ```
    cd backend
    cp secrets.atlas.env.example secrets.atlas.env
    chmod 600 secrets.atlas.env
+   cd ..
    ```
-3. In `secrets.atlas.env`, replace `<db_username>`, `<db_password>`, and `<cluster_address>`.
-4. Build and run:
+3. In `backend/secrets.atlas.env`, replace `<db_username>`, `<db_password>`, and `<cluster_address>`.
+4. From repo root, build and run:
    ```
-   cd ..          # to repo root
    make server
    cd backend
-   ./server serve --secrets-file secrets.atlas.env
+   ./server/backend serve --secrets-file secrets.atlas.env
    ```
-5. You should see `The server has started`.
+5. The output should include a log line containing `"msg":"Secrets loaded"`. Press Ctrl+C to stop.
 
 If it fails, see [Troubleshooting](#troubleshooting).
 
@@ -69,36 +69,44 @@ Your local database starts empty, so upload a `.env` into it once.
    docker compose up -d
    docker ps
    ```
-   `docker ps` should list a container named `clueless-mongo`.
+   `docker ps` should list a container named `mongo` with a status starting with `Up`.
 2. Create connection file and `.env`:
    ```
    cd backend
    cp secrets.env.example secrets.local.env
    cp .env.example .env
+   cd ..
    ```
    `.env.example` has placeholder values.
 3. Build server and upload `.env` into local database:
    ```
-   cd ..          # to repo root
    make server
    cd backend
-   ./server secrets-push --secrets-file secrets.local.env --file .env --env dev
+   ./server/backend secrets-push --secrets-file secrets.local.env --file .env --env dev
    ```
    Expect: `Uploaded .env to the secrets store.`
-4. Run server:
+4. Run the server:
    ```
-   ./server serve --secrets-file secrets.local.env
+   ./server/backend serve --secrets-file secrets.local.env
+   ```
+   The output should include a log line containing `"msg":"Secrets loaded"`. Press Ctrl+C to stop, then:
+   ```
+   cd ..
    ```
 5. Optional check that document exists (does not print contents):
    ```
-   docker exec -it clueless-mongo mongosh -u root -p localdevpassword --authenticationDatabase admin --eval 'db.getSiblingDB("secrets").env_files.find({}, {dotenv: 0})'
+   docker exec -it mongo mongosh -u root -p localdevpassword --authenticationDatabase admin --eval 'db.getSiblingDB("secrets").env_files.find({}, {dotenv: 0})'
    ```
 
 ### Overrides
 
 To change a setting just for yourself, put it in `backend/.env.override`:
 ```
-echo "SERVER_PORT=9090" > backend/.env.override
+echo "EXAMPLE_SECRET=my-local-value" > backend/.env.override
+```
+Or for a single run, from `backend/`:
+```
+EXAMPLE_SECRET=my-local-value ./server/backend serve --secrets-file secrets.atlas.env
 ```
 Delete the file (or line) to go back to the shared value.
 
@@ -111,8 +119,10 @@ Use `secrets-writer` Atlas creds.
 2. Edit `backend/.env` with new values.
 3. Upload it:
    ```
+   make server
    cd backend
-   ./server secrets-push --secrets-file secrets.atlas-writer.env --file .env --env dev
+   ./server/backend secrets-push --secrets-file secrets.atlas-writer.env --file .env --env dev
+   cd ..
    ```
 4. Restart server (rebuild) to see change.
 
