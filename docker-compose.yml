@@ -13,10 +13,10 @@ services:
 # Username and password below are throwaway values
   mongo:
     image: mongo:8
-    container_name: clueless-mongo
+    container_name: mongo
     restart: unless-stopped
     ports:
-      - "127.0.0.1:27017:27017"
+      - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: localdevpassword
