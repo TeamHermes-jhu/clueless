@@ -1,6 +1,9 @@
-*.env
+*.env*
+!*.env.example
 bin/
 shell.nix
 
 # Go build outputs
 backend/*.exe
+backend/server/backend
+gen/
