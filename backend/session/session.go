@@ -62,6 +62,7 @@ type Session struct {
 	turnOrder  []string
 	turnIdx    int
 	started    bool
+	gameLogicManager *GameLogicManager
 }
 
 // New creates a new session.
@@ -75,6 +76,7 @@ func New(l *slog.Logger) *Session {
 		unregister: make(chan string),
 		inbound:    make(chan inboundMessage),
 		stop:       make(chan struct{}),
+		gameLogicManager: &GameLogicManager{},
 	}
 
 	s.logger = l.With("session_id", s.id)

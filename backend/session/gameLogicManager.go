@@ -58,7 +58,7 @@ type PlayerHand struct {
 	weaponCards  []int
 }
 
-// GameLogicManager manages the game logic for a session, including the case file, player hands, and player locations.
+// GameLogicManager manages the game logic for a session, including the case file, player hands, player locations, and the list of player IDs.
 type GameLogicManager struct {
 	// needs to be associated with a session (contains turn order, players, turnIdx)
 	session *Session
@@ -71,6 +71,9 @@ type GameLogicManager struct {
 
 	// needs to maintain the location of all the players
 	locations map[string]*playerLocation
+
+	// needs to maintain the list of player IDs
+	playerIDs []string
 }
 
 func (s *Session) startGame() {
@@ -86,19 +89,28 @@ func (s *Session) startGame() {
 		s.turnOrder[v] = s.joinOrder[i]
 	}
 
+	playerIDs := slices.Collect(maps.Keys(s.players))
+
 	g := GameLogicManager{
 		session:   s,
 		caseFile:  CaseFile{},
+		playerIDs: playerIDs,
 		hands:     make(map[string]*PlayerHand),
 		locations: make(map[string]*playerLocation),
 	}
+	s.gameLogicManager = &g
 
-	playerIDs := slices.Collect(maps.Keys(s.players))
+	g.setupGame()
+	g.setTurn(0)
+}
 
-	g.setupGame(playerIDs)
+func (g *GameLogicManager) setTurn(turnIdx int) {
+	g.session.turnIdx = (turnIdx % len(g.session.turnOrder))
+	g.session.broadcastMessage(fmt.Sprintf("It is now %s's turn", g.session.turnOrder[g.session.turnIdx]))
 }
 
 func (s *Session) move(move *sessionv1.Move) {
+	g := s.gameLogicManager
 	// TODO: validate its a good move
 	to := move.GetRoom().String()
 
@@ -107,9 +119,13 @@ func (s *Session) move(move *sessionv1.Move) {
 	}
 
 	s.broadcastMessage(fmt.Sprintf(moveFmt, move.GetPlayerId(), to))
+
+	g.setTurn(g.session.turnIdx + 1)
 }
 
 func (s *Session) suggest(suggestion *suggestionv1.SuggestionRequest) {
+	g := s.gameLogicManager
+
 	// TODO: figure out how to handle suggestions
 	s.broadcastMessage(fmt.Sprintf(
 		suggestFmt,
@@ -118,9 +134,13 @@ func (s *Session) suggest(suggestion *suggestionv1.SuggestionRequest) {
 		suggestion.GetWeapon().String(),
 		suggestion.GetRoom().String(),
 	))
+
+	g.setTurn(g.session.turnIdx + 1)
 }
 
 func (s *Session) accuse(accusation *suggestionv1.AccusationRequest) {
+	g := s.gameLogicManager
+
 	// TODO: validation + logic
 	s.broadcastMessage(fmt.Sprintf(
 		accuseFmt,
@@ -129,17 +149,19 @@ func (s *Session) accuse(accusation *suggestionv1.AccusationRequest) {
 		accusation.GetSuggestion().GetWeapon().String(),
 		accusation.GetSuggestion().GetRoom().String(),
 	))
+
+	g.setTurn(g.session.turnIdx + 1)
 }
 
-func (g *GameLogicManager) setupGame(playerIDs []string) {
+func (g *GameLogicManager) setupGame() {
 	// set up the game logic for a new game
 	// create the case file (suspect, room, weapon)
 	// deal the cards to each player (shuffled)
 	// put each player in their starting room
 	g.setupCaseFile()
-	g.initializeHands(playerIDs)
-	g.dealCards(playerIDs)
-	g.setupPlayerLocations(playerIDs)
+	g.initializeHands()
+	g.dealCards()
+	g.setupPlayerLocations()
 }
 
 func (g *GameLogicManager) setupCaseFile() {
@@ -162,14 +184,14 @@ func (g *GameLogicManager) setupCaseFile() {
 	g.session.broadcastMessage(fmt.Sprintf(caseFileFmt, suspect, room, weapon))
 }
 
-func (g *GameLogicManager) initializeHands(playerIDs []string) {
+func (g *GameLogicManager) initializeHands() {
 	g.hands = make(map[string]*PlayerHand)
-	for _, playerID := range playerIDs {
+	for _, playerID := range g.playerIDs {
 		g.hands[playerID] = &PlayerHand{}
 	}
 }
 
-func (g *GameLogicManager) dealCards(playerIDs []string) {
+func (g *GameLogicManager) dealCards() {
 	// we have 18 cards left, 5 suspects/weapons and 8 rooms
 	g.session.broadcastMessage("Dealing cards to players...")
 
@@ -196,22 +218,22 @@ func (g *GameLogicManager) dealCards(playerIDs []string) {
 		switch {
 		case cardToDeal <= numSuspects:
 			// assign suspect card to current player
-			g.hands[playerIDs[currentplayerIDxToDeal-1]].suspectCards = append(g.hands[playerIDs[currentplayerIDxToDeal-1]].suspectCards, cardToDeal)
+			g.hands[g.playerIDs[currentplayerIDxToDeal-1]].suspectCards = append(g.hands[g.playerIDs[currentplayerIDxToDeal-1]].suspectCards, cardToDeal)
 		case cardToDeal <= numSuspects+numRooms:
 			// assign room card to current player
 			cardToDeal -= numSuspects
-			g.hands[playerIDs[currentplayerIDxToDeal-1]].roomCards = append(g.hands[playerIDs[currentplayerIDxToDeal-1]].roomCards, cardToDeal)
+			g.hands[g.playerIDs[currentplayerIDxToDeal-1]].roomCards = append(g.hands[g.playerIDs[currentplayerIDxToDeal-1]].roomCards, cardToDeal)
 		default:
 			// assign weapon card to current player
 			cardToDeal -= numSuspects + numRooms
-			g.hands[playerIDs[currentplayerIDxToDeal-1]].weaponCards = append(g.hands[playerIDs[currentplayerIDxToDeal-1]].weaponCards, cardToDeal)
+			g.hands[g.playerIDs[currentplayerIDxToDeal-1]].weaponCards = append(g.hands[g.playerIDs[currentplayerIDxToDeal-1]].weaponCards, cardToDeal)
 		}
 
-		currentplayerIDxToDeal = (currentplayerIDxToDeal % len(playerIDs)) + 1
+		currentplayerIDxToDeal = (currentplayerIDxToDeal % len(g.playerIDs)) + 1
 	}
 
 	// broadcast the final hands to all players
-	for _, playerID := range playerIDs {
+	for _, playerID := range g.playerIDs {
 		g.session.broadcastMessage(fmt.Sprintf(playerHandFmt, playerID, g.hands[playerID].suspectCards, g.hands[playerID].roomCards, g.hands[playerID].weaponCards))
 	}
 }
@@ -239,11 +261,11 @@ func removeCardFromDeck(deck []int, cardNum int, cardType int) []int {
 	return deck
 }
 
-func (g *GameLogicManager) setupPlayerLocations(playerIDs []string) {
+func (g *GameLogicManager) setupPlayerLocations() {
 	g.session.broadcastMessage("Setting up player locations...")
 
 	// set initial locations for all players
-	for _, playerID := range playerIDs {
+	for _, playerID := range g.playerIDs {
 		location := playerLocation{
 			// randomly select a room
 			isHall: false,
@@ -253,7 +275,7 @@ func (g *GameLogicManager) setupPlayerLocations(playerIDs []string) {
 		g.locations[playerID] = &location
 	}
 
-	for _, playerID := range playerIDs {
+	for _, playerID := range g.playerIDs {
 		g.session.broadcastMessage(fmt.Sprintf(playerLocationFmt, playerID, g.locations[playerID].isHall, g.locations[playerID].location))
 	}
 }
