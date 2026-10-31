@@ -52,30 +52,30 @@ type Session struct {
 
 	players map[string]*Client
 
-	join       chan joinRequest
-	query      chan playerQuery
-	register   chan registerRequest
-	unregister chan string
-	inbound    chan inboundMessage
-	stop       chan struct{}
-	joinOrder  []string
-	turnOrder  []string
-	turnIdx    int
-	started    bool
+	join             chan joinRequest
+	query            chan playerQuery
+	register         chan registerRequest
+	unregister       chan string
+	inbound          chan inboundMessage
+	stop             chan struct{}
+	joinOrder        []string
+	turnOrder        []string
+	turnIdx          int
+	started          bool
 	gameLogicManager *GameLogicManager
 }
 
 // New creates a new session.
 func New(l *slog.Logger) *Session {
 	s := &Session{
-		id:         uuid.New(),
-		players:    make(map[string]*Client),
-		join:       make(chan joinRequest),
-		query:      make(chan playerQuery),
-		register:   make(chan registerRequest),
-		unregister: make(chan string),
-		inbound:    make(chan inboundMessage),
-		stop:       make(chan struct{}),
+		id:               uuid.New(),
+		players:          make(map[string]*Client),
+		join:             make(chan joinRequest),
+		query:            make(chan playerQuery),
+		register:         make(chan registerRequest),
+		unregister:       make(chan string),
+		inbound:          make(chan inboundMessage),
+		stop:             make(chan struct{}),
 		gameLogicManager: &GameLogicManager{},
 	}
 
