@@ -11,4 +11,4 @@ generate to.
 
 The server can be built using the command: `make server`
 
-Then run using `./backend/bin/server`
+Then run using `./backend/server`
