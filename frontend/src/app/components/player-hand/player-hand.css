@@ -1,0 +1,23 @@
+.open-hand {
+  position: fixed;
+  bottom: 1rem;
+  left: 1rem;
+  z-index: 25;
+  --p-button-primary-color: white;
+  --p-button-primary-hover-color: white;
+  --p-button-primary-active-color: white;
+  --p-button-primary-background: black;
+  --p-button-primary-border-color: black;
+  --p-button-primary-hover-background: var(--p-surface-800);
+  --p-button-primary-hover-border-color: var(--p-surface-800);
+  --p-button-primary-active-background: var(--p-surface-700);
+  --p-button-primary-active-border-color: var(--p-surface-700);
+}
+
+.hand {
+  color: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}

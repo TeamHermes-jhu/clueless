@@ -1,0 +1,14 @@
+:host {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: 2px solid black;
+  outline-offset: -2px;
+}
+
+p-terminal {
+  flex: 1;
+  height: 80%;
+  margin: 2rem 10rem;
+  overflow: auto;
+}
