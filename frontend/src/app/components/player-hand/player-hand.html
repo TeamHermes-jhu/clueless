@@ -1,0 +1,20 @@
+<button
+  class="open-hand"
+  pButton
+  [rounded]="true"
+  [iconOnly]="true"
+  aria-label="Open player hand"
+  (click)="visible.set(true)"
+>
+  <svg data-p-icon="plus"></svg>
+</button>
+
+<p-drawer
+  position="bottom"
+  [style]="{ outline: '2px solid black', 'outline-offset': '-2px' }"
+  [(visible)]="visible"
+>
+  <div class="hand">
+    <h1>Player-Hand</h1>
+  </div>
+</p-drawer>

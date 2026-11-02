@@ -1,0 +1,7 @@
+:host {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: 2px solid black;
+  outline-offset: -2px;
+}

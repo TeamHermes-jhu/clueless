@@ -1,0 +1,21 @@
+:host {
+  display: flex;
+  height: 100vh;
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+app-landmark {
+  height: 20%;
+  flex-shrink: 0;
+}
+
+app-board {
+  flex: 1;
+  min-height: 0;
+}
