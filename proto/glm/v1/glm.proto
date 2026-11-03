@@ -1,4 +1,5 @@
-// Message definitions related to the game logic manager (GLM) for the Clueless game.
+// Message definitions related to the game logic manager (GLM) for the Clueless
+// game.
 edition = "2024";
 
 package glm.v1;
@@ -27,4 +28,18 @@ message PlayerHand {
   repeated cards.v1.Characters characters = 1;
   repeated cards.v1.Weapons weapons = 2;
   repeated cards.v1.Rooms rooms = 3;
+}
+
+message CharacterChoices {
+  repeated cards.v1.Characters characters = 1;
+}
+
+message CharacterSelectRequest {
+  string player_id = 1;
+  cards.v1.Characters character = 2;
+}
+
+message CharacterSelectResponse {
+  string player_id = 1;
+  bool ok = 2;
 }
