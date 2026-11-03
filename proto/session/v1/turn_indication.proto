@@ -37,3 +37,8 @@ message TurnIndication {
   // sequential turn counter.
   int32 turn_number = 4;
 }
+
+message EndTurn {
+  // Not sure what information is needed here. Field currently unused.
+  string player_id = 1;
+}

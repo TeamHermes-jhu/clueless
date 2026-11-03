@@ -39,6 +39,7 @@ message JoinResponse {
 message Player {
   int32 player_id = 1; // Unique identifier for the player
   string player_name = 2; // Name of the player
+  bool is_connected = 3; // Indicates if the player is currently connected to the session
 }
 
 message Move {

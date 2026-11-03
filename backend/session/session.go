@@ -278,6 +278,11 @@ func (s *Session) handleInbound(msg inboundMessage) {
 
 		return
 
+	case envelopev1.Envelope_EndTurn_case:
+		s.endTurn()
+
+		return
+
 	default:
 	}
 }
@@ -304,9 +309,6 @@ func (s *Session) startGame() {
 	s.broadcastMessage("game is starting")
 	s.gameLogicManager.InitializeGameState(s.joinOrder)
 
-	caseFileMessage := s.gameLogicManager.GetCaseFile()
-	s.broadcastMessage(caseFileMessage)
-
 	for _, playerID := range s.joinOrder {
 		playerHandMessage := s.gameLogicManager.GetPlayerHand(playerID)
 		s.sendTo(playerID, envelopev1.Envelope_builder{
@@ -314,38 +316,33 @@ func (s *Session) startGame() {
 				Msg: new(playerHandMessage),
 			}.Build(),
 		}.Build())
-	}
-
-	for _, playerID := range s.joinOrder {
 		playerLocationMessage := s.gameLogicManager.GetPlayerLocation(playerID)
 		s.broadcastMessage(playerLocationMessage)
 	}
 
-	turnMessage := s.gameLogicManager.SetTurn(0)
+	turnMessage := s.gameLogicManager.GetTurnMessage()
 	s.broadcastMessage(turnMessage)
 }
 
 func (s *Session) move(move *sessionv1.Move) {
 	moveMessage := s.gameLogicManager.Move(move)
 	s.broadcastMessage(moveMessage)
-
-	turnMessage := s.gameLogicManager.SetTurn(s.gameLogicManager.GetCurrentTurnIndex() + 1)
-	s.broadcastMessage(turnMessage)
 }
 
 func (s *Session) suggest(suggestion *suggestionv1.SuggestionRequest) {
 	suggestMessage := s.gameLogicManager.Suggest(suggestion)
 	s.broadcastMessage(suggestMessage)
-
-	turnMessage := s.gameLogicManager.SetTurn(s.gameLogicManager.GetCurrentTurnIndex() + 1)
-	s.broadcastMessage(turnMessage)
 }
 
 func (s *Session) accuse(accusation *suggestionv1.AccusationRequest) {
 	accuseMessage := s.gameLogicManager.Accuse(accusation)
 	s.broadcastMessage(accuseMessage)
+}
 
-	turnMessage := s.gameLogicManager.SetTurn(s.gameLogicManager.GetCurrentTurnIndex() + 1)
+func (s *Session) endTurn() {
+	s.gameLogicManager.AdvanceTurn()
+
+	turnMessage := s.gameLogicManager.GetTurnMessage()
 	s.broadcastMessage(turnMessage)
 }
 

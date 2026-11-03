@@ -6,6 +6,7 @@ package glm
 
 import (
 	"fmt"
+	"maps"
 	"math/rand/v2"
 	"slices"
 
@@ -51,31 +52,26 @@ type GameLogicManager struct {
 
 	// needs to maintain all the players' hands
 	playerStates map[string]*glmv1.PlayerGameState
-
-	// needs to maintain the list of player IDs
-	playerIDs []string
 }
 
 // InitializeGameState sets up the initial state of the game, including the turn order, player hands, and player locations.
 func (g *GameLogicManager) InitializeGameState(playerIDs []string) {
-	g.playerIDs = playerIDs
 	g.turnIdx = 0
 	g.playerStates = make(map[string]*glmv1.PlayerGameState)
 
-	r := rand.Perm(len(g.playerIDs))
+	r := rand.Perm(len(playerIDs))
 
-	g.turnOrder = make([]string, len(g.playerIDs))
+	g.turnOrder = make([]string, len(playerIDs))
 	for i, v := range r {
-		g.turnOrder[v] = g.playerIDs[i]
+		g.turnOrder[v] = playerIDs[i]
 	}
 
-	g.setupGame()
+	g.setupGame(playerIDs)
 }
 
-// SetTurn updates the current turn index and returns a message indicating whose turn it is.
-func (g *GameLogicManager) SetTurn(turnIdx int) string {
-	g.turnIdx = (turnIdx % len(g.turnOrder))
-	return fmt.Sprintf("It is now %s's turn", g.turnOrder[g.turnIdx])
+// AdvanceTurn updates the current turn index.
+func (g *GameLogicManager) AdvanceTurn() {
+	g.turnIdx = (g.turnIdx + 1) % len(g.turnOrder)
 }
 
 // Move updates the player's location and returns a message indicating the move.
@@ -129,9 +125,9 @@ func (g *GameLogicManager) GetCurrentPlayer() string {
 	return g.turnOrder[g.turnIdx]
 }
 
-// GetCurrentTurnIndex returns the index of the current turn in the turn order.
-func (g *GameLogicManager) GetCurrentTurnIndex() int {
-	return g.turnIdx
+// GetTurnMessage returns a message indicating whose turn it is.
+func (g *GameLogicManager) GetTurnMessage() string {
+	return fmt.Sprintf("It is now %s's turn", g.turnOrder[g.turnIdx])
 }
 
 // GetCaseFile returns a string representation of the current case file.
@@ -196,9 +192,9 @@ func (g *GameLogicManager) GetPlayerLocation(playerID string) string {
 }
 
 // setupGame initializes the game by setting up the case file, dealing cards, and placing players in their starting rooms.
-func (g *GameLogicManager) setupGame() {
+func (g *GameLogicManager) setupGame(playerIDs []string) {
 	g.setupCaseFile()
-	g.initializePlayerStates()
+	g.initializePlayerStates(playerIDs)
 	g.dealCards()
 	g.setupPlayerLocations()
 }
@@ -219,9 +215,9 @@ func (g *GameLogicManager) setupCaseFile() {
 	}.Build()
 }
 
-func (g *GameLogicManager) initializePlayerStates() {
+func (g *GameLogicManager) initializePlayerStates(playerIDs []string) {
 	g.playerStates = make(map[string]*glmv1.PlayerGameState)
-	for _, playerID := range g.playerIDs {
+	for _, playerID := range playerIDs {
 		g.playerStates[playerID] = glmv1.PlayerGameState_builder{}.Build()
 	}
 
@@ -229,7 +225,8 @@ func (g *GameLogicManager) initializePlayerStates() {
 }
 
 func (g *GameLogicManager) initializeHands() {
-	for _, playerID := range g.playerIDs {
+	playerIDs := slices.Collect(maps.Keys(g.playerStates))
+	for _, playerID := range playerIDs {
 		g.playerStates[playerID].SetHand(glmv1.PlayerHand_builder{
 			Characters: []cardsv1.Characters{},
 			Rooms:      []cardsv1.Rooms{},
@@ -257,6 +254,8 @@ func (g *GameLogicManager) dealCards() {
 
 	currentplayerIDxToDeal := 1
 
+	playerIDs := slices.Collect(maps.Keys(g.playerStates))
+
 	for len(allCards) > 0 {
 		cardToDeal := allCards[0]
 		allCards = allCards[1:]
@@ -264,24 +263,24 @@ func (g *GameLogicManager) dealCards() {
 		switch {
 		case cardToDeal <= numSuspects:
 			// assign suspect card to current player
-			currentCharacters := g.playerStates[g.playerIDs[currentplayerIDxToDeal-1]].GetHand().GetCharacters()
-			g.playerStates[g.playerIDs[currentplayerIDxToDeal-1]].GetHand().SetCharacters(
+			currentCharacters := g.playerStates[playerIDs[currentplayerIDxToDeal-1]].GetHand().GetCharacters()
+			g.playerStates[playerIDs[currentplayerIDxToDeal-1]].GetHand().SetCharacters(
 				append(currentCharacters, cardsv1.Characters(cardToDeal)))
 		case cardToDeal <= numSuspects+numRooms:
 			// assign room card to current player
 			cardToDeal -= numSuspects
-			currentRooms := g.playerStates[g.playerIDs[currentplayerIDxToDeal-1]].GetHand().GetRooms()
-			g.playerStates[g.playerIDs[currentplayerIDxToDeal-1]].GetHand().SetRooms(
+			currentRooms := g.playerStates[playerIDs[currentplayerIDxToDeal-1]].GetHand().GetRooms()
+			g.playerStates[playerIDs[currentplayerIDxToDeal-1]].GetHand().SetRooms(
 				append(currentRooms, cardsv1.Rooms(cardToDeal)))
 		default:
 			// assign weapon card to current player
 			cardToDeal -= numSuspects + numRooms
-			currentWeapons := g.playerStates[g.playerIDs[currentplayerIDxToDeal-1]].GetHand().GetWeapons()
-			g.playerStates[g.playerIDs[currentplayerIDxToDeal-1]].GetHand().SetWeapons(
+			currentWeapons := g.playerStates[playerIDs[currentplayerIDxToDeal-1]].GetHand().GetWeapons()
+			g.playerStates[playerIDs[currentplayerIDxToDeal-1]].GetHand().SetWeapons(
 				append(currentWeapons, cardsv1.Weapons(cardToDeal)))
 		}
 
-		currentplayerIDxToDeal = (currentplayerIDxToDeal % len(g.playerIDs)) + 1
+		currentplayerIDxToDeal = (currentplayerIDxToDeal % len(playerIDs)) + 1
 	}
 }
 
@@ -311,7 +310,8 @@ func removeCardFromDeck(deck []int32, cardNum int32, cardType int) []int32 {
 
 // setupPlayerLocations places each player in a random starting room.
 func (g *GameLogicManager) setupPlayerLocations() {
-	for _, playerID := range g.playerIDs {
+	playerIDs := slices.Collect(maps.Keys(g.playerStates))
+	for _, playerID := range playerIDs {
 		//nolint:gosec // rand.IntN is used for selecting random rooms, not for security-sensitive purposes.
 		room := cardsv1.Rooms(rand.IntN(numRooms) + 1)
 		g.playerStates[playerID].SetLocation(glmv1.PlayerLocation_builder{
