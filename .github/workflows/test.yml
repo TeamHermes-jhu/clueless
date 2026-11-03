@@ -23,9 +23,27 @@ jobs:
       # checkout the repo
       - uses: actions/checkout@v7
 
+      - name: protobuf-lint
+        uses: bufbuild/buf-action@v1
+        with:
+          setup_only: true
+
       - uses: actions/setup-go@v6
         with:
           go-version: stable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: ./frontend
+
+      - name: buf generate
+        run: buf generate
 
       # go test
       - name: Install dependencies

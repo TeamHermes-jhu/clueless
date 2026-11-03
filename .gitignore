@@ -4,3 +4,6 @@ shell.nix
 
 # Go build outputs
 backend/*.exe
+
+# Protobuf generated code
+backend/internal/gen/
