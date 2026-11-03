@@ -1,0 +1,23 @@
+<p-sidebar side="right" variant="sidebar" collapsible="icon" [open]="false" width="25rem">
+  <p-sidebar-spacer />
+  <p-sidebar-aside>
+    <p-sidebar-panel>
+      <p-sidebar-header>
+        <button
+          class="toggle"
+          pButton
+          pSidebarTrigger
+          [text]="true"
+          [rounded]="true"
+          [iconOnly]="true"
+          aria-label="Toggle sidebar"
+        >
+          <svg data-p-icon="bars"></svg>
+        </button>
+      </p-sidebar-header>
+      <p-sidebar-content>
+        <h1>Sidebar</h1>
+      </p-sidebar-content>
+    </p-sidebar-panel>
+  </p-sidebar-aside>
+</p-sidebar>

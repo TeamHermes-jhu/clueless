@@ -42,7 +42,7 @@ export class App {
     this.joinSessionService.join(name).subscribe({
       next: (response) => {
         this.golangAdapter.joinSession(response.sessionId, response.username);
-        void this.router.navigateByUrl('/test-message-bus');
+        void this.router.navigateByUrl('/integrated-board');
       },
       error: (err) => {
         console.error('Failed to join session:', err);

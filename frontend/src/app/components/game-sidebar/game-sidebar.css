@@ -1,0 +1,32 @@
+:host {
+  display: flex;
+}
+
+p-sidebar-aside {
+  outline: 2px solid black;
+  outline-offset: -2px;
+}
+
+p-sidebar-header {
+  align-items: center;
+}
+
+p-sidebar[data-state='expanded'] p-sidebar-header {
+  align-items: flex-start;
+}
+
+.toggle {
+  --p-button-text-primary-color: black;
+  --p-button-text-primary-hover-background: var(--p-surface-200);
+  --p-button-text-primary-active-background: var(--p-surface-300);
+}
+
+p-sidebar-content {
+  color: black;
+  align-items: center;
+  justify-content: center;
+}
+
+p-sidebar[data-state='collapsed'] h1 {
+  display: none;
+}
