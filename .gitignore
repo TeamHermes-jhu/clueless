@@ -1,4 +1,5 @@
-*.env
+*.env*
+!*.env.example
 bin/
 shell.nix
 
@@ -7,3 +8,4 @@ backend/*.exe
 
 # Protobuf generated code
 backend/internal/gen/
+backend/server/backend
