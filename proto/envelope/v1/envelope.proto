@@ -3,6 +3,7 @@ edition = "2024";
 package envelope.v1;
 
 import "session/v1/session.proto";
+import "session/v1/turn_indication.proto";
 import "suggestion/v1/suggestion.proto";
 
 message Envelope {
@@ -11,6 +12,7 @@ message Envelope {
     session.v1.Message msg = 2;
     suggestion.v1.SuggestionRequest suggest = 3;
     suggestion.v1.AccusationRequest accuse = 4;
-    session.v1.Error error = 5;
+    session.v1.EndTurn end_turn = 5;
+    session.v1.Error error = 6;
   }
 }

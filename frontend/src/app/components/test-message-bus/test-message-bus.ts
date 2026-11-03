@@ -7,8 +7,9 @@ import { Toast } from 'primeng/toast';
 import { TextMessageStore } from '../../common/data-stores/TextMessageStore';
 import { EventBus } from '../../common/events/event-bus/event-bus';
 import { MessageType } from '../../common/events/event-types/AppEvents';
-import { Characters, Rooms, Weapons } from '../../common/events/event-types/gen/cards/v1/enums_pb';
+import { Characters, Rooms, Weapons } from '../../common/events/event-types/gen/cards/v1/cards_pb';
 import { MoveSchema } from '../../common/events/event-types/gen/session/v1/session_pb';
+import { EndTurnSchema } from '../../common/events/event-types/gen/session/v1/turn_indication_pb';
 import {
   AccusationRequestSchema,
   SuggestionRequestSchema,
@@ -42,6 +43,7 @@ export class TestMessageBus {
     { label: 'Move', send: () => this.sendMove() },
     { label: 'Suggest', send: () => this.sendSuggest() },
     { label: 'Accuse', send: () => this.sendAccuse() },
+    { label: 'End Turn', send: () => this.sendEndTurn() },
   ];
 
   constructor() {
@@ -103,6 +105,21 @@ export class TestMessageBus {
           room: Rooms.HALL,
           weapon: Weapons.ROPE,
         },
+      }),
+    });
+  }
+
+  private sendEndTurn(): void {
+    const playerId = this.golangAdapter.playerId();
+    if (!playerId) {
+      console.error('Cannot send End Turn before a session is joined.');
+      return;
+    }
+
+    this.golangAdapter.sendEnvelope({
+      case: 'endTurn',
+      value: create(EndTurnSchema, {
+        playerId,
       }),
     });
   }

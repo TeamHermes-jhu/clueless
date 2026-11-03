@@ -16,6 +16,7 @@ import type {
   SuggestionRequest,
   SuggestionResponse,
 } from './gen/suggestion/v1/suggestion_pb';
+import type { EndTurn } from './gen/session/v1/turn_indication_pb';
 
 // Maps every server MessageType to the generated protobuf message it carries.
 export interface ProtoPayloadMap {
@@ -32,6 +33,7 @@ export interface ProtoPayloadMap {
   [MessageType.SuggestionResponse]: SuggestionResponse;
   [MessageType.AccusationRequest]: AccusationRequest;
   [MessageType.AccusationResponse]: AccusationResponse;
+  [MessageType.EndTurn]: EndTurn;
 }
 
 export type ProtoMessageType = keyof ProtoPayloadMap;
@@ -63,6 +65,7 @@ export const ENVELOPE_MESSAGE_TYPES = {
   suggest: MessageType.SuggestionRequest,
   accuse: MessageType.AccusationRequest,
   error: MessageType.Error,
+  endTurn: MessageType.EndTurn,
 } as const satisfies { [K in EnvelopeCase]: MessageTypeFor<EnvelopeValue<K>> };
 
 // Converts a received Envelope into its bus event, or null if it has no payload.
