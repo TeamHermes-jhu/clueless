@@ -6,25 +6,25 @@ package glm.v1;
 import "cards/v1/cards.proto";
 
 message PlayerGameState {
-    PlayerLocation location = 1;
-    PlayerHand hand = 2;
+  PlayerLocation location = 1;
+  PlayerHand hand = 2;
 }
 
 message PlayerLocation {
-    oneof location {
-        cards.v1.Rooms room = 1;
-        cards.v1.Halls hall = 2;
-    }
+  oneof location {
+    cards.v1.Rooms room = 1;
+    cards.v1.Halls hall = 2;
+  }
 }
 
 message CaseFile {
-    cards.v1.Characters character = 1;
-    cards.v1.Weapons weapon = 2;
-    cards.v1.Rooms room = 3;
+  cards.v1.Characters character = 1;
+  cards.v1.Weapons weapon = 2;
+  cards.v1.Rooms room = 3;
 }
 
 message PlayerHand {
-    repeated cards.v1.Characters characters = 1;
-    repeated cards.v1.Weapons weapons = 2;
-    repeated cards.v1.Rooms rooms = 3;
+  repeated cards.v1.Characters characters = 1;
+  repeated cards.v1.Weapons weapons = 2;
+  repeated cards.v1.Rooms rooms = 3;
 }
