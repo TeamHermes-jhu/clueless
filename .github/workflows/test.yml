@@ -37,9 +37,6 @@ jobs:
         run: npm ci
         working-directory: ./frontend
 
-      - uses: bufbuild/buf-setup-action@v1
-
-      # generate code from protos so backend code that imports it builds
       - name: buf generate
         run: buf generate
 
