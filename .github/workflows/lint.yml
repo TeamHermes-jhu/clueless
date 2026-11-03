@@ -29,9 +29,6 @@ jobs:
         with:
           breaking: false
 
-      - name: buf generate
-        run: buf generate
-
       - uses: actions/setup-go@v6
         with:
           go-version: '1.26'
@@ -46,6 +43,8 @@ jobs:
         run: npm ci
         working-directory: ./frontend
 
+      - name: buf generate
+        run: buf generate
 
       # golang lint
       - name: golangci-lint
