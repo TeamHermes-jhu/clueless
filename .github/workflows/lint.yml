@@ -26,9 +26,11 @@ jobs:
       # protobuf lint
       - name: protobuf-lint
         uses: bufbuild/buf-action@v1
-        run: buf generate
         with:
           breaking: false
+
+      - name: buf generate
+        run: buf generate
 
       - uses: actions/setup-go@v6
         with:
@@ -43,6 +45,7 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
         working-directory: ./frontend
+
 
       # golang lint
       - name: golangci-lint
