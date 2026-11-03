@@ -43,7 +43,7 @@ jobs:
         run: npm ci
         working-directory: ./frontend
 
-      - uses: bufbuild/buf-setup-action@v1
+      - uses: bufbuild/buf-setup-action@v1.50.0
 
       # generate code from protos so the linter has something to lint against
       - name: buf generate
