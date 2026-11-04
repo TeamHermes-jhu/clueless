@@ -2,6 +2,7 @@ package glm
 
 import "math/rand/v2"
 
+// Rand is the methods GameLogicManager needs for its rng during setup.
 type Rand interface {
 	IntN(n int) int
 	Shuffle(n int, swap func(i, j int))

@@ -50,7 +50,7 @@ func buildAdjacency() map[node]map[node]bool {
 		{roomNode(cardsv1.Rooms_LOUNGE), roomNode(cardsv1.Rooms_CONSERVATORY)},
 	}
 
-	adj := make(map[node]map[node]bool, len(edges)*2)
+	adj := make(map[node]map[node]bool, len(edges)*2) //nolint:mnd // double cause a->b and b->a
 	for _, e := range edges {
 		a, b := e[0], e[1]
 
@@ -69,7 +69,7 @@ func buildAdjacency() map[node]map[node]bool {
 	return adj
 }
 
-// isAdjacent reports whether to can be reached from from in a single move.
+// isAdjacent reports whether "to" can be reached from "from" in a single move.
 func isAdjacent(from, to node) bool {
 	return adjacency[from][to]
 }

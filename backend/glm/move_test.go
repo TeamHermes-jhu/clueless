@@ -1,7 +1,6 @@
 package glm_test
 
 import (
-	"fmt"
 	"math/rand/v2"
 	"testing"
 
@@ -70,7 +69,6 @@ func TestMove(t *testing.T) {
 
 	for _, test := range tt {
 		t.Run(test.name, func(t *testing.T) {
-			fmt.Println(gm.GetPlayerLocation("2"))
 			before, beforeErr := gm.GetPlayerLocation(test.move.GetPlayerId())
 			if beforeErr == nil {
 				if test.move.HasHall() {
