@@ -38,6 +38,7 @@ export class Board {
       });
 
     this.terminalService.commandHandler.pipe(takeUntilDestroyed()).subscribe((command) => {
+      // execute the command based on the user's input
       switch (command.trim()) {
         case 'clear':
           this.terminal().commands = [];
