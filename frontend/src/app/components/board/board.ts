@@ -6,7 +6,7 @@ import { Terminal, TerminalService } from 'primeng/terminal';
 import { Toast } from 'primeng/toast';
 import { EventBus } from '../../common/events/event-bus/event-bus';
 import { MessageType } from '../../common/events/event-types/AppEvents';
-import { Characters, Rooms, Weapons } from '../../common/events/event-types/gen/cards/v1/enums_pb';
+import { Characters, Rooms, Weapons } from '../../common/events/event-types/gen/cards/v1/cards_pb';
 import { MoveSchema } from '../../common/events/event-types/gen/session/v1/session_pb';
 import {
   AccusationRequestSchema,
