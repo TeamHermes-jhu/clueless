@@ -1,6 +1,7 @@
 package glm_test
 
 import (
+	"fmt"
 	"math/rand/v2"
 	"testing"
 
@@ -19,29 +20,6 @@ func TestMove(t *testing.T) {
 
 	gm.InitializeGameState([]string{"1", "2", "3"})
 
-	// player 1 never moves so using their location as the occupied room.
-	occupiedLoc, err := gm.GetPlayerLocation("1")
-	require.NoError(t, err)
-
-	occupiedRoom := occupiedLoc.GetRoom()
-
-	player3Loc, err := gm.GetPlayerLocation("3")
-	require.NoError(t, err)
-
-	freeRoom := cardsv1.Rooms_UNSPECIFIED
-
-	for v := 1; v <= 9; v++ {
-		candidate := cardsv1.Rooms(int32(v))
-
-		if candidate != occupiedRoom && candidate != player3Loc.GetRoom() {
-			freeRoom = candidate
-
-			break
-		}
-	}
-
-	require.NotEqual(t, cardsv1.Rooms_UNSPECIFIED, freeRoom)
-
 	tt := []struct {
 		name  string
 		move  *sessionv1.Move
@@ -52,7 +30,7 @@ func TestMove(t *testing.T) {
 			name: "not players turn",
 			move: sessionv1.Move_builder{
 				PlayerId: new("1"),
-				Hall:     cardsv1.Halls_ONE.Enum(),
+				Room:     cardsv1.Rooms_BALLROOM.Enum(),
 			}.Build(),
 			want: "not players turn",
 		},
@@ -60,7 +38,7 @@ func TestMove(t *testing.T) {
 			name: "invalid player id",
 			move: sessionv1.Move_builder{
 				PlayerId: new("0"),
-				Hall:     cardsv1.Halls_ONE.Enum(),
+				Room:     cardsv1.Rooms_BALLROOM.Enum(),
 			}.Build(),
 			want: "invalid player id",
 		},
@@ -72,35 +50,27 @@ func TestMove(t *testing.T) {
 			want: "no location selected",
 		},
 		{
-			name: "room occupied by another player",
+			name: "not adjacent move",
 			move: sessionv1.Move_builder{
 				PlayerId: new("2"),
-				Room:     occupiedRoom.Enum(),
+				Room:     cardsv1.Rooms_LOUNGE.Enum(),
 			}.Build(),
-			want: "room is occupied by player",
-		},
-		{
-			name: "valid hall move",
-			move: sessionv1.Move_builder{
-				PlayerId: new("2"),
-				Hall:     cardsv1.Halls_ONE.Enum(),
-			}.Build(),
-			want:  "player 2 has moved to HALLS_ONE",
-			moved: true,
+			want: "location is not next to the players current location",
 		},
 		{
 			name: "valid room move",
 			move: sessionv1.Move_builder{
 				PlayerId: new("2"),
-				Room:     freeRoom.Enum(),
+				Room:     cardsv1.Rooms_LIBRARY.Enum(),
 			}.Build(),
-			want:  "player 2 has moved to " + freeRoom.String(),
+			want:  "player 2 has moved to " + cardsv1.Rooms_LIBRARY.String(),
 			moved: true,
 		},
 	}
 
 	for _, test := range tt {
 		t.Run(test.name, func(t *testing.T) {
+			fmt.Println(gm.GetPlayerLocation("2"))
 			before, beforeErr := gm.GetPlayerLocation(test.move.GetPlayerId())
 			if beforeErr == nil {
 				if test.move.HasHall() {
@@ -128,4 +98,35 @@ func TestMove(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestOccupiedRoom(t *testing.T) {
+	// using a deterministic rand so player 2 is always going first
+	r := rand.New(rand.NewPCG(1, 2))
+	gm := glm.New(glm.WithRand(r))
+
+	gm.InitializeGameState([]string{"1", "2", "3"})
+
+	occupant := gm.GetCurrentPlayer()
+
+	occupantLoc, err := gm.GetPlayerLocation(occupant)
+	require.NoError(t, err)
+	occupantLoc.SetRoom(cardsv1.Rooms_LOUNGE)
+
+	gm.AdvanceTurn()
+
+	mover := gm.GetCurrentPlayer()
+
+	moverLoc, err := gm.GetPlayerLocation(mover)
+	require.NoError(t, err)
+	moverLoc.SetHall(cardsv1.Halls_TWO)
+
+	got := gm.Move(
+		sessionv1.Move_builder{
+			PlayerId: new(mover),
+			Room:     cardsv1.Rooms_LOUNGE.Enum(),
+		}.Build(),
+	)
+
+	assert.Equal(t, "room is occupied by player", got)
 }

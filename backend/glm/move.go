@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	glmv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/glm/v1"
 	sessionv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/session/v1"
 )
 
@@ -14,6 +15,7 @@ const (
 var (
 	errRoomOccupied = errors.New("room is occupied by player")
 	errNoLocation   = errors.New("no location selected")
+	errNotAdjacent  = errors.New("location is not next to the players current location")
 )
 
 // Move updates the player's location and returns a message indicating the move.
@@ -23,7 +25,7 @@ func (g *GameLogicManager) Move(move *sessionv1.Move) string {
 		return "invalid player id"
 	}
 
-	err := g.validateMove(move)
+	err := g.validateMove(move, state)
 	if err != nil {
 		return err.Error()
 	}
@@ -42,32 +44,45 @@ func (g *GameLogicManager) Move(move *sessionv1.Move) string {
 	return fmt.Sprintf(moveFmt, move.GetPlayerId(), to)
 }
 
-func (g *GameLogicManager) validateMove(move *sessionv1.Move) error {
+func (g *GameLogicManager) validateMove(move *sessionv1.Move, playerState *glmv1.PlayerGameState) error {
 	if !g.isValidTurn(move.GetPlayerId()) {
 		return errInvalidTurn
 	}
 
+	var to node
+
 	switch move.WhichMoveTo() {
 	case sessionv1.Move_Hall_case:
-		return nil
+		to = hallNode(move.GetHall())
 
 	case sessionv1.Move_Room_case:
-		for playerID, state := range g.playerStates {
-			if move.GetPlayerId() == playerID {
-				continue
-			}
+		to = roomNode(move.GetRoom())
 
-			if state.GetLocation().HasHall() {
-				continue
-			}
+	default:
+		return errNoLocation
+	}
 
-			if move.GetRoom() == state.GetLocation().GetRoom() {
-				return errRoomOccupied
-			}
-		}
+	if !isAdjacent(nodeFromLocation(playerState.GetLocation()), to) {
+		return errNotAdjacent
+	}
 
+	if !move.HasRoom() {
 		return nil
 	}
 
-	return errNoLocation
+	for playerID, state := range g.playerStates {
+		if move.GetPlayerId() == playerID {
+			continue
+		}
+
+		if state.GetLocation().HasHall() {
+			continue
+		}
+
+		if move.GetRoom() == state.GetLocation().GetRoom() {
+			return errRoomOccupied
+		}
+	}
+
+	return nil
 }

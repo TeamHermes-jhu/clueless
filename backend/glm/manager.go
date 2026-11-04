@@ -31,7 +31,7 @@ const (
 	cardWeapon  = 3
 
 	// number of halls in the game.
-	// numHalls = 12 will be used later.
+	numHalls = 12
 
 	// text formats for game initialization.
 	caseFileFmt   = "Spoiler alert! case file: suspect %s, room %s, weapon %s"
@@ -290,9 +290,8 @@ func removeCardFromDeck(deck []int32, cardNum int32, cardType int) []int32 {
 // setupPlayerLocations places each player in a random starting room.
 func (g *GameLogicManager) setupPlayerLocations() {
 	for _, state := range g.playerStates {
-		room := cardsv1.Rooms(g.rng.IntN(numRooms) + 1)
 		state.SetLocation(glmv1.PlayerLocation_builder{
-			Room: &room,
+			Hall: new(cardsv1.Halls(g.rng.IntN(numHalls) + 1)),
 		}.Build())
 	}
 }
