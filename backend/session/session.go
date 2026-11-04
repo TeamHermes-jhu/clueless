@@ -76,7 +76,7 @@ func New(l *slog.Logger) *Session {
 		unregister:       make(chan string),
 		inbound:          make(chan inboundMessage),
 		stop:             make(chan struct{}),
-		gameLogicManager: &glm.GameLogicManager{},
+		gameLogicManager: glm.New(),
 	}
 
 	s.logger = l.With("session_id", s.id)
@@ -316,8 +316,16 @@ func (s *Session) startGame() {
 				Msg: new(playerHandMessage),
 			}.Build(),
 		}.Build())
-		playerLocationMessage := s.gameLogicManager.GetPlayerLocation(playerID)
-		s.broadcastMessage(playerLocationMessage)
+		loc, _ := s.gameLogicManager.GetPlayerLocation(playerID)
+
+		var locS string
+		if loc.HasHall() {
+			locS = loc.GetHall().String()
+		} else {
+			locS = loc.GetRoom().String()
+		}
+
+		s.broadcastMessage(fmt.Sprintf("player %s is in the %s", playerID, locS))
 	}
 
 	turnMessage := s.gameLogicManager.GetTurnMessage()

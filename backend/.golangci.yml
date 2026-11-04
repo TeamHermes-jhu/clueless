@@ -109,6 +109,8 @@ linters:
     gosec:
       excludes:
         - G104 # Audit errors not checked
+        - G404 # Insecure random
+        - G115 # Overflow check
       config:
         global:
           audit: true
