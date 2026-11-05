@@ -1,0 +1,23 @@
+// Message definitions for choosing a character before the game starts.
+edition = "2024";
+
+package glm.v1;
+
+import "cards/v1/cards.proto";
+
+// Sent by client to claim character before game starts.
+// The server identifies the player from the connection, so no player id is sent.
+message CharacterSelectRequest {
+  cards.v1.Characters character = 1;
+}
+
+// A player's chosen character.
+message CharacterAssignment {
+  string player_id = 1;
+  cards.v1.Characters character = 2;
+}
+
+// Broadcast to every connected player whenever a selection changes.
+message CharacterSelectionUpdate {
+  repeated CharacterAssignment assignments = 1;
+}

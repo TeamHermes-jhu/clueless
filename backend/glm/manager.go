@@ -52,6 +52,9 @@ type GameLogicManager struct {
 	playerStates map[string]*glmv1.PlayerGameState
 
 	rng Rand
+
+	// needs to maintain which player chose which character
+	characters characterSelection
 }
 
 // Option is passed to New for GameLogicManager to affect it in someway.
@@ -86,6 +89,7 @@ func (g *GameLogicManager) InitializeGameState(playerIDs []string) {
 		g.turnOrder[i], g.turnOrder[j] = g.turnOrder[j], g.turnOrder[i]
 	})
 
+	g.assignRemainingCharacters(playerIDs)
 	g.setupGame(playerIDs)
 }
 
