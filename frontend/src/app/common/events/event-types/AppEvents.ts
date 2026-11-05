@@ -20,7 +20,6 @@ export enum MessageType {
   AccusationResponse,
   EndTurn,
   ViewLocationsRequest,
-  ViewLocationsResponse,
   ViewHandRequest,
   ViewHandResponse
 }

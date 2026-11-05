@@ -11,8 +11,7 @@ import type {
     Session,
     SessionList,
     ViewHandRequest,
-    ViewLocationsRequest,
-    ViewLocationsResponse
+    ViewLocationsRequest
 } from './gen/session/v1/session_pb';
 import type { EndTurn } from './gen/session/v1/turn_indication_pb';
 import type {
@@ -41,7 +40,6 @@ export interface ProtoPayloadMap {
   [MessageType.ViewHandRequest]: ViewHandRequest;
   [MessageType.ViewHandResponse]: PlayerHand;
   [MessageType.ViewLocationsRequest]: ViewLocationsRequest;
-  [MessageType.ViewLocationsResponse]: ViewLocationsResponse;
 }
 
 export type ProtoMessageType = keyof ProtoPayloadMap;
@@ -75,8 +73,7 @@ export const ENVELOPE_MESSAGE_TYPES = {
   endTurn: MessageType.EndTurn,
   viewHand: MessageType.ViewHandRequest,
   playerHand: MessageType.ViewHandResponse,
-  viewLocations: MessageType.ViewLocationsRequest,
-  playerLocations: MessageType.ViewLocationsResponse
+  viewLocations: MessageType.ViewLocationsRequest
 } as const satisfies { [K in EnvelopeCase]: MessageTypeFor<EnvelopeValue<K>> };
 
 // Converts a received Envelope into its bus event, or null if it has no payload.
