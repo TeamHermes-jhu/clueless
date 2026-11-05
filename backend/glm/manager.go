@@ -52,6 +52,9 @@ type GameLogicManager struct {
 
 	// needs to maintain all the players' hands
 	playerStates map[string]*glmv1.PlayerGameState
+
+	// needs to maintain which player chose which character
+	characters characterSelection
 }
 
 // InitializeGameState sets up the initial state of the game, including the turn order, player hands, and player locations.
@@ -66,6 +69,7 @@ func (g *GameLogicManager) InitializeGameState(playerIDs []string) {
 		g.turnOrder[v] = playerIDs[i]
 	}
 
+	g.assignRemainingCharacters(playerIDs)
 	g.setupGame(playerIDs)
 }
 

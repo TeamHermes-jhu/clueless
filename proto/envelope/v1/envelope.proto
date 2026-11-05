@@ -2,6 +2,7 @@ edition = "2024";
 
 package envelope.v1;
 
+import "glm/v1/character_selection.proto";
 import "session/v1/session.proto";
 import "session/v1/turn_indication.proto";
 import "suggestion/v1/suggestion.proto";
@@ -14,5 +15,7 @@ message Envelope {
     suggestion.v1.AccusationRequest accuse = 4;
     session.v1.EndTurn end_turn = 5;
     session.v1.Error error = 6;
+    glm.v1.CharacterSelectRequest select_character = 7;
+    glm.v1.CharacterSelectionUpdate character_selection = 8;
   }
 }
