@@ -2,10 +2,10 @@ edition = "2024";
 
 package envelope.v1;
 
+import "glm/v1/glm.proto";
 import "session/v1/session.proto";
 import "session/v1/turn_indication.proto";
 import "suggestion/v1/suggestion.proto";
-import "glm/v1/glm.proto";
 
 message Envelope {
   oneof payload {
