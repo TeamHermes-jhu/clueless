@@ -1,11 +1,12 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, NgZone, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { create } from '@bufbuild/protobuf';
 import { MessageService } from 'primeng/api';
 import { Terminal, TerminalService } from 'primeng/terminal';
 import { Toast } from 'primeng/toast';
+import { filter } from 'rxjs';
 import { EventBus } from '../../common/events/event-bus/event-bus';
-import { MessageType } from '../../common/events/event-types/AppEvents';
+import { EventProducer, MessageType } from '../../common/events/event-types/AppEvents';
 import { Characters, Rooms, Weapons, Halls } from '../../common/events/event-types/gen/cards/v1/cards_pb';
 import { MoveSchema, ViewHandRequestSchema, ViewLocationsRequestSchema } from '../../common/events/event-types/gen/session/v1/session_pb';
 import { EndTurnSchema } from '../../common/events/event-types/gen/session/v1/turn_indication_pb'
@@ -13,7 +14,6 @@ import {
   AccusationRequestSchema,
   SuggestionRequestSchema,
 } from '../../common/events/event-types/gen/suggestion/v1/suggestion_pb';
-import { GoBackendServiceAdapter } from '../../services/GoBackendServiceAdapter';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,50 +24,54 @@ import { GoBackendServiceAdapter } from '../../services/GoBackendServiceAdapter'
   templateUrl: './board.html',
 })
 export class Board {
-  private readonly golangAdapter = inject(GoBackendServiceAdapter);
+  private readonly eventBus = inject(EventBus);
   private readonly messageService = inject(MessageService);
-  private readonly zone = inject(NgZone);
   private readonly terminalService = inject(TerminalService);
   private readonly terminal = viewChild.required(Terminal);
-  private readonly terminalChangeDetector = viewChild.required(Terminal, { read: ChangeDetectorRef });
   private readonly availableCommands = [
     'help', 
     'about', 
     'clear', 
+    'selectcharacter',
     'move', 
     'suggest', 
     'accuse', 
+    'respond',
     'endturn', 
     'viewhand', 
     'viewlocations', 
     'listrooms', 
     'listsuspects', 
-    'listweapons'];
+    'listweapons',
+    'listhalls'
+  ];
   private readonly roomList = Object.keys(Rooms)
     .filter((room) => room !== 'UNSPECIFIED' && Number.isNaN(Number(room)));
   private readonly suspectList = Object.keys(Characters)
     .filter((suspect) => suspect !== 'UNSPECIFIED' && Number.isNaN(Number(suspect)));
   private readonly weaponList = Object.keys(Weapons)
     .filter((weapon) => weapon !== 'UNSPECIFIED' && Number.isNaN(Number(weapon)));
+  private readonly hallList = Object.keys(Halls)
+    .filter((hall) => hall !== 'UNSPECIFIED' && Number.isNaN(Number(hall)));
 
   constructor() {
-    inject(EventBus)
+    // Subscribe to error events to get Toast in top corner
+    this.eventBus
       .on(MessageType.Error)
       .pipe(takeUntilDestroyed())
       .subscribe(({ error }) => {
         this.messageService.add({ severity: 'error', summary: 'Error', detail: error });
       });
 
-    inject(EventBus)
-      .on(MessageType.Message)
-      .pipe(takeUntilDestroyed())
-      .subscribe(({ msg }) => {
-        this.zone.run(() => {
-          const terminal = this.terminal();
-          terminal.commands = [...terminal.commands, { text: 'server' }];
-          this.terminalService.sendResponse(msg);
-          this.terminalChangeDetector().detectChanges();
-        });
+    // Subscribe to message events to get messages from server in terminal
+    this.eventBus
+      .subscribe(MessageType.Message)
+      .pipe(
+        filter(({ event }) => event.producer === EventProducer.SERVER),
+        takeUntilDestroyed(),
+      )
+      .subscribe(({ event }) => {
+        this.printToTerminal(event.payload.msg);
       });
 
     this.terminalService.commandHandler.pipe(takeUntilDestroyed()).subscribe((command) => {
@@ -89,9 +93,6 @@ export class Board {
         case 'viewlocations':
           this.sendViewLocations();
           break;
-        case 'endturn':
-          this.sendEndTurn();
-          break;
         case 'listrooms':
           this.terminalService.sendResponse(`Available rooms: ${this.roomList.join(', ')}`);
           break;
@@ -100,6 +101,9 @@ export class Board {
           break;
         case 'listweapons':
           this.terminalService.sendResponse(`Available weapons: ${this.weaponList.join(', ')}`);
+          break;
+        case 'listhalls':
+          this.terminalService.sendResponse(`Available halls: ${this.hallList.join(', ')}`);
           break;
         case 'move':
           this.sendMove(command);
@@ -110,49 +114,48 @@ export class Board {
         case 'accuse':
           this.sendAccuse(command);
           break;
+        case 'endturn':
+          this.sendEndTurn();
+          break;
+        case 'selectcharacter':
+          this.terminalService.sendResponse(`TODO: Implement character selection`);
+          break;
+        case 'respond':
+          this.terminalService.sendResponse(`TODO: Implement response handling`);
+          break;
         default:
           this.terminalService.sendResponse(`Unknown command: ${commandName}`);
       }
     });
   }
 
-  private sendViewHand(): void {
-    const playerId = this.golangAdapter.playerId();
-    if (!playerId) {
-      console.error('Cannot send View Hand before a session is joined.');
-      return;
+    private printToTerminal(text: string): void {
+      const terminal = this.terminal();
+      terminal.commands.push({ text: '' });
+      this.terminalService.sendResponse(text);
+      terminal.cd.markForCheck();
     }
 
-    this.golangAdapter.sendEnvelope({
-      case: 'viewHand',
-      value: create(ViewHandRequestSchema, {
-        playerId,
-      }),
+  private sendViewHand(): void {
+
+    this.eventBus.publish({
+      type: MessageType.ViewHandRequest,
+      producer: EventProducer.CLIENT,
+      payload: create(ViewHandRequestSchema, {}),
     });
   }
 
   private sendViewLocations(): void {
-    const playerId = this.golangAdapter.playerId();
-    if (!playerId) {
-      console.error('Cannot send View Locations before a session is joined.');
-      return;
-    }
 
-    this.golangAdapter.sendEnvelope({
-      case: 'viewLocations',
-      value: create(ViewLocationsRequestSchema, {
-        playerId,
-      }),
-    }); 
+    this.eventBus.publish({
+      type: MessageType.ViewLocationsRequest,
+      producer: EventProducer.CLIENT,
+      payload: create(ViewLocationsRequestSchema, {}),
+    });
 
   }
 
   private sendMove(command: string): void {
-    const playerId = this.golangAdapter.playerId();
-    if (!playerId) {
-      console.error('Cannot send Move before a session is joined.');
-      return;
-    }
 
     const [_, isRoom, key] = command.split(' ');
     const roomLower = isRoom.toLowerCase();
@@ -165,12 +168,10 @@ export class Board {
         return;
       }
 
-      this.golangAdapter.sendEnvelope({
-        case: 'move',
-        value: create(MoveSchema, {
-          playerId,
-          moveTo: { case: 'hall', value: hall },
-        }),
+      this.eventBus.publish({
+        type: MessageType.Move,
+        producer: EventProducer.CLIENT,
+        payload: create(MoveSchema, { moveTo: { case: 'hall', value: hall } }),
       });
 
       return;
@@ -183,12 +184,10 @@ export class Board {
         return;
       }
 
-      this.golangAdapter.sendEnvelope({
-        case: 'move',
-        value: create(MoveSchema, {
-          playerId,
-          moveTo: { case: 'room', value: room },
-        }),
+      this.eventBus.publish({
+        type: MessageType.Move,
+        producer: EventProducer.CLIENT,
+        payload: create(MoveSchema, { moveTo: { case: 'room', value: room } }),
       });
 
       return;
@@ -200,13 +199,8 @@ export class Board {
   }
 
   private sendSuggest(command: string): void {
-    const playerId = this.golangAdapter.playerId();
-    if (!playerId) {
-      console.error('Cannot send Suggest before a session is joined.');
-      return;
-    }
 
-    const [_, character, room, weapon] = command.split(' ');
+    const [_, character, weapon, room] = command.split(' ');
 
     const charVal = Characters[character.toUpperCase() as keyof typeof Characters];
     const roomVal = Rooms[room.toUpperCase() as keyof typeof Rooms];
@@ -227,10 +221,11 @@ export class Board {
       return;
     }
 
-    this.golangAdapter.sendEnvelope({
-      case: 'suggest',
-      value: create(SuggestionRequestSchema, {
-        playerId,
+
+    this.eventBus.publish({
+      type: MessageType.SuggestionRequest,
+      producer: EventProducer.CLIENT,
+      payload: create(SuggestionRequestSchema, {
         character: charVal,
         room: roomVal,
         weapon: weaponVal,
@@ -239,13 +234,8 @@ export class Board {
   }
 
   private sendAccuse(command: string): void {
-    const playerId = this.golangAdapter.playerId();
-    if (!playerId) {
-      console.error('Cannot send Accuse before a session is joined.');
-      return;
-    }
 
-    const [_, character, room, weapon] = command.split(' ');
+    const [_, character, weapon, room] = command.split(' ');
 
     const charVal = Characters[character.toUpperCase() as keyof typeof Characters];
     const roomVal = Rooms[room.toUpperCase() as keyof typeof Rooms];
@@ -266,31 +256,21 @@ export class Board {
       return;
     }
 
-    this.golangAdapter.sendEnvelope({
-      case: 'accuse',
-      value: create(AccusationRequestSchema, {
-        suggestion: {
-          playerId,
-          character: charVal,
-          room: roomVal,
-          weapon: weaponVal,
-        },
+    this.eventBus.publish({
+      type: MessageType.AccusationRequest,
+      producer: EventProducer.CLIENT,
+      payload: create(AccusationRequestSchema, {
+        suggestion: { character: charVal, room: roomVal, weapon: weaponVal },
       }),
     });
   }
 
   private sendEndTurn(): void {
-    const playerId = this.golangAdapter.playerId();
-    if (!playerId) {
-      console.error('Cannot send End Turn before a session is joined.');
-      return;
-    }
 
-    this.golangAdapter.sendEnvelope({
-      case: 'endTurn',
-      value: create(EndTurnSchema, {
-        playerId,
-      }),
+    this.eventBus.publish({
+      type: MessageType.EndTurn,
+      producer: EventProducer.CLIENT,
+      payload: create(EndTurnSchema, {}),
     });
   }
 

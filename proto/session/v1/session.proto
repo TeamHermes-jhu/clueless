@@ -66,8 +66,3 @@ message ViewLocationsRequest {
   // currently unused
   string player_id = 1;
 }
-
-message ViewLocationsResponse {
-  // currently unused
-  repeated string locations = 1;
-}

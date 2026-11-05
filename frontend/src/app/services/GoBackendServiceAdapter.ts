@@ -77,6 +77,30 @@ export class GoBackendServiceAdapter extends AbstractServiceAdapter {
           }));
         },
         EventProducer.CLIENT,
+      )
+      .on(
+        MessageType.EndTurn,
+        (endTurn) => {
+          this.sendAsPlayer((playerId) => ({ case: 'endTurn', value: { ...endTurn, playerId } }));
+        },
+        EventProducer.CLIENT,
+      )
+      .on(
+        MessageType.ViewHandRequest,
+        (viewHand) => {
+          this.sendAsPlayer((playerId) => ({ case: 'viewHand', value: { ...viewHand, playerId } }));
+        },
+        EventProducer.CLIENT,
+      )
+      .on(
+        MessageType.ViewLocationsRequest,
+        (viewLocations) => {
+          this.sendAsPlayer((playerId) => ({
+            case: 'viewLocations',
+            value: { ...viewLocations, playerId },
+          }));
+        },
+        EventProducer.CLIENT,
       );
   }
 
