@@ -275,6 +275,14 @@ func (s *Session) handleInbound(msg inboundMessage) {
 		return
 	}
 
+	s.handlePlayerTurnAction(&env)
+}
+
+func (s *Session) handlePlayerTurnAction(env *envelopev1.Envelope) {
+	if env == nil {
+		return
+	}
+
 	switch env.WhichPayload() {
 	case envelopev1.Envelope_Move_case:
 		s.move(env.GetMove())
@@ -295,8 +303,6 @@ func (s *Session) handleInbound(msg inboundMessage) {
 		s.endTurn()
 
 		return
-
-	default:
 	}
 }
 
