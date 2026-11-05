@@ -18,6 +18,5 @@ message Envelope {
     session.v1.ViewHandRequest view_hand = 7;
     glm.v1.PlayerHand player_hand = 8;
     session.v1.ViewLocationsRequest view_locations = 9;
-    session.v1.ViewLocationsResponse player_locations = 10;
   }
 }
