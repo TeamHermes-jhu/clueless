@@ -18,7 +18,11 @@ export enum MessageType {
   SuggestionResponse,
   AccusationRequest,
   AccusationResponse,
-  EndTurn
+  EndTurn,
+  ViewLocationsRequest,
+  ViewLocationsResponse,
+  ViewHandRequest,
+  ViewHandResponse
 }
 
 export enum EventProducer {

@@ -9,6 +9,7 @@ import (
 	"maps"
 	"math/rand/v2"
 	"slices"
+	"strings"
 
 	cardsv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/cards/v1"
 	glmv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/glm/v1"
@@ -82,7 +83,7 @@ func (g *GameLogicManager) Move(move *sessionv1.Move) string {
 	to := move.GetRoom().String()
 
 	if move.WhichMoveTo() == sessionv1.Move_Hall_case {
-		to = move.GetRoom().String()
+		to = move.GetHall().String()
 	}
 
 	return fmt.Sprintf(moveFmt, move.GetPlayerId(), to)
@@ -165,6 +166,27 @@ func (g *GameLogicManager) GetPlayerHand(playerID string) string {
 		hand.GetRooms(),
 		hand.GetWeapons(),
 	)
+}
+
+// GetPlayerHandProto returns a player's hand as a protobuf message.
+func (g *GameLogicManager) GetPlayerHandProto(playerID string) *glmv1.PlayerHand {
+	state := g.getPlayerState(playerID)
+	if state == nil {
+		return nil
+	}
+
+	return state.GetHand()
+}
+
+// GetPlayerLocations returns a string representation of all players' locations.
+func (g *GameLogicManager) GetPlayerLocations() string {
+	locations := make([]string, len(g.playerStates))
+	for i := range len(g.turnOrder) {
+		playerID := g.turnOrder[i]
+		locations[i] = g.GetPlayerLocation(playerID)
+	}
+
+	return strings.Join(locations, "\n")
 }
 
 // GetPlayerLocation returns a string representation of a player's location.

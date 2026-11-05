@@ -252,6 +252,19 @@ func (s *Session) handleInbound(msg inboundMessage) {
 		return
 	}
 
+	switch env.WhichPayload() {
+	case envelopev1.Envelope_ViewHand_case:
+		s.viewHand(msg.from)
+
+		return
+
+	case envelopev1.Envelope_ViewLocations_case:
+		s.viewLocations(msg.from)
+
+		return
+	default:
+	}
+
 	if msg.from != s.gameLogicManager.GetCurrentPlayer() {
 		s.sendTo(msg.from, envelopev1.Envelope_builder{
 			Error: sessionv1.Error_builder{
@@ -285,6 +298,22 @@ func (s *Session) handleInbound(msg inboundMessage) {
 
 	default:
 	}
+}
+
+func (s *Session) viewHand(playerID string) {
+	s.sendTo(playerID, envelopev1.Envelope_builder{
+		Msg: sessionv1.Message_builder{
+			Msg: new(s.gameLogicManager.GetPlayerHand(playerID)),
+		}.Build(),
+	}.Build())
+}
+
+func (s *Session) viewLocations(playerID string) {
+	s.sendTo(playerID, envelopev1.Envelope_builder{
+		Msg: sessionv1.Message_builder{
+			Msg: new(s.gameLogicManager.GetPlayerLocations()),
+		}.Build(),
+	}.Build())
 }
 
 func (s *Session) sendTo(id string, env *envelopev1.Envelope) {
