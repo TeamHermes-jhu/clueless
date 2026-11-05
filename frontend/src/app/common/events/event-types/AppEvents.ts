@@ -21,7 +21,9 @@ export enum MessageType {
   EndTurn,
   ViewLocationsRequest,
   ViewHandRequest,
-  ViewHandResponse
+  ViewHandResponse,
+  CharacterSelectRequest,
+  CharacterSelectionUpdate
 }
 
 export enum EventProducer {

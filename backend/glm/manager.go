@@ -59,6 +59,9 @@ type GameLogicManager struct {
 	eliminated map[string]struct{}
 
 	rng Rand
+
+	// needs to maintain which player chose which character
+	characters characterSelection
 }
 
 // Option is passed to New for GameLogicManager to affect it in someway.
@@ -96,6 +99,7 @@ func (g *GameLogicManager) InitializeGameState(playerIDs []string) {
 	// initialize eliminated tracker
 	g.eliminated = make(map[string]struct{})
 
+	g.assignRemainingCharacters(playerIDs)
 	g.setupGame(playerIDs)
 }
 
