@@ -216,6 +216,8 @@ func (s *Session) handleRegister(req registerRequest) {
 
 	s.players[req.client.id] = req.client
 	req.result <- true
+
+	s.sendCharacterSelections(req.client.id)
 }
 
 func (s *Session) handleUnregister(id string) {
@@ -238,6 +240,12 @@ func (s *Session) handleInbound(msg inboundMessage) {
 				Error: new("malformed message"),
 			}.Build(),
 		}.Build())
+
+		return
+	}
+
+	if env.WhichPayload() == envelopev1.Envelope_SelectCharacter_case {
+		s.selectCharacter(msg.from, env.GetSelectCharacter())
 
 		return
 	}
@@ -308,6 +316,7 @@ func (s *Session) startGame() {
 	s.started = true
 	s.broadcastMessage("game is starting")
 	s.gameLogicManager.InitializeGameState(s.joinOrder)
+	s.broadcastCharacterSelections()
 
 	for _, playerID := range s.joinOrder {
 		playerHandMessage := s.gameLogicManager.GetPlayerHand(playerID)
