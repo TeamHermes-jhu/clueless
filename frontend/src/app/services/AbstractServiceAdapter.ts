@@ -116,7 +116,7 @@ export abstract class AbstractServiceAdapter implements OnDestroy {
       return;
     }
     if (event) {
-      this.eventBus.publish(event.type, event.payload);
+      this.eventBus.publish(event);
     }
   }
 

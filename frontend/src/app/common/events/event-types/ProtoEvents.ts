@@ -46,11 +46,10 @@ export interface ProtoPayloadMap {
 
 export type ProtoMessageType = keyof ProtoPayloadMap;
 
-// Events whose payload is a generated protobuf message received from the Go backend.
 export type ProtoAppEvent = {
   [T in ProtoMessageType]: {
     type: T;
-    producer: EventProducer.SERVER;
+    producer: EventProducer;
     payload: ProtoPayloadMap[T];
   };
 }[ProtoMessageType];
