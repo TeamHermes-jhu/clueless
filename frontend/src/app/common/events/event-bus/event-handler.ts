@@ -1,6 +1,7 @@
 // src/events/event-handler.ts
 import type { Subscription } from 'rxjs';
-import type { EventByType, EventPayload, EventType } from '../event-types/AppEvents';
+import { filter } from 'rxjs';
+import type { EventByType, EventPayload, EventProducer, EventType } from '../event-types/AppEvents';
 import type { EventBus } from './event-bus';
 import type { EventEnvelope } from './event-envelope';
 
@@ -24,19 +25,21 @@ export class EventHandlerRegistry {
 
   constructor(private eventBus: EventBus) {}
 
-  // Register a handler for a specific event type
-  on<T extends EventType>(type: T, handler: EventHandler<T>): this {
-    const subscription = this.eventBus.subscribe(type).subscribe({
-      next: (envelope) => {
-        void (async () => {
-          try {
-            await handler(envelope.event.payload as EventPayload<T>, envelope.metadata);
-          } catch (error) {
-            console.error(`Error in handler for ${type}:`, error);
-          }
-        })();
-      },
-    });
+  on<T extends EventType>(type: T, handler: EventHandler<T>, producer?: EventProducer): this {
+    const subscription = this.eventBus
+      .subscribe(type)
+      .pipe(filter((envelope) => producer === undefined || envelope.event.producer === producer))
+      .subscribe({
+        next: (envelope) => {
+          void (async () => {
+            try {
+              await handler(envelope.event.payload as EventPayload<T>, envelope.metadata);
+            } catch (error) {
+              console.error(`Error in handler for ${type}:`, error);
+            }
+          })();
+        },
+      });
 
     this.handlers.push({
       eventType: type,

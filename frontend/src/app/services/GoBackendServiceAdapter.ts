@@ -1,8 +1,10 @@
 import { Injectable, signal } from '@angular/core';
 import { create, fromJsonString, toJsonString } from '@bufbuild/protobuf';
 import type { AppEvent } from '../common/events/event-types/AppEvents';
+import { EventProducer, MessageType } from '../common/events/event-types/AppEvents';
 import type { Envelope } from '../common/events/event-types/gen/envelope/v1/envelope_pb';
 import { EnvelopeSchema } from '../common/events/event-types/gen/envelope/v1/envelope_pb';
+import { SuggestionRequestSchema } from '../common/events/event-types/gen/suggestion/v1/suggestion_pb';
 import { envelopeToEvent } from '../common/events/event-types/ProtoEvents';
 import { AbstractServiceAdapter } from './AbstractServiceAdapter';
 
@@ -21,6 +23,7 @@ export class GoBackendServiceAdapter extends AbstractServiceAdapter {
 
   constructor() {
     super('localhost', 8000, '/ws');
+    this.registerCommandHandlers();
 
     const stored = this.loadSession();
     if (stored) {
@@ -36,6 +39,78 @@ export class GoBackendServiceAdapter extends AbstractServiceAdapter {
 
   sendEnvelope(payload: Envelope['payload']): void {
     this.sendMessage(toJsonString(EnvelopeSchema, create(EnvelopeSchema, { payload })));
+  }
+
+  // Forward client-produced events from the bus to the server, stamped with this player's id.
+  // Server-produced events of the same types are ignored so they are not echoed back.
+  private registerCommandHandlers(): void {
+    this.handlers
+      .on(
+        MessageType.Move,
+        (move) => {
+          this.sendAsPlayer((playerId) => ({ case: 'move', value: { ...move, playerId } }));
+        },
+        EventProducer.CLIENT,
+      )
+      .on(
+        MessageType.SuggestionRequest,
+        (suggestion) => {
+          this.sendAsPlayer((playerId) => ({
+            case: 'suggest',
+            value: { ...suggestion, playerId },
+          }));
+        },
+        EventProducer.CLIENT,
+      )
+      .on(
+        MessageType.AccusationRequest,
+        (accusation) => {
+          this.sendAsPlayer((playerId) => ({
+            case: 'accuse',
+            value: {
+              ...accusation,
+              suggestion: {
+                ...(accusation.suggestion ?? create(SuggestionRequestSchema)),
+                playerId,
+              },
+            },
+          }));
+        },
+        EventProducer.CLIENT,
+      )
+      .on(
+        MessageType.EndTurn,
+        (endTurn) => {
+          this.sendAsPlayer((playerId) => ({ case: 'endTurn', value: { ...endTurn, playerId } }));
+        },
+        EventProducer.CLIENT,
+      )
+      .on(
+        MessageType.ViewHandRequest,
+        (viewHand) => {
+          this.sendAsPlayer((playerId) => ({ case: 'viewHand', value: { ...viewHand, playerId } }));
+        },
+        EventProducer.CLIENT,
+      )
+      .on(
+        MessageType.ViewLocationsRequest,
+        (viewLocations) => {
+          this.sendAsPlayer((playerId) => ({
+            case: 'viewLocations',
+            value: { ...viewLocations, playerId },
+          }));
+        },
+        EventProducer.CLIENT,
+      );
+  }
+
+  private sendAsPlayer(build: (playerId: string) => Envelope['payload']): void {
+    const playerId = this.playerId();
+    if (!playerId) {
+      console.error('Cannot send a command before a session is joined.');
+      return;
+    }
+    this.sendEnvelope(build(playerId));
   }
 
   // The stored session is likely gone (e.g. server restart), so stop trying to rejoin it.

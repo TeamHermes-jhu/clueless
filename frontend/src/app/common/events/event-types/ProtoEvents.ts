@@ -1,22 +1,25 @@
 import { EventProducer, MessageType } from './AppEvents';
 import type { Envelope } from './gen/envelope/v1/envelope_pb';
+import type { PlayerHand } from './gen/glm/v1/glm_pb';
 import type {
-  Error,
-  JoinRequest,
-  JoinResponse,
-  Message,
-  Move,
-  Player,
-  Session,
-  SessionList,
+    Error,
+    JoinRequest,
+    JoinResponse,
+    Message,
+    Move,
+    Player,
+    Session,
+    SessionList,
+    ViewHandRequest,
+    ViewLocationsRequest
 } from './gen/session/v1/session_pb';
-import type {
-  AccusationRequest,
-  AccusationResponse,
-  SuggestionRequest,
-  SuggestionResponse,
-} from './gen/suggestion/v1/suggestion_pb';
 import type { EndTurn } from './gen/session/v1/turn_indication_pb';
+import type {
+    AccusationRequest,
+    AccusationResponse,
+    SuggestionRequest,
+    SuggestionResponse,
+} from './gen/suggestion/v1/suggestion_pb';
 
 // Maps every server MessageType to the generated protobuf message it carries.
 export interface ProtoPayloadMap {
@@ -34,15 +37,17 @@ export interface ProtoPayloadMap {
   [MessageType.AccusationRequest]: AccusationRequest;
   [MessageType.AccusationResponse]: AccusationResponse;
   [MessageType.EndTurn]: EndTurn;
+  [MessageType.ViewHandRequest]: ViewHandRequest;
+  [MessageType.ViewHandResponse]: PlayerHand;
+  [MessageType.ViewLocationsRequest]: ViewLocationsRequest;
 }
 
 export type ProtoMessageType = keyof ProtoPayloadMap;
 
-// Events whose payload is a generated protobuf message received from the Go backend.
 export type ProtoAppEvent = {
   [T in ProtoMessageType]: {
     type: T;
-    producer: EventProducer.SERVER;
+    producer: EventProducer;
     payload: ProtoPayloadMap[T];
   };
 }[ProtoMessageType];
@@ -66,6 +71,9 @@ export const ENVELOPE_MESSAGE_TYPES = {
   accuse: MessageType.AccusationRequest,
   error: MessageType.Error,
   endTurn: MessageType.EndTurn,
+  viewHand: MessageType.ViewHandRequest,
+  playerHand: MessageType.ViewHandResponse,
+  viewLocations: MessageType.ViewLocationsRequest
 } as const satisfies { [K in EnvelopeCase]: MessageTypeFor<EnvelopeValue<K>> };
 
 // Converts a received Envelope into its bus event, or null if it has no payload.

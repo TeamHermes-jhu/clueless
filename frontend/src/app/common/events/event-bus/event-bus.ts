@@ -1,6 +1,6 @@
 import type { Observable } from 'rxjs';
 import { Subject, filter, map, share, takeUntil } from 'rxjs';
-import type { EventByType, EventPayload, EventType } from '../event-types/AppEvents';
+import type { AppEvent, EventByType, EventPayload, EventType } from '../event-types/AppEvents';
 import type { EventEnvelope, EventMetadata } from './event-envelope';
 
 export class EventBus {
@@ -13,9 +13,7 @@ export class EventBus {
   constructor(private source = 'default') {}
 
   // Publish an event with automatic metadata generation
-  publish<T extends EventType>(type: T, payload: EventPayload<T>): void {
-    const event = { type, payload } as EventByType<T>;
-
+  publish(event: AppEvent): void {
     const metadata: EventMetadata = {
       eventId: this.generateEventId(),
       timestamp: new Date(),
