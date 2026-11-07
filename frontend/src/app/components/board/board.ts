@@ -154,13 +154,14 @@ export class Board {
   private sendMove(command: string): void {
 
     const [_, isRoom, key] = command.split(' ');
-    const roomLower = isRoom.toLowerCase();
-    const keyUpper = key.toUpperCase();
 
     if (!isRoom || !key) {
       this.terminalService.sendResponse('Invalid move command format. Expected "move <room|hall> <key>".');
       return;
     }
+
+    const roomLower = isRoom.toLowerCase();
+    const keyUpper = key.toUpperCase();
 
     if (roomLower === 'hall') {
       const hall = Halls[keyUpper as keyof typeof Halls];
@@ -261,13 +262,13 @@ export class Board {
       return false;
     }
 
-    if (typeof roomVal !== 'number' || roomVal === Rooms.UNSPECIFIED) {
-      this.terminalService.sendResponse(`Invalid room ${room}. Use listrooms for valid rooms`);
+    if (typeof weaponVal !== 'number' || weaponVal === Weapons.UNSPECIFIED) {
+      this.terminalService.sendResponse(`Invalid weapon ${weapon}. Use listweapons for valid weapons`);
       return false;
     }
 
-    if (typeof weaponVal !== 'number' || weaponVal === Weapons.UNSPECIFIED) {
-      this.terminalService.sendResponse(`Invalid weapon ${weapon}. Use listweapons for valid weapons`);
+    if (typeof roomVal !== 'number' || roomVal === Rooms.UNSPECIFIED) {
+      this.terminalService.sendResponse(`Invalid room ${room}. Use listrooms for valid rooms`);
       return false;
     }
 
