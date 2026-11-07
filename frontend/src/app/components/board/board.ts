@@ -9,7 +9,7 @@ import { EventBus } from '../../common/events/event-bus/event-bus';
 import { EventProducer, MessageType } from '../../common/events/event-types/AppEvents';
 import { Characters, Rooms, Weapons, Halls } from '../../common/events/event-types/gen/cards/v1/cards_pb';
 import { MoveSchema, ViewHandRequestSchema, ViewLocationsRequestSchema } from '../../common/events/event-types/gen/session/v1/session_pb';
-import { EndTurnSchema } from '../../common/events/event-types/gen/session/v1/turn_indication_pb'
+import { EndTurnSchema } from '../../common/events/event-types/gen/session/v1/turn_indication_pb';
 import {
   AccusationRequestSchema,
   SuggestionRequestSchema,
@@ -45,14 +45,10 @@ export class Board {
     'listweapons',
     'listhalls'
   ];
-  private readonly roomList = Object.keys(Rooms)
-    .filter((room) => room !== 'UNSPECIFIED' && Number.isNaN(Number(room)));
-  private readonly suspectList = Object.keys(Characters)
-    .filter((suspect) => suspect !== 'UNSPECIFIED' && Number.isNaN(Number(suspect)));
-  private readonly weaponList = Object.keys(Weapons)
-    .filter((weapon) => weapon !== 'UNSPECIFIED' && Number.isNaN(Number(weapon)));
-  private readonly hallList = Object.keys(Halls)
-    .filter((hall) => hall !== 'UNSPECIFIED' && Number.isNaN(Number(hall)));
+  private readonly roomList = this.getEnumList(Rooms);
+  private readonly suspectList = this.getEnumList(Characters);
+  private readonly weaponList = this.getEnumList(Weapons);
+  private readonly hallList = this.getEnumList(Halls);
 
   constructor() {
     // Subscribe to error events to get Toast in top corner
@@ -129,12 +125,12 @@ export class Board {
     });
   }
 
-    private printToTerminal(text: string): void {
-      const terminal = this.terminal();
-      terminal.commands.push({ text: '' });
-      this.terminalService.sendResponse(text);
-      terminal.cd.markForCheck();
-    }
+  private printToTerminal(text: string): void {
+    const terminal = this.terminal();
+    terminal.commands.push({ text: '' });
+    this.terminalService.sendResponse(text);
+    terminal.cd.markForCheck();
+  }
 
   private sendViewHand(): void {
 
@@ -161,10 +157,15 @@ export class Board {
     const roomLower = isRoom.toLowerCase();
     const keyUpper = key.toUpperCase();
 
+    if (!isRoom || !key) {
+      this.terminalService.sendResponse('Invalid move command format. Expected "move <room|hall> <key>".');
+      return;
+    }
+
     if (roomLower === 'hall') {
       const hall = Halls[keyUpper as keyof typeof Halls];
       if (typeof hall !== 'number' || hall === Halls.UNSPECIFIED) {
-        console.error('Invalid hall %s.', keyUpper);
+        this.terminalService.sendResponse(`Invalid hall ${keyUpper}. Use listhalls for valid halls`);
         return;
       }
 
@@ -180,7 +181,7 @@ export class Board {
     if (roomLower === 'room') {
       const room = Rooms[keyUpper as keyof typeof Rooms];
       if (typeof room !== 'number' || room === Rooms.UNSPECIFIED) {
-        console.error('Invalid room %s.', keyUpper);
+        this.terminalService.sendResponse(`Invalid room ${keyUpper}. Use listrooms for valid rooms`);
         return;
       }
 
@@ -193,33 +194,22 @@ export class Board {
       return;
     }
 
-    console.error('Invalid room type %s. Must be either "hall" or "room".', roomLower);
+    this.terminalService.sendResponse(`Invalid room type ${roomLower}. Must be either "hall" or "room".`);
     return;
 
   }
 
   private sendSuggest(command: string): void {
 
+    if (!this.verifySuggestAccuseCommand(command)) {
+      return;
+    }
+
     const [_, character, weapon, room] = command.split(' ');
 
     const charVal = Characters[character.toUpperCase() as keyof typeof Characters];
     const roomVal = Rooms[room.toUpperCase() as keyof typeof Rooms];
     const weaponVal = Weapons[weapon.toUpperCase() as keyof typeof Weapons];
-
-    if (typeof charVal !== 'number' || charVal === Characters.UNSPECIFIED) {
-      console.error('Invalid character %s.', character);
-      return;
-    }
-
-    if (typeof roomVal !== 'number' || roomVal === Rooms.UNSPECIFIED) {
-      console.error('Invalid room %s.', room);
-      return;
-    }
-
-    if (typeof weaponVal !== 'number' || weaponVal === Weapons.UNSPECIFIED) {
-      console.error('Invalid weapon %s.', weapon);
-      return;
-    }
 
 
     this.eventBus.publish({
@@ -235,26 +225,15 @@ export class Board {
 
   private sendAccuse(command: string): void {
 
+    if (!this.verifySuggestAccuseCommand(command)) {
+      return;
+    }
+
     const [_, character, weapon, room] = command.split(' ');
 
     const charVal = Characters[character.toUpperCase() as keyof typeof Characters];
     const roomVal = Rooms[room.toUpperCase() as keyof typeof Rooms];
     const weaponVal = Weapons[weapon.toUpperCase() as keyof typeof Weapons];
-
-    if (typeof charVal !== 'number' || charVal === Characters.UNSPECIFIED) {
-      console.error('Invalid character %s.', character);
-      return;
-    }
-
-    if (typeof roomVal !== 'number' || roomVal === Rooms.UNSPECIFIED) {
-      console.error('Invalid room %s.', room);
-      return;
-    }
-
-    if (typeof weaponVal !== 'number' || weaponVal === Weapons.UNSPECIFIED) {
-      console.error('Invalid weapon %s.', weapon);
-      return;
-    }
 
     this.eventBus.publish({
       type: MessageType.AccusationRequest,
@@ -265,6 +244,36 @@ export class Board {
     });
   }
 
+  private verifySuggestAccuseCommand(command: string): boolean {
+    const [action, character, weapon, room] = command.split(' ');
+
+    if (!character || !weapon || !room) {
+      this.terminalService.sendResponse(`Missing arguments. Expected format ${action} <character> <weapon> <room>. Use listsuspects, listweapons, and listrooms for valid values`);
+      return false;
+    }
+
+    const charVal = Characters[character.toUpperCase() as keyof typeof Characters];
+    const roomVal = Rooms[room.toUpperCase() as keyof typeof Rooms];
+    const weaponVal = Weapons[weapon.toUpperCase() as keyof typeof Weapons];
+
+    if (typeof charVal !== 'number' || charVal === Characters.UNSPECIFIED) {
+      this.terminalService.sendResponse(`Invalid character ${character}. Use listsuspects for valid characters`);
+      return false;
+    }
+
+    if (typeof roomVal !== 'number' || roomVal === Rooms.UNSPECIFIED) {
+      this.terminalService.sendResponse(`Invalid room ${room}. Use listrooms for valid rooms`);
+      return false;
+    }
+
+    if (typeof weaponVal !== 'number' || weaponVal === Weapons.UNSPECIFIED) {
+      this.terminalService.sendResponse(`Invalid weapon ${weapon}. Use listweapons for valid weapons`);
+      return false;
+    }
+
+    return true;
+  }
+
   private sendEndTurn(): void {
 
     this.eventBus.publish({
@@ -272,6 +281,11 @@ export class Board {
       producer: EventProducer.CLIENT,
       payload: create(EndTurnSchema, {}),
     });
+  }
+
+  private getEnumList(enumObject: Record<number, string>): string[] {
+    return Object.keys(enumObject)
+    .filter((key) => key !== 'UNSPECIFIED' && Number.isNaN(Number(key)));
   }
 
 }
