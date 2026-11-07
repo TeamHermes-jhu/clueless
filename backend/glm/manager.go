@@ -9,7 +9,6 @@ import (
 	"maps"
 	"math/rand/v2"
 	"slices"
-	"strings"
 
 	cardsv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/cards/v1"
 	glmv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/glm/v1"
@@ -37,9 +36,7 @@ const (
 	// numHalls = 12 will be used later.
 
 	// text formats for game initialization.
-	caseFileFmt       = "Spoiler alert! case file: suspect %s, room %s, weapon %s"
-	playerHandFmt     = "Your hand: suspects %v, rooms %v, weapons %v"
-	playerLocationFmt = "player %s location: %s"
+	caseFileFmt = "Spoiler alert! case file: suspect %s, room %s, weapon %s"
 )
 
 // GameLogicManager manages the game logic for a session, including the case file, player hands, player locations, and the list of player IDs.
@@ -141,76 +138,24 @@ func (g *GameLogicManager) GetCaseFile() string {
 	)
 }
 
-func (g *GameLogicManager) getPlayerState(playerID string) *glmv1.PlayerGameState {
-	// Return nil if the player does not exist.
+// GetPlayerHand returns a player's hand as a protobuf message.
+func (g *GameLogicManager) GetPlayerHand(playerID string) *glmv1.PlayerHand {
 	state, ok := g.playerStates[playerID]
 	if !ok {
-		return nil
-	}
-
-	return state
-}
-
-// GetPlayerHand returns a string representation of a player's hand.
-func (g *GameLogicManager) GetPlayerHand(playerID string) string {
-	state := g.getPlayerState(playerID)
-	if state == nil {
-		return ""
-	}
-
-	hand := state.GetHand()
-
-	return fmt.Sprintf(
-		playerHandFmt,
-		hand.GetCharacters(),
-		hand.GetRooms(),
-		hand.GetWeapons(),
-	)
-}
-
-// GetPlayerHandProto returns a player's hand as a protobuf message.
-func (g *GameLogicManager) GetPlayerHandProto(playerID string) *glmv1.PlayerHand {
-	state := g.getPlayerState(playerID)
-	if state == nil {
 		return nil
 	}
 
 	return state.GetHand()
 }
 
-// GetPlayerLocations returns a string representation of all players' locations.
-func (g *GameLogicManager) GetPlayerLocations() string {
-	locations := make([]string, len(g.playerStates))
-	for i := range len(g.turnOrder) {
-		playerID := g.turnOrder[i]
-		locations[i] = g.GetPlayerLocation(playerID)
+// GetPlayerLocation returns a player's location as a protobuf message.
+func (g *GameLogicManager) GetPlayerLocation(playerID string) *glmv1.PlayerLocation {
+	state, ok := g.playerStates[playerID]
+	if !ok {
+		return nil
 	}
 
-	return strings.Join(locations, "\n")
-}
-
-// GetPlayerLocation returns a string representation of a player's location.
-func (g *GameLogicManager) GetPlayerLocation(playerID string) string {
-	state := g.getPlayerState(playerID)
-	if state == nil {
-		return ""
-	}
-
-	location := state.GetLocation()
-	isHall := location.HasHall()
-
-	var locationName string
-	if isHall {
-		locationName = location.GetHall().String()
-	} else {
-		locationName = location.GetRoom().String()
-	}
-
-	return fmt.Sprintf(
-		playerLocationFmt,
-		playerID,
-		locationName,
-	)
+	return state.GetLocation()
 }
 
 // setupGame initializes the game by setting up the case file, dealing cards, and placing players in their starting rooms.
