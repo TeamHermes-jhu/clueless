@@ -57,3 +57,12 @@ message Error {
 message Message {
   string msg = 1;
 }
+
+message ViewHandRequest {
+  string player_id = 1;
+}
+
+message ViewLocationsRequest {
+  // currently unused
+  string player_id = 1;
+}
