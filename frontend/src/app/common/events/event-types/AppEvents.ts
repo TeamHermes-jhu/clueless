@@ -23,7 +23,7 @@ export enum MessageType {
   ViewHandRequest,
   ViewHandResponse,
   CharacterSelectRequest,
-  CharacterSelectionUpdate
+  CharacterSelectChoices,
 }
 
 export enum EventProducer {

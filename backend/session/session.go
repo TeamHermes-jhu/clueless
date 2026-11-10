@@ -420,12 +420,14 @@ func (s *Session) getPlayerLocationMessage(playerID string) string {
 func (s *Session) broadcastMessage(msg string) {
 	s.logger.Info("Broadcasting message")
 
-	env := envelopev1.Envelope_builder{
+	s.broadcast(envelopev1.Envelope_builder{
 		Msg: sessionv1.Message_builder{
 			Msg: new(msg),
 		}.Build(),
-	}.Build()
+	}.Build())
+}
 
+func (s *Session) broadcast(env *envelopev1.Envelope) {
 	for id := range s.players {
 		s.sendTo(id, env)
 	}
