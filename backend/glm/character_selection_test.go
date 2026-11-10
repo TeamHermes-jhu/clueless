@@ -1,4 +1,4 @@
-package glm //nolint:testpackage // tests the unexported selection logic
+package glm //nolint:testpackage // tests the unexported selection helpers
 
 import (
 	"testing"
@@ -9,144 +9,82 @@ import (
 	cardsv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/cards/v1"
 )
 
-func TestChoose_AssignsFreeCharacter(t *testing.T) {
-	var cs characterSelection
+func TestSelectCharacter_AssignsFreeCharacter(t *testing.T) {
+	g := &GameLogicManager{}
 
-	require.NoError(t, cs.choose("alice", cardsv1.Characters_PLUM))
+	require.NoError(t, g.SelectCharacter("alice", cardsv1.Characters_PLUM))
 
-	got, ok := cs.characterOf("alice")
+	got, ok := g.GetPlayerCharacter("alice")
 	require.True(t, ok)
 	assert.Equal(t, cardsv1.Characters_PLUM, got)
 }
 
-func TestChoose_RejectsTakenCharacter(t *testing.T) {
-	var cs characterSelection
+func TestSelectCharacter_RejectsTakenCharacter(t *testing.T) {
+	g := &GameLogicManager{}
 
-	require.NoError(t, cs.choose("alice", cardsv1.Characters_PLUM))
+	require.NoError(t, g.SelectCharacter("alice", cardsv1.Characters_PLUM))
+	require.ErrorIs(t, g.SelectCharacter("bob", cardsv1.Characters_PLUM), ErrCharacterTaken)
 
-	err := cs.choose("bob", cardsv1.Characters_PLUM)
-	require.ErrorIs(t, err, ErrCharacterTaken)
-
-	got, ok := cs.characterOf("alice")
+	got, ok := g.GetPlayerCharacter("alice")
 	require.True(t, ok)
 	assert.Equal(t, cardsv1.Characters_PLUM, got)
 
-	_, ok = cs.characterOf("bob")
+	_, ok = g.GetPlayerCharacter("bob")
 	assert.False(t, ok)
 }
 
-func TestChoose_SameCharacterAgainIsNoOp(t *testing.T) {
-	var cs characterSelection
+func TestSelectCharacter_SameCharacterAgainIsNoOp(t *testing.T) {
+	g := &GameLogicManager{}
 
-	require.NoError(t, cs.choose("alice", cardsv1.Characters_PLUM))
-	require.NoError(t, cs.choose("alice", cardsv1.Characters_PLUM))
+	require.NoError(t, g.SelectCharacter("alice", cardsv1.Characters_PLUM))
+	require.NoError(t, g.SelectCharacter("alice", cardsv1.Characters_PLUM))
 
-	assert.Len(t, cs.assignments(), 1)
+	assert.Len(t, g.GetCharacterSelections().GetAssignments(), 1)
 }
 
-func TestChoose_ChangingReleasesPreviousCharacter(t *testing.T) {
-	var cs characterSelection
+func TestSelectCharacter_ChangingFreesPreviousCharacter(t *testing.T) {
+	g := &GameLogicManager{}
 
-	require.NoError(t, cs.choose("alice", cardsv1.Characters_PLUM))
-	require.NoError(t, cs.choose("alice", cardsv1.Characters_GREEN))
+	require.NoError(t, g.SelectCharacter("alice", cardsv1.Characters_PLUM))
+	require.NoError(t, g.SelectCharacter("alice", cardsv1.Characters_GREEN))
+	require.NoError(t, g.SelectCharacter("bob", cardsv1.Characters_PLUM))
 
-	require.NoError(t, cs.choose("bob", cardsv1.Characters_PLUM))
-
-	got, ok := cs.characterOf("alice")
+	got, ok := g.GetPlayerCharacter("alice")
 	require.True(t, ok)
 	assert.Equal(t, cardsv1.Characters_GREEN, got)
 }
 
-func TestChoose_RejectsInvalidCharacter(t *testing.T) {
-	var cs characterSelection
-
-	require.ErrorIs(t, cs.choose("alice", cardsv1.Characters(0)), ErrInvalidCharacter)
-	require.ErrorIs(t, cs.choose("alice", cardsv1.Characters(7)), ErrInvalidCharacter)
-	require.ErrorIs(t, cs.choose("alice", cardsv1.Characters(999)), ErrInvalidCharacter)
-
-	_, ok := cs.characterOf("alice")
-	assert.False(t, ok)
-}
-
-func TestRelease_FreesCharacter(t *testing.T) {
-	var cs characterSelection
-
-	require.NoError(t, cs.choose("alice", cardsv1.Characters_PLUM))
-
-	cs.release("alice")
-
-	_, ok := cs.characterOf("alice")
-	assert.False(t, ok)
-	require.NoError(t, cs.choose("bob", cardsv1.Characters_PLUM))
-}
-
-func TestRelease_UnknownPlayerDoesNothing(t *testing.T) {
-	var cs characterSelection
-
-	require.NoError(t, cs.choose("alice", cardsv1.Characters_PLUM))
-
-	cs.release("nobody")
-
-	assert.Len(t, cs.assignments(), 1)
-}
-
-func TestAssignments_OrderedByCharacter(t *testing.T) {
-	var cs characterSelection
-
-	require.NoError(t, cs.choose("bob", cardsv1.Characters_PLUM))
-	require.NoError(t, cs.choose("alice", cardsv1.Characters_WHITE))
-
-	got := cs.assignments()
-
-	require.Len(t, got, 2)
-	assert.Equal(t, "alice", got[0].playerID)
-	assert.Equal(t, "bob", got[1].playerID)
-}
-
-func TestToProto_ListsAssignments(t *testing.T) {
-	var cs characterSelection
-
-	require.NoError(t, cs.choose("bob", cardsv1.Characters_PLUM))
-	require.NoError(t, cs.choose("alice", cardsv1.Characters_WHITE))
-
-	got := cs.toProto().GetAssignments()
-
-	require.Len(t, got, 2)
-	assert.Equal(t, "alice", got[0].GetPlayerId())
-	assert.Equal(t, cardsv1.Characters_WHITE, got[0].GetCharacter())
-	assert.Equal(t, "bob", got[1].GetPlayerId())
-	assert.Equal(t, cardsv1.Characters_PLUM, got[1].GetCharacter())
-}
-
-func TestAssignRemaining_FillsGapsInOrder(t *testing.T) {
-	var cs characterSelection
-
-	require.NoError(t, cs.choose("alice", cardsv1.Characters_WHITE))
-
-	cs.assignRemaining([]string{"alice", "bob", "carol"})
-
-	bob, ok := cs.characterOf("bob")
-	require.True(t, ok)
-	assert.Equal(t, cardsv1.Characters_GREEN, bob)
-
-	carol, ok := cs.characterOf("carol")
-	require.True(t, ok)
-	assert.Equal(t, cardsv1.Characters_PEACOCK, carol)
-
-	alice, ok := cs.characterOf("alice")
-	require.True(t, ok)
-	assert.Equal(t, cardsv1.Characters_WHITE, alice)
-}
-
-func TestSelectCharacter_WorksOnZeroValueManager(t *testing.T) {
+func TestSelectCharacter_RejectsInvalidCharacter(t *testing.T) {
 	g := &GameLogicManager{}
 
-	require.NoError(t, g.SelectCharacter("alice", cardsv1.Characters_SCARLET))
-	require.ErrorIs(t, g.SelectCharacter("bob", cardsv1.Characters_SCARLET), ErrCharacterTaken)
+	require.ErrorIs(t, g.SelectCharacter("alice", cardsv1.Characters(0)), ErrInvalidCharacter)
+	require.ErrorIs(t, g.SelectCharacter("alice", cardsv1.Characters(7)), ErrInvalidCharacter)
+	require.ErrorIs(t, g.SelectCharacter("alice", cardsv1.Characters(999)), ErrInvalidCharacter)
 
-	got, ok := g.GetPlayerCharacter("alice")
-	require.True(t, ok)
-	assert.Equal(t, cardsv1.Characters_SCARLET, got)
+	_, ok := g.GetPlayerCharacter("alice")
+	assert.False(t, ok)
+}
+
+func TestReleaseCharacter_FreesCharacter(t *testing.T) {
+	g := &GameLogicManager{}
+
+	require.NoError(t, g.SelectCharacter("alice", cardsv1.Characters_PLUM))
+
+	g.ReleaseCharacter("alice")
+
+	_, ok := g.GetPlayerCharacter("alice")
+	assert.False(t, ok)
+	require.NoError(t, g.SelectCharacter("bob", cardsv1.Characters_PLUM))
+}
+
+func TestReleaseCharacter_UnknownPlayerDoesNothing(t *testing.T) {
+	g := &GameLogicManager{}
+
+	require.NoError(t, g.SelectCharacter("alice", cardsv1.Characters_PLUM))
+
+	g.ReleaseCharacter("nobody")
+
+	assert.Len(t, g.GetCharacterSelections().GetAssignments(), 1)
 }
 
 func TestGetCharacterSelections_EmptyByDefault(t *testing.T) {
@@ -155,7 +93,38 @@ func TestGetCharacterSelections_EmptyByDefault(t *testing.T) {
 	assert.Empty(t, g.GetCharacterSelections().GetAssignments())
 }
 
-func TestInitializeGameState_GivesEveryPlayerACharacter(t *testing.T) {
+func TestGetCharacterSelections_OrderedByCharacter(t *testing.T) {
+	g := &GameLogicManager{}
+
+	require.NoError(t, g.SelectCharacter("bob", cardsv1.Characters_PLUM))
+	require.NoError(t, g.SelectCharacter("alice", cardsv1.Characters_WHITE))
+
+	got := g.GetCharacterSelections().GetAssignments()
+
+	require.Len(t, got, 2)
+	assert.Equal(t, "alice", got[0].GetPlayerId())
+	assert.Equal(t, cardsv1.Characters_WHITE, got[0].GetCharacter())
+	assert.Equal(t, "bob", got[1].GetPlayerId())
+	assert.Equal(t, cardsv1.Characters_PLUM, got[1].GetCharacter())
+}
+
+func TestAssignRemainingCharacters_FillsGapsInOrder(t *testing.T) {
+	g := &GameLogicManager{}
+
+	require.NoError(t, g.SelectCharacter("alice", cardsv1.Characters_WHITE))
+
+	g.assignRemainingCharacters([]string{"alice", "bob", "carol"})
+
+	bob, ok := g.GetPlayerCharacter("bob")
+	require.True(t, ok)
+	assert.Equal(t, cardsv1.Characters_GREEN, bob)
+
+	carol, ok := g.GetPlayerCharacter("carol")
+	require.True(t, ok)
+	assert.Equal(t, cardsv1.Characters_PEACOCK, carol)
+}
+
+func TestInitializeGameState_KeepsChoicesAndAssignsTheRest(t *testing.T) {
 	g := &GameLogicManager{}
 	players := []string{"alice", "bob", "carol"}
 

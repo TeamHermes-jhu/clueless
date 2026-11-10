@@ -12,12 +12,12 @@ message CharacterSelectRequest {
 }
 
 // A player's chosen character.
-message CharacterAssignment {
+message CharacterSelectResponse {
   string player_id = 1;
   cards.v1.Characters character = 2;
 }
 
 // Broadcast to every connected player whenever a selection changes.
-message CharacterSelectionUpdate {
-  repeated CharacterAssignment assignments = 1;
+message CharacterSelectChoices {
+  repeated CharacterSelectResponse assignments = 1;
 }

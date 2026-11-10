@@ -16,55 +16,14 @@ var (
 	ErrCharacterTaken = errors.New("character already taken")
 )
 
-// SelectCharacter lets a player claim a character. Choosing a different character frees the
-// one the player held before. Choosing the character you already hold succeeds.
-// It returns ErrInvalidCharacter or ErrCharacterTaken if the choice is rejected.
+// SelectCharacter lets a player claim a character.
+// Returns ErrInvalidCharacter or ErrCharacterTaken if the choice is rejected.
 func (g *GameLogicManager) SelectCharacter(playerID string, character cardsv1.Characters) error {
-	return g.characters.choose(playerID, character)
-}
-
-// ReleaseCharacter frees the character a player holds. It does nothing if they hold none.
-func (g *GameLogicManager) ReleaseCharacter(playerID string) {
-	g.characters.release(playerID)
-}
-
-// GetPlayerCharacter returns the character a player holds, if any.
-func (g *GameLogicManager) GetPlayerCharacter(playerID string) (cardsv1.Characters, bool) {
-	return g.characters.characterOf(playerID)
-}
-
-// GetCharacterSelections returns every current selection as the message sent to players.
-func (g *GameLogicManager) GetCharacterSelections() *glmv1.CharacterSelectionUpdate {
-	return g.characters.toProto()
-}
-
-// assignRemainingCharacters gives every player without a character the lowest numbered
-// free one. It runs when the game starts so that every player has a character.
-func (g *GameLogicManager) assignRemainingCharacters(playerIDs []string) {
-	g.characters.assignRemaining(playerIDs)
-}
-
-// assignment is one player's chosen character.
-type assignment struct {
-	playerID  string
-	character cardsv1.Characters
-}
-
-// characterSelection tracks which player has claimed which character.
-// The zero value is ready to use. Not safe for concurrent use: only touch it
-// from the session's run goroutine.
-type characterSelection struct {
-	byPlayer    map[string]cardsv1.Characters
-	byCharacter map[cardsv1.Characters]string
-}
-
-// choose gives character to the player and releases any character they held before.
-func (cs *characterSelection) choose(playerID string, character cardsv1.Characters) error {
 	if !validCharacter(character) {
 		return ErrInvalidCharacter
 	}
 
-	owner, taken := cs.byCharacter[character]
+	owner, taken := g.characterOwner(character)
 	if taken && owner == playerID {
 		return nil
 	}
@@ -73,103 +32,106 @@ func (cs *characterSelection) choose(playerID string, character cardsv1.Characte
 		return ErrCharacterTaken
 	}
 
-	cs.release(playerID)
-
-	if cs.byPlayer == nil {
-		cs.byPlayer = make(map[string]cardsv1.Characters)
-		cs.byCharacter = make(map[cardsv1.Characters]string)
-	}
-
-	cs.byPlayer[playerID] = character
-	cs.byCharacter[character] = playerID
+	g.ensurePlayerState(playerID).SetCharacter(character)
 
 	return nil
 }
 
-// release frees the character the player holds. It does nothing if they hold none.
-func (cs *characterSelection) release(playerID string) {
-	character, ok := cs.byPlayer[playerID]
-	if !ok {
+// ReleaseCharacter frees the character a player holds. It does nothing if they hold none.
+func (g *GameLogicManager) ReleaseCharacter(playerID string) {
+	state := g.getPlayerState(playerID)
+	if state == nil {
 		return
 	}
 
-	delete(cs.byPlayer, playerID)
-	delete(cs.byCharacter, character)
+	state.ClearCharacter()
 }
 
-// characterOf returns the character the player holds, if any.
-func (cs *characterSelection) characterOf(playerID string) (cardsv1.Characters, bool) {
-	character, ok := cs.byPlayer[playerID]
-
-	return character, ok
-}
-
-// freeCharacters returns the characters nobody holds, lowest numbered first.
-func (cs *characterSelection) freeCharacters() []cardsv1.Characters {
-	free := make([]cardsv1.Characters, 0, numSuspects)
-
-	for c := cardsv1.Characters(1); c <= numSuspects; c++ {
-		if _, taken := cs.byCharacter[c]; !taken {
-			free = append(free, c)
-		}
+// GetPlayerCharacter returns the character a player holds, if any.
+func (g *GameLogicManager) GetPlayerCharacter(playerID string) (cardsv1.Characters, bool) {
+	state := g.getPlayerState(playerID)
+	if state == nil || !state.HasCharacter() {
+		return 0, false
 	}
 
-	return free
+	return state.GetCharacter(), true
 }
 
-// assignRemaining gives each player in playerIDs who holds no character the next free one,
-// in the order the players are listed.
-func (cs *characterSelection) assignRemaining(playerIDs []string) {
-	free := cs.freeCharacters()
+// GetCharacterSelections returns every current selection, ordered by character.
+func (g *GameLogicManager) GetCharacterSelections() *glmv1.CharacterSelectChoices {
+	choices := make([]*glmv1.CharacterSelectResponse, 0, len(g.playerStates))
 
-	for _, playerID := range playerIDs {
-		if _, ok := cs.byPlayer[playerID]; ok {
+	for playerID, state := range g.playerStates {
+		if !state.HasCharacter() {
 			continue
 		}
 
-		if len(free) == 0 {
-			return
-		}
-
-		// Cannot fail: free[0] is a valid character that nobody holds.
-		_ = cs.choose(playerID, free[0])
-		free = free[1:]
-	}
-}
-
-// assignments returns every current selection, ordered by character so the result is stable.
-func (cs *characterSelection) assignments() []assignment {
-	out := make([]assignment, 0, len(cs.byPlayer))
-
-	for playerID, character := range cs.byPlayer {
-		out = append(out, assignment{playerID: playerID, character: character})
-	}
-
-	slices.SortFunc(out, func(a, b assignment) int {
-		return cmp.Compare(a.character, b.character)
-	})
-
-	return out
-}
-
-// toProto builds the message that is broadcast to players.
-func (cs *characterSelection) toProto() *glmv1.CharacterSelectionUpdate {
-	current := cs.assignments()
-	assignments := make([]*glmv1.CharacterAssignment, 0, len(current))
-
-	for _, a := range current {
-		assignments = append(assignments, glmv1.CharacterAssignment_builder{
-			PlayerId:  new(a.playerID),
-			Character: new(a.character),
+		choices = append(choices, glmv1.CharacterSelectResponse_builder{
+			PlayerId:  new(playerID),
+			Character: new(state.GetCharacter()),
 		}.Build())
 	}
 
-	return glmv1.CharacterSelectionUpdate_builder{
-		Assignments: assignments,
+	slices.SortFunc(choices, func(a, b *glmv1.CharacterSelectResponse) int {
+		return cmp.Compare(a.GetCharacter(), b.GetCharacter())
+	})
+
+	return glmv1.CharacterSelectChoices_builder{
+		Assignments: choices,
 	}.Build()
+}
+
+// assignRemainingCharacters gives every player without a character the lowest numbered
+// free one, in the order the players are listed. It runs when the game starts.
+func (g *GameLogicManager) assignRemainingCharacters(playerIDs []string) {
+	for _, playerID := range playerIDs {
+		state := g.ensurePlayerState(playerID)
+		if state.HasCharacter() {
+			continue
+		}
+
+		for c := cardsv1.Characters(1); c <= numSuspects; c++ {
+			if _, taken := g.characterOwner(c); !taken {
+				state.SetCharacter(c)
+
+				break
+			}
+		}
+	}
+}
+
+// characterOwner returns the player who holds character, if any.
+func (g *GameLogicManager) characterOwner(character cardsv1.Characters) (string, bool) {
+	for playerID, state := range g.playerStates {
+		if state.HasCharacter() && state.GetCharacter() == character {
+			return playerID, true
+		}
+	}
+
+	return "", false
+}
+
+// ensurePlayerState returns the player's state, creating it if it does not exist yet.
+func (g *GameLogicManager) ensurePlayerState(playerID string) *glmv1.PlayerGameState {
+	if g.playerStates == nil {
+		g.playerStates = make(map[string]*glmv1.PlayerGameState)
+	}
+
+	state, ok := g.playerStates[playerID]
+	if !ok {
+		state = glmv1.PlayerGameState_builder{}.Build()
+		g.playerStates[playerID] = state
+	}
+
+	return state
 }
 
 // validCharacter reports whether c is a real character (not unspecified or unknown).
 func validCharacter(c cardsv1.Characters) bool {
 	return c >= 1 && c <= numSuspects
+}
+
+// getPlayerState returns the player's state, or nil if they have none.
+func (g *GameLogicManager) getPlayerState(playerID string) *glmv1.PlayerGameState {
+	return g.playerStates[playerID]
 }
