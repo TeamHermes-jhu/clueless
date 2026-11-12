@@ -34,14 +34,10 @@ const (
 	numHalls = 12
 
 	// text formats for game initialization.
-	caseFileFmt   = "Spoiler alert! case file: suspect %s, room %s, weapon %s"
-	playerHandFmt = "Your hand: suspects %v, rooms %v, weapons %v"
+	caseFileFmt = "Spoiler alert! case file: suspect %s, room %s, weapon %s"
 )
 
-var (
-	errInvalidTurn     = errors.New("not players turn")
-	errInvalidPlayerID = errors.New("invalid player id")
-)
+var errInvalidTurn = errors.New("not players turn")
 
 // GameLogicManager manages the game logic for a session, including the case file, player hands, player locations, and the list of player IDs.
 type GameLogicManager struct {
