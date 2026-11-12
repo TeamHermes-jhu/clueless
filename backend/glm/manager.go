@@ -228,37 +228,42 @@ func (g *GameLogicManager) dealCards() {
 		allCards[i], allCards[j] = allCards[j], allCards[i]
 	})
 
-	for _, state := range g.playerStates {
-		if len(allCards) == 0 {
-			break
-		}
+	i := 0
 
-		cardToDeal := allCards[0]
-		allCards = allCards[1:]
+	for i < len(allCards) {
+		for _, state := range g.playerStates {
+			if i >= len(allCards) {
+				break
+			}
 
-		switch {
-		case cardToDeal <= numSuspects:
-			// assign suspect card to current player
-			currentCharacters := state.GetHand().GetCharacters()
-			state.GetHand().SetCharacters(
-				append(currentCharacters, cardsv1.Characters(cardToDeal)),
-			)
+			card := allCards[i]
 
-		case cardToDeal <= numSuspects+numRooms:
-			// assign room card to current player
-			cardToDeal -= numSuspects
-			currentRooms := state.GetHand().GetRooms()
-			state.GetHand().SetRooms(
-				append(currentRooms, cardsv1.Rooms(cardToDeal)),
-			)
+			switch {
+			case card <= numSuspects:
+				// assign suspect card to current player
+				currentCharacters := state.GetHand().GetCharacters()
+				state.GetHand().SetCharacters(
+					append(currentCharacters, cardsv1.Characters(card)),
+				)
 
-		default:
-			// assign weapon card to current player
-			cardToDeal -= numSuspects + numRooms
-			currentWeapons := state.GetHand().GetWeapons()
-			state.GetHand().SetWeapons(
-				append(currentWeapons, cardsv1.Weapons(cardToDeal)),
-			)
+			case card <= numSuspects+numRooms:
+				// assign room card to current player
+				card -= numSuspects
+				currentRooms := state.GetHand().GetRooms()
+				state.GetHand().SetRooms(
+					append(currentRooms, cardsv1.Rooms(card)),
+				)
+
+			default:
+				// assign weapon card to current player
+				card -= numSuspects + numRooms
+				currentWeapons := state.GetHand().GetWeapons()
+				state.GetHand().SetWeapons(
+					append(currentWeapons, cardsv1.Weapons(card)),
+				)
+			}
+
+			i++
 		}
 	}
 }

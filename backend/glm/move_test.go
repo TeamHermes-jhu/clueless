@@ -98,7 +98,7 @@ func TestMove(t *testing.T) {
 	}
 }
 
-func TestOccupiedRoom(t *testing.T) {
+func TestOccupiedHall(t *testing.T) {
 	// using a deterministic rand so player 2 is always going first
 	r := rand.New(rand.NewPCG(1, 2))
 	gm := glm.New(glm.WithRand(r))
@@ -109,7 +109,7 @@ func TestOccupiedRoom(t *testing.T) {
 
 	occupantLoc, err := gm.GetPlayerLocation(occupant)
 	require.NoError(t, err)
-	occupantLoc.SetRoom(cardsv1.Rooms_LOUNGE)
+	occupantLoc.SetHall(cardsv1.Halls_ONE)
 
 	gm.AdvanceTurn()
 
@@ -117,14 +117,14 @@ func TestOccupiedRoom(t *testing.T) {
 
 	moverLoc, err := gm.GetPlayerLocation(mover)
 	require.NoError(t, err)
-	moverLoc.SetHall(cardsv1.Halls_TWO)
+	moverLoc.SetRoom(cardsv1.Rooms_STUDY)
 
 	got := gm.Move(
 		sessionv1.Move_builder{
 			PlayerId: new(mover),
-			Room:     cardsv1.Rooms_LOUNGE.Enum(),
+			Hall:     cardsv1.Halls_ONE.Enum(),
 		}.Build(),
 	)
 
-	assert.Equal(t, "room is occupied by player", got)
+	assert.Equal(t, "hall is occupied by player", got)
 }

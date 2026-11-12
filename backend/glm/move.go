@@ -13,7 +13,7 @@ const (
 )
 
 var (
-	errRoomOccupied = errors.New("room is occupied by player")
+	errHallOccupied = errors.New("hall is occupied by player")
 	errNoLocation   = errors.New("no location selected")
 	errNotAdjacent  = errors.New("location is not next to the players current location")
 )
@@ -66,7 +66,7 @@ func (g *GameLogicManager) validateMove(move *sessionv1.Move, playerState *glmv1
 		return errNotAdjacent
 	}
 
-	if !move.HasRoom() {
+	if !move.HasHall() {
 		return nil
 	}
 
@@ -75,12 +75,12 @@ func (g *GameLogicManager) validateMove(move *sessionv1.Move, playerState *glmv1
 			continue
 		}
 
-		if state.GetLocation().HasHall() {
+		if state.GetLocation().HasRoom() {
 			continue
 		}
 
-		if move.GetRoom() == state.GetLocation().GetRoom() {
-			return errRoomOccupied
+		if move.GetHall() == state.GetLocation().GetHall() {
+			return errHallOccupied
 		}
 	}
 
