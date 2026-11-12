@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"github.com/TeamHermes-jhu/clueless/backend/glm"
 	cardsv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/cards/v1"
@@ -69,8 +68,8 @@ func TestMove(t *testing.T) {
 
 	for _, test := range tt {
 		t.Run(test.name, func(t *testing.T) {
-			before, beforeErr := gm.GetPlayerLocation(test.move.GetPlayerId())
-			if beforeErr == nil {
+			before := gm.GetPlayerLocation(test.move.GetPlayerId())
+			if before != nil {
 				if test.move.HasHall() {
 					assert.NotEqual(t, test.move.GetHall(), before.GetHall())
 				} else if test.move.HasRoom() {
@@ -86,8 +85,7 @@ func TestMove(t *testing.T) {
 				return
 			}
 
-			after, err := gm.GetPlayerLocation(test.move.GetPlayerId())
-			require.NoError(t, err)
+			after := gm.GetPlayerLocation(test.move.GetPlayerId())
 
 			if test.move.HasHall() {
 				assert.Equal(t, test.move.GetHall(), after.GetHall())
@@ -107,16 +105,14 @@ func TestOccupiedHall(t *testing.T) {
 
 	occupant := gm.GetCurrentPlayer()
 
-	occupantLoc, err := gm.GetPlayerLocation(occupant)
-	require.NoError(t, err)
+	occupantLoc := gm.GetPlayerLocation(occupant)
 	occupantLoc.SetHall(cardsv1.Halls_ONE)
 
 	gm.AdvanceTurn()
 
 	mover := gm.GetCurrentPlayer()
 
-	moverLoc, err := gm.GetPlayerLocation(mover)
-	require.NoError(t, err)
+	moverLoc := gm.GetPlayerLocation(mover)
 	moverLoc.SetRoom(cardsv1.Rooms_STUDY)
 
 	got := gm.Move(
