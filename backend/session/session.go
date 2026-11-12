@@ -23,7 +23,9 @@ const (
 
 	startGameDelay = time.Second * 20
 
-	gameTimerFmt = "%d/6 players. Game starts in %ds"
+	gameTimerFmt      = "%d/6 players. Game starts in %ds"
+	playerLocationFmt = "player %s location: %s"
+	playerHandFmt     = "Your hand: suspects %v, rooms %v, weapons %v"
 )
 
 type inboundMessage struct {
@@ -252,6 +254,19 @@ func (s *Session) handleInbound(msg inboundMessage) {
 		return
 	}
 
+	switch env.WhichPayload() {
+	case envelopev1.Envelope_ViewHand_case:
+		s.viewHand(msg.from)
+
+		return
+
+	case envelopev1.Envelope_ViewLocations_case:
+		s.viewLocations(msg.from)
+
+		return
+	default:
+	}
+
 	if msg.from != s.gameLogicManager.GetCurrentPlayer() {
 		s.sendTo(msg.from, envelopev1.Envelope_builder{
 			Error: sessionv1.Error_builder{
@@ -259,6 +274,14 @@ func (s *Session) handleInbound(msg inboundMessage) {
 			}.Build(),
 		}.Build())
 
+		return
+	}
+
+	s.handlePlayerTurnAction(&env)
+}
+
+func (s *Session) handlePlayerTurnAction(env *envelopev1.Envelope) {
+	if env == nil {
 		return
 	}
 
@@ -282,8 +305,27 @@ func (s *Session) handleInbound(msg inboundMessage) {
 		s.endTurn()
 
 		return
+	}
+}
 
-	default:
+func (s *Session) viewHand(playerID string) {
+	playerHand := s.gameLogicManager.GetPlayerHand(playerID)
+	message := fmt.Sprintf(playerHandFmt, playerHand.GetCharacters(), playerHand.GetRooms(), playerHand.GetWeapons())
+	s.sendTo(playerID, envelopev1.Envelope_builder{
+		Msg: sessionv1.Message_builder{
+			Msg: new(message),
+		}.Build(),
+	}.Build())
+}
+
+func (s *Session) viewLocations(playerID string) {
+	for _, loc := range s.joinOrder {
+		playerLoc := s.getPlayerLocationMessage(loc)
+		s.sendTo(playerID, envelopev1.Envelope_builder{
+			Msg: sessionv1.Message_builder{
+				Msg: new(playerLoc),
+			}.Build(),
+		}.Build())
 	}
 }
 
@@ -310,22 +352,20 @@ func (s *Session) startGame() {
 	s.gameLogicManager.InitializeGameState(s.joinOrder)
 
 	for _, playerID := range s.joinOrder {
-		playerHandMessage := s.gameLogicManager.GetPlayerHand(playerID)
+		playerHand := s.gameLogicManager.GetPlayerHand(playerID)
+		playerHandMessage := fmt.Sprintf(playerHandFmt, playerHand.GetCharacters(), playerHand.GetRooms(), playerHand.GetWeapons())
 		s.sendTo(playerID, envelopev1.Envelope_builder{
 			Msg: sessionv1.Message_builder{
 				Msg: new(playerHandMessage),
 			}.Build(),
 		}.Build())
-		loc, _ := s.gameLogicManager.GetPlayerLocation(playerID)
 
-		var locS string
-		if loc.HasHall() {
-			locS = loc.GetHall().String()
-		} else {
-			locS = loc.GetRoom().String()
-		}
-
-		s.broadcastMessage(fmt.Sprintf("player %s is in the %s", playerID, locS))
+		playerLocationMessage := s.getPlayerLocationMessage(playerID)
+		s.sendTo(playerID, envelopev1.Envelope_builder{
+			Msg: sessionv1.Message_builder{
+				Msg: new(playerLocationMessage),
+			}.Build(),
+		}.Build())
 	}
 
 	turnMessage := s.gameLogicManager.GetTurnMessage()
@@ -352,6 +392,20 @@ func (s *Session) endTurn() {
 
 	turnMessage := s.gameLogicManager.GetTurnMessage()
 	s.broadcastMessage(turnMessage)
+}
+
+func (s *Session) getPlayerLocationMessage(playerID string) string {
+	playerLocation := s.gameLogicManager.GetPlayerLocation(playerID)
+
+	if playerLocation == nil {
+		return ""
+	}
+
+	if playerLocation.HasRoom() {
+		return fmt.Sprintf(playerLocationFmt, playerID, playerLocation.GetRoom().String())
+	}
+
+	return fmt.Sprintf(playerLocationFmt, playerID, playerLocation.GetHall().String())
 }
 
 func (s *Session) broadcastMessage(msg string) {

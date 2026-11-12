@@ -150,35 +150,24 @@ func (g *GameLogicManager) GetCaseFile() string {
 	)
 }
 
-func (g *GameLogicManager) getPlayerState(playerID string) *glmv1.PlayerGameState {
-	return g.playerStates[playerID]
-}
-
-// GetPlayerHand returns a string representation of a player's hand.
-func (g *GameLogicManager) GetPlayerHand(playerID string) string {
-	state := g.getPlayerState(playerID)
-	if state == nil {
-		return ""
-	}
-
-	hand := state.GetHand()
-
-	return fmt.Sprintf(
-		playerHandFmt,
-		hand.GetCharacters(),
-		hand.GetRooms(),
-		hand.GetWeapons(),
-	)
-}
-
-// GetPlayerLocation returns a string representation of a player's location.
-func (g *GameLogicManager) GetPlayerLocation(playerID string) (*glmv1.PlayerLocation, error) {
+// GetPlayerHand returns a player's hand as a protobuf message.
+func (g *GameLogicManager) GetPlayerHand(playerID string) *glmv1.PlayerHand {
 	state, ok := g.playerStates[playerID]
 	if !ok {
-		return nil, errInvalidPlayerID
+		return nil
 	}
 
-	return state.GetLocation(), nil
+	return state.GetHand()
+}
+
+// GetPlayerLocation returns a player's location as a protobuf message.
+func (g *GameLogicManager) GetPlayerLocation(playerID string) *glmv1.PlayerLocation {
+	state, ok := g.playerStates[playerID]
+	if !ok {
+		return nil
+	}
+
+	return state.GetLocation()
 }
 
 // setupGame initializes the game by setting up the case file, dealing cards, and placing players in their starting rooms.
