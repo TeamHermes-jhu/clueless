@@ -1,8 +1,11 @@
 <div
   class="card"
   role="button"
-  tabindex="0"
-  [attr.aria-label]="name()"
+  [class.unavailable]="!selectable()"
+  [attr.tabindex]="selectable() ? 0 : -1"
+  [attr.aria-disabled]="!selectable()"
+  [attr.aria-label]="selectable() ? name() : name() + ' (unavailable)'"
+  [attr.title]="selectable() ? null : 'Already taken'"
   (click)="confirmSelection()"
   (keydown.enter)="confirmSelection()"
 >

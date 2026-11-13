@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { filter } from 'rxjs';
 import { EventBus } from '../../common/events/event-bus/event-bus';
 import { EventProducer, MessageType } from '../../common/events/event-types/AppEvents';
-import { CardAccessService } from '../../services/CardAccessService';
+import { Characters } from '../../common/events/event-types/gen/cards/v1/cards_pb';
 import { GoBackendServiceAdapter } from '../../services/GoBackendServiceAdapter';
 import { PlayerSelectionCard } from '../player-selection-card/player-selection-card';
 
@@ -17,15 +17,32 @@ import { PlayerSelectionCard } from '../player-selection-card/player-selection-c
   templateUrl: './character-selection.html',
 })
 export class CharacterSelection {
-  protected readonly cardAccessService = inject(CardAccessService);
+  protected readonly characters = new Set<Characters>([
+    Characters.SCARLET,
+    Characters.MUSTARD,
+    Characters.WHITE,
+    Characters.GREEN,
+    Characters.PEACOCK,
+    Characters.PLUM,
+  ]);
 
-  // MessageService comes from App, which renders the shared <p-toast />.
+  protected availableCharacters = new Set<Characters>(this.characters);
+
   private readonly messageService = inject(MessageService);
   private readonly playerId = inject(GoBackendServiceAdapter).playerId;
 
   constructor() {
     const eventBus = inject(EventBus);
     const router = inject(Router);
+    const changeDetector = inject(ChangeDetectorRef);
+
+    eventBus
+      .on(MessageType.CharacterChoices)
+      .pipe(takeUntilDestroyed())
+      .subscribe(({ characters }) => {
+        this.availableCharacters = new Set(characters);
+        changeDetector.markForCheck();
+      });
 
     eventBus
       .subscribe(MessageType.CharacterSelectRequest)

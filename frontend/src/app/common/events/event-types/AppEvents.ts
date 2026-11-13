@@ -24,6 +24,7 @@ export enum MessageType {
   ViewHandResponse,
   CharacterSelectRequest,
   CharacterSelectResponse,
+  CharacterChoices,
 }
 
 export enum EventProducer {

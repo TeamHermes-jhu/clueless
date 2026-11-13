@@ -1,6 +1,7 @@
 import { EventProducer, MessageType } from './AppEvents';
 import type { Envelope } from './gen/envelope/v1/envelope_pb';
 import type {
+    CharacterChoices,
     CharacterSelectRequest,
     CharacterSelectResponse,
     PlayerHand,
@@ -46,6 +47,7 @@ export interface ProtoPayloadMap {
   [MessageType.ViewLocationsRequest]: ViewLocationsRequest;
   [MessageType.CharacterSelectRequest]: CharacterSelectRequest;
   [MessageType.CharacterSelectResponse]: CharacterSelectResponse;
+  [MessageType.CharacterChoices]: CharacterChoices;
 }
 
 export type ProtoMessageType = keyof ProtoPayloadMap;
@@ -82,6 +84,7 @@ export const ENVELOPE_MESSAGE_TYPES = {
   viewLocations: MessageType.ViewLocationsRequest,
   characterSelect: MessageType.CharacterSelectRequest,
   characterSelectResponse: MessageType.CharacterSelectResponse,
+  characterChoices: MessageType.CharacterChoices,
 } as const satisfies { [K in EnvelopeCase]: MessageTypeFor<EnvelopeValue<K>> };
 
 // Converts a received Envelope into its bus event, or null if it has no payload.

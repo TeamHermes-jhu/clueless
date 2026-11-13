@@ -24,11 +24,20 @@
   object-fit: cover;
 }
 
-.card:hover {
+.card:not(.unavailable):hover {
   border: 1px solid black;
   transform: scale(1.05);
 }
 
-.card:active {
+.card:not(.unavailable):active {
   transform: scale(0.95) rotateZ(1.7deg);
+}
+
+/* Taken characters stay visible but render black and white and can't be picked. */
+.card.unavailable {
+  cursor: not-allowed;
+}
+
+.card.unavailable img {
+  filter: grayscale(100%);
 }

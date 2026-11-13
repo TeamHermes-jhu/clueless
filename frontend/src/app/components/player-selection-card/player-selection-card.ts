@@ -18,6 +18,7 @@ import { CardAccessService } from '../../services/CardAccessService';
 })
 export class PlayerSelectionCard {
   readonly character = input.required<Characters>();
+  readonly selectable = input(true);
 
   private readonly cardAccessService = inject(CardAccessService);
 
@@ -33,6 +34,9 @@ export class PlayerSelectionCard {
   private readonly eventBus = inject(EventBus);
 
   protected confirmSelection(): void {
+    if (!this.selectable()) {
+      return;
+    }
     this.confirmationService.confirm({
       header: `Choose ${this.name()}?`,
       message: ' ',

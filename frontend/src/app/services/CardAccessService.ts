@@ -12,23 +12,6 @@ const CHARACTER_IMAGES: Partial<Record<Characters, string>> = {
 
 @Injectable({ providedIn: 'root' })
 export class CardAccessService {
-  private selectableCharacters = new Set<Characters>([
-    Characters.SCARLET,
-    Characters.MUSTARD,
-    Characters.WHITE,
-    Characters.GREEN,
-    Characters.PEACOCK,
-    Characters.PLUM,
-  ]);
-
-  getSelectableCharacters(): ReadonlySet<Characters> {
-    return this.selectableCharacters;
-  }
-
-  setSelectableCharacters(characters: Iterable<Characters>): void {
-    this.selectableCharacters = new Set(characters);
-  }
-
   getCharacterImage(character: Characters): string | undefined {
     return CHARACTER_IMAGES[character];
   }
