@@ -52,6 +52,8 @@ type GameLogicManager struct {
 	playerStates map[string]*glmv1.PlayerGameState
 
 	rng Rand
+
+	pendingDisprove *disproveState
 }
 
 // Option is passed to New for GameLogicManager to affect it in someway.
