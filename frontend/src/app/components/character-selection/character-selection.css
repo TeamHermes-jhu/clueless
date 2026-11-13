@@ -1,0 +1,22 @@
+:host {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: url('/images/background.jpg') center / cover no-repeat;
+}
+
+.frame {
+  box-sizing: border-box;
+  width: 70%;
+  height: 80%;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  background: #8b5a2b;
+}
+
+app-player-selection-card {
+  width: 14%;
+}

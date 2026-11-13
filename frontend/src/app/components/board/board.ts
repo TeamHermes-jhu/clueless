@@ -1,9 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { create } from '@bufbuild/protobuf';
-import { MessageService } from 'primeng/api';
 import { Terminal, TerminalService } from 'primeng/terminal';
-import { Toast } from 'primeng/toast';
 import { filter } from 'rxjs';
 import { EventBus } from '../../common/events/event-bus/event-bus';
 import { EventProducer, MessageType } from '../../common/events/event-types/AppEvents';
@@ -17,15 +15,14 @@ import {
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Terminal, Toast],
-  providers: [MessageService, TerminalService],
+  imports: [Terminal],
+  providers: [TerminalService],
   selector: 'app-board',
   styleUrl: './board.css',
   templateUrl: './board.html',
 })
 export class Board {
   private readonly eventBus = inject(EventBus);
-  private readonly messageService = inject(MessageService);
   private readonly terminalService = inject(TerminalService);
   private readonly terminal = viewChild.required(Terminal);
   private readonly availableCommands = [
@@ -51,14 +48,6 @@ export class Board {
   private readonly hallList = this.getEnumList(Halls);
 
   constructor() {
-    // Subscribe to error events to get Toast in top corner
-    this.eventBus
-      .on(MessageType.Error)
-      .pipe(takeUntilDestroyed())
-      .subscribe(({ error }) => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: error });
-      });
-
     // Subscribe to message events to get messages from server in terminal
     this.eventBus
       .subscribe(MessageType.Message)

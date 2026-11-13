@@ -1,6 +1,10 @@
 import { EventProducer, MessageType } from './AppEvents';
 import type { Envelope } from './gen/envelope/v1/envelope_pb';
-import type { PlayerHand } from './gen/glm/v1/glm_pb';
+import type {
+    CharacterSelectRequest,
+    CharacterSelectResponse,
+    PlayerHand,
+} from './gen/glm/v1/glm_pb';
 import type {
     Error,
     JoinRequest,
@@ -40,6 +44,8 @@ export interface ProtoPayloadMap {
   [MessageType.ViewHandRequest]: ViewHandRequest;
   [MessageType.ViewHandResponse]: PlayerHand;
   [MessageType.ViewLocationsRequest]: ViewLocationsRequest;
+  [MessageType.CharacterSelectRequest]: CharacterSelectRequest;
+  [MessageType.CharacterSelectResponse]: CharacterSelectResponse;
 }
 
 export type ProtoMessageType = keyof ProtoPayloadMap;
@@ -73,7 +79,9 @@ export const ENVELOPE_MESSAGE_TYPES = {
   endTurn: MessageType.EndTurn,
   viewHand: MessageType.ViewHandRequest,
   playerHand: MessageType.ViewHandResponse,
-  viewLocations: MessageType.ViewLocationsRequest
+  viewLocations: MessageType.ViewLocationsRequest,
+  characterSelect: MessageType.CharacterSelectRequest,
+  characterSelectResponse: MessageType.CharacterSelectResponse,
 } as const satisfies { [K in EnvelopeCase]: MessageTypeFor<EnvelopeValue<K>> };
 
 // Converts a received Envelope into its bus event, or null if it has no payload.

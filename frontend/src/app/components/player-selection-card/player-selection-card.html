@@ -1,0 +1,13 @@
+<div
+  class="card"
+  role="button"
+  tabindex="0"
+  [style.background-color]="color().background"
+  [style.color]="color().text"
+  (click)="confirmSelection()"
+  (keydown.enter)="confirmSelection()"
+>
+  {{ name() }}
+</div>
+
+<p-confirmdialog />

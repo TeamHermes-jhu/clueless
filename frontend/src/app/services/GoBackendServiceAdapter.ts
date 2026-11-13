@@ -101,6 +101,16 @@ export class GoBackendServiceAdapter extends AbstractServiceAdapter {
           }));
         },
         EventProducer.CLIENT,
+      )
+      .on(
+        MessageType.CharacterSelectRequest,
+        (characterSelect) => {
+          this.sendAsPlayer((playerId) => ({
+            case: 'characterSelect',
+            value: { ...characterSelect, playerId },
+          }));
+        },
+        EventProducer.CLIENT,
       );
   }
 
