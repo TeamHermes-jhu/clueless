@@ -27,6 +27,13 @@ p-sidebar-content {
   justify-content: center;
 }
 
-p-sidebar[data-state='collapsed'] h1 {
+.sidebar-image {
+  width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+}
+
+p-sidebar[data-state='collapsed'] h1,
+p-sidebar[data-state='collapsed'] .sidebar-image {
   display: none;
 }
