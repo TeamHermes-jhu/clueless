@@ -4,21 +4,9 @@ import { ConfirmationService } from 'primeng/api';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { EventBus } from '../../common/events/event-bus/event-bus';
 import { EventProducer, MessageType } from '../../common/events/event-types/AppEvents';
-import { Characters } from '../../common/events/event-types/gen/cards/v1/cards_pb';
+import type { Characters } from '../../common/events/event-types/gen/cards/v1/cards_pb';
 import { CharacterSelectRequestSchema } from '../../common/events/event-types/gen/glm/v1/glm_pb';
-
-// Text color is picked per card so the label stays readable on light and dark fills.
-const CHARACTER_COLORS: Record<
-  Exclude<Characters, Characters.UNSPECIFIED>,
-  { background: string; text: string }
-> = {
-  [Characters.SCARLET]: { background: '#c1121f', text: '#fff' },
-  [Characters.MUSTARD]: { background: '#e0a800', text: '#000' },
-  [Characters.WHITE]: { background: '#f5f5f5', text: '#000' },
-  [Characters.GREEN]: { background: '#2e7d32', text: '#fff' },
-  [Characters.PEACOCK]: { background: '#1e4fa3', text: '#fff' },
-  [Characters.PLUM]: { background: '#6a3d7a', text: '#fff' },
-};
+import { CardAccessService } from '../../services/CardAccessService';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,10 +17,17 @@ const CHARACTER_COLORS: Record<
   templateUrl: './player-selection-card.html',
 })
 export class PlayerSelectionCard {
-  readonly character = input.required<Exclude<Characters, Characters.UNSPECIFIED>>();
+  readonly character = input.required<Characters>();
 
-  protected readonly color = computed(() => CHARACTER_COLORS[this.character()]);
-  protected readonly name = computed(() => Characters[this.character()]);
+  private readonly cardAccessService = inject(CardAccessService);
+
+  protected readonly image = computed(() =>
+    this.cardAccessService.getCharacterImage(this.character()),
+  );
+
+  protected readonly name = computed(() =>
+    this.cardAccessService.getCharacterName(this.character()),
+  );
 
   private readonly confirmationService = inject(ConfirmationService);
   private readonly eventBus = inject(EventBus);

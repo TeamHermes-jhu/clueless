@@ -5,7 +5,7 @@ import { MessageService } from 'primeng/api';
 import { filter } from 'rxjs';
 import { EventBus } from '../../common/events/event-bus/event-bus';
 import { EventProducer, MessageType } from '../../common/events/event-types/AppEvents';
-import { Characters } from '../../common/events/event-types/gen/cards/v1/cards_pb';
+import { CardAccessService } from '../../services/CardAccessService';
 import { GoBackendServiceAdapter } from '../../services/GoBackendServiceAdapter';
 import { PlayerSelectionCard } from '../player-selection-card/player-selection-card';
 
@@ -17,14 +17,7 @@ import { PlayerSelectionCard } from '../player-selection-card/player-selection-c
   templateUrl: './character-selection.html',
 })
 export class CharacterSelection {
-  protected readonly characters = [
-    Characters.SCARLET,
-    Characters.MUSTARD,
-    Characters.WHITE,
-    Characters.GREEN,
-    Characters.PEACOCK,
-    Characters.PLUM,
-  ] as const;
+  protected readonly cardAccessService = inject(CardAccessService);
 
   // MessageService comes from App, which renders the shared <p-toast />.
   private readonly messageService = inject(MessageService);

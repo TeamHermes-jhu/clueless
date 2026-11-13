@@ -1,5 +1,5 @@
 <div class="frame">
-  @for (character of characters; track character) {
+  @for (character of cardAccessService.getSelectableCharacters(); track character) {
     <app-player-selection-card [character]="character" />
   }
 </div>
