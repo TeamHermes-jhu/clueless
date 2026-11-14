@@ -382,15 +382,15 @@ func (s *Session) suggest(suggestion *suggestionv1.SuggestionRequest) {
 	s.broadcastMessage(suggestMessage)
 }
 
-// processes player's accusation and broadcasts the result
+// processes player's accusation and broadcasts the result.
 func (s *Session) accuse(accusation *suggestionv1.AccusationRequest) {
-	// Get playerID of the player who made the accusation
+	// Get playerID of the player who made the accusation.
 	playerID := accusation.GetSuggestion().GetPlayerId()
 	
-	// Checks with game logic manager to see if accusation was correct
+	// Checks with game logic manager to see if accusation was correct.
 	correct, err := s.gameLogicManager.Accuse(accusation)
 
-	// if accusation is invalid, notify player and stop processing
+	// if accusation is invalid, notify player and stop processing.
 	if err != nil{
 		s.sendTo(playerID, envelopev1.Envelope_builder{
 			Error: sessionv1.Error_builder{
@@ -401,23 +401,24 @@ func (s *Session) accuse(accusation *suggestionv1.AccusationRequest) {
 		return
 	}
 
-	// if accusation is correct, announce the winner and reveal solution
+	// if accusation is correct, announce the winner and reveal solution.
 	if correct {
 		s.broadcastMessage(fmt.Sprintf(
 			"Player %s Wins! %s",
 			playerID,
 			s.gameLogicManager.GetCaseFile(),
 		))
+
 		return
 	}
 
-	// if accusation is incorrect, announce that the player has been eliminated
+	// if accusation is incorrect, announce that the player has been eliminated.
 	s.broadcastMessage(fmt.Sprintf(
 		"Player %s has made an incorrect accusation and has been eliminated.",
 		playerID,
 	))
 
-	// if there are no remaining players broadcast GameOver with no winner
+	// if there are no remaining players broadcast GameOver with no winner.
 	if s.gameLogicManager.PlayersRemaining() == 0{
 		s.broadcastMessage("All players have been eliminated. Game Over!")
 
