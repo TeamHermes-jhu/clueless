@@ -108,15 +108,19 @@ func (g *GameLogicManager) AdvanceTurn() {
 	for range len(g.turnOrder) {
 		g.turnIdx = (g.turnIdx + 1) % len(g.turnOrder)
 
-		if !g.eliminated[g.turnOrder[g.turnIdx]] {
-			return
+		// Check whether the current player has been eliminated.
+		_, eliminated := g.eliminated[g.turnOrder[g.turnIdx]]
+
+		// Stop advancing if the player has not been eliminated.
+		if !eliminated {
+    		return
 		}
 	}
 }
 
 // PlayersRemaining checks to see how many players are remaining.
 func (g *GameLogicManager) PlayersRemaining() int {
-	count := len(turnOrder) - len(eliminated)
+	count := len(g.turnOrder) - len(g.eliminated)
 	return count
 }
 
@@ -159,14 +163,14 @@ func (g *GameLogicManager) Accuse(accusation *suggestionv1.AccusationRequest) (b
 
 	// if accusation is incorrect, mark the player as eliminated.
 	if !correct {
-		g.eliminated[playerID] = true
+		g.eliminated[playerID] = struct{}{}
 	}
 
 	return correct, nil
 }
 
 // EndGame ends the game when called
-func (g *GameLogicManager) EndGmae() string {
+func (g *GameLogicManager) EndGame()  {
 	// TO DO
 	return
 }
