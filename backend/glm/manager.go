@@ -104,7 +104,7 @@ func (g *GameLogicManager) AdvanceTurn() {
 	for i := 0; i < len(g.turnOrder); i++{
 		g.turnIdx = (g.turnIdx + 1) % len(g.turnOrder)
 
-		if !g.eliminated[g.trunOrder[g.turnIdx]]{
+		if !g.eliminated[g.turnOrder[g.turnIdx]]{
 			return
 		}
 	}
@@ -114,7 +114,7 @@ func (g *GameLogicManager) AdvanceTurn() {
 func(g *GameLogicManager) PlayersRemaining() int {
 	count := 0
 
-	for _, playerID := range g.turnOder{
+	for _, playerID := range g.turnOrder{
 		if !g.eliminated[playerID] {
 			count++
 		}
