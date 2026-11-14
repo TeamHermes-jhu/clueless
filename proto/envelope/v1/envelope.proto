@@ -21,6 +21,6 @@ message Envelope {
     session.v1.ViewLocationsRequest view_locations = 9;
     glm.v1.CharacterSelectRequest select_character = 10;
     glm.v1.CharacterSelectChoices character_selection = 11;
-    suggestion.v1.SuggestionResponse suggestion_response = 10;
+    suggestion.v1.SuggestionResponse suggestion_response = 12;
   }
 }
