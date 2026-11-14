@@ -113,7 +113,7 @@ func (g *GameLogicManager) AdvanceTurn() {
 
 		// Stop advancing if the player has not been eliminated.
 		if !eliminated {
-    		return
+			return
 		}
 	}
 }
@@ -170,7 +170,7 @@ func (g *GameLogicManager) Accuse(accusation *suggestionv1.AccusationRequest) (b
 }
 
 // EndGame ends the game when called
-func (g *GameLogicManager) EndGame()  {
+func (g *GameLogicManager) EndGame() {
 	// TO DO
 	return
 }
