@@ -2,16 +2,17 @@ import { EventProducer, MessageType } from './AppEvents';
 import type { Envelope } from './gen/envelope/v1/envelope_pb';
 import type { PlayerHand } from './gen/glm/v1/glm_pb';
 import type {
-    Error,
-    JoinRequest,
-    JoinResponse,
-    Message,
-    Move,
-    Player,
-    Session,
-    SessionList,
-    ViewHandRequest,
-    ViewLocationsRequest
+  Error,
+  JoinRequest,
+  JoinResponse,
+  Message,
+  Move,
+  Player,
+  Session,
+  SessionList,
+  ViewHandRequest,
+  ViewLocationsRequest,
+  StartGame,
 } from './gen/session/v1/session_pb';
 import type { EndTurn } from './gen/session/v1/turn_indication_pb';
 import type {
@@ -40,6 +41,12 @@ export interface ProtoPayloadMap {
   [MessageType.ViewHandRequest]: ViewHandRequest;
   [MessageType.ViewHandResponse]: PlayerHand;
   [MessageType.ViewLocationsRequest]: ViewLocationsRequest;
+<<<<<<< HEAD
+=======
+  [MessageType.CharacterSelectRequest]: CharacterSelectRequest;
+  [MessageType.CharacterSelectChoices]: CharacterSelectChoices;
+  [MessageType.StartGame]: StartGame;
+>>>>>>> 9d36ba6 (send game start message to front-end)
 }
 
 export type ProtoMessageType = keyof ProtoPayloadMap;
@@ -73,7 +80,15 @@ export const ENVELOPE_MESSAGE_TYPES = {
   endTurn: MessageType.EndTurn,
   viewHand: MessageType.ViewHandRequest,
   playerHand: MessageType.ViewHandResponse,
+<<<<<<< HEAD
   viewLocations: MessageType.ViewLocationsRequest
+=======
+  viewLocations: MessageType.ViewLocationsRequest,
+  selectCharacter: MessageType.CharacterSelectRequest,
+  characterSelection: MessageType.CharacterSelectChoices,
+  suggestionResponse: MessageType.SuggestionResponse,
+  startGame: MessageType.StartGame,
+>>>>>>> 9d36ba6 (send game start message to front-end)
 } as const satisfies { [K in EnvelopeCase]: MessageTypeFor<EnvelopeValue<K>> };
 
 // Converts a received Envelope into its bus event, or null if it has no payload.
