@@ -25,7 +25,7 @@ message AccusationRequest {
 // Message representing the response to a suggestion
 message SuggestionResponse {
   int32 suggestion_id = 1; // Unique identifier for the suggestion being responded to
-  int32 responder_id = 2; // ID of the player responding to the suggestion
+  string responder_id = 2; // ID of the player responding to the suggestion
   bool has_card = 3; // True if the responder has a card to show, false otherwise
 
   oneof card { // The card shown in response to the suggestion, if any

@@ -2,6 +2,7 @@ edition = "2024";
 
 package envelope.v1;
 
+import "glm/v1/character_selection.proto";
 import "glm/v1/glm.proto";
 import "session/v1/session.proto";
 import "session/v1/turn_indication.proto";
@@ -18,5 +19,8 @@ message Envelope {
     session.v1.ViewHandRequest view_hand = 7;
     glm.v1.PlayerHand player_hand = 8;
     session.v1.ViewLocationsRequest view_locations = 9;
+    glm.v1.CharacterSelectRequest select_character = 10;
+    glm.v1.CharacterSelectChoices character_selection = 11;
+    suggestion.v1.SuggestionResponse suggestion_response = 12;
   }
 }
