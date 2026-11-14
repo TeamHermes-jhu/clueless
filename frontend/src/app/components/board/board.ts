@@ -8,7 +8,11 @@ import { filter } from 'rxjs';
 import { EventBus } from '../../common/events/event-bus/event-bus';
 import { EventProducer, MessageType } from '../../common/events/event-types/AppEvents';
 import { Characters, Rooms, Weapons, Halls } from '../../common/events/event-types/gen/cards/v1/cards_pb';
-import { MoveSchema, ViewHandRequestSchema, ViewLocationsRequestSchema } from '../../common/events/event-types/gen/session/v1/session_pb';
+import { MoveSchema, 
+  ViewHandRequestSchema, 
+  ViewLocationsRequestSchema,
+  ViewCharactersRequestSchema 
+} from '../../common/events/event-types/gen/session/v1/session_pb';
 import { EndTurnSchema } from '../../common/events/event-types/gen/session/v1/turn_indication_pb';
 import {
   AccusationRequestSchema,
@@ -33,7 +37,6 @@ export class Board {
     'help', 
     'about', 
     'clear', 
-    'selectcharacter',
     'move', 
     'suggest', 
     'accuse', 
@@ -41,6 +44,7 @@ export class Board {
     'endturn', 
     'viewhand', 
     'viewlocations', 
+    'viewcharacters',
     'listrooms', 
     'listsuspects', 
     'listweapons',
@@ -90,6 +94,9 @@ export class Board {
         case 'viewlocations':
           this.sendViewLocations();
           break;
+        case 'viewcharacters':
+          this.sendViewCharacters();
+          break;
         case 'listrooms':
           this.terminalService.sendResponse(`Available rooms: ${this.roomList.join(', ')}`);
           break;
@@ -113,9 +120,6 @@ export class Board {
           break;
         case 'endturn':
           this.sendEndTurn();
-          break;
-        case 'selectcharacter':
-          this.terminalService.sendResponse(`TODO: Implement character selection`);
           break;
         case 'respond':
           this.sendSuggestResponse(command);
@@ -148,6 +152,16 @@ export class Board {
       type: MessageType.ViewLocationsRequest,
       producer: EventProducer.CLIENT,
       payload: create(ViewLocationsRequestSchema, {}),
+    });
+
+  }
+
+  private sendViewCharacters(): void {
+
+    this.eventBus.publish({
+      type: MessageType.ViewCharactersRequest,
+      producer: EventProducer.CLIENT,
+      payload: create(ViewCharactersRequestSchema, {}),
     });
 
   }

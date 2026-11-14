@@ -16,6 +16,7 @@ import type {
   SessionList,
   ViewHandRequest,
   ViewLocationsRequest,
+  ViewCharactersRequest,
 } from './gen/session/v1/session_pb';
 import type { EndTurn } from './gen/session/v1/turn_indication_pb';
 import type {
@@ -43,6 +44,7 @@ export interface ProtoPayloadMap {
   [MessageType.EndTurn]: EndTurn;
   [MessageType.ViewHandRequest]: ViewHandRequest;
   [MessageType.ViewHandResponse]: PlayerHand;
+  [MessageType.ViewCharactersRequest]: ViewCharactersRequest;
   [MessageType.ViewLocationsRequest]: ViewLocationsRequest;
   [MessageType.CharacterSelectRequest]: CharacterSelectRequest;
   [MessageType.CharacterSelectChoices]: CharacterSelectChoices;
@@ -80,6 +82,7 @@ export const ENVELOPE_MESSAGE_TYPES = {
   viewHand: MessageType.ViewHandRequest,
   playerHand: MessageType.ViewHandResponse,
   viewLocations: MessageType.ViewLocationsRequest,
+  viewCharacters: MessageType.ViewCharactersRequest,
   selectCharacter: MessageType.CharacterSelectRequest,
   characterSelection: MessageType.CharacterSelectChoices,
   suggestionResponse: MessageType.SuggestionResponse

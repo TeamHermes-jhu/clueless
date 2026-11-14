@@ -23,9 +23,10 @@ const (
 
 	startGameDelay = time.Second * 20
 
-	gameTimerFmt      = "%d/6 players. Game starts in %ds"
-	playerLocationFmt = "player %s location: %s"
-	playerHandFmt     = "Your hand: suspects %v, rooms %v, weapons %v"
+	gameTimerFmt        = "%d/6 players. Game starts in %ds"
+	playerCharactersFmt = "Player %s character: %s"
+	playerLocationFmt   = "player %s location: %s"
+	playerHandFmt       = "Your hand: suspects %v, rooms %v, weapons %v"
 )
 
 type inboundMessage struct {
@@ -272,6 +273,12 @@ func (s *Session) handleInbound(msg inboundMessage) {
 		s.viewLocations(msg.from)
 
 		return
+
+	case envelopev1.Envelope_ViewCharacters_case:
+		s.viewCharacters(msg.from)
+
+		return
+
 	case envelopev1.Envelope_SuggestionResponse_case:
 		s.disprove(msg.from, env.GetSuggestionResponse())
 
@@ -345,6 +352,17 @@ func (s *Session) viewLocations(playerID string) {
 	}
 }
 
+func (s *Session) viewCharacters(playerID string) {
+	for _, loc := range s.joinOrder {
+		playerCharacter := s.getPlayerCharactersMessage(loc)
+		s.sendTo(playerID, envelopev1.Envelope_builder{
+			Msg: sessionv1.Message_builder{
+				Msg: new(playerCharacter),
+			}.Build(),
+		}.Build())
+	}
+}
+
 func (s *Session) sendTo(id string, env *envelopev1.Envelope) {
 	s.logger.Info("Sending message", "player_id", id, "message_type", env.WhichPayload().String())
 
@@ -381,6 +399,13 @@ func (s *Session) startGame() {
 		s.sendTo(playerID, envelopev1.Envelope_builder{
 			Msg: sessionv1.Message_builder{
 				Msg: new(playerLocationMessage),
+			}.Build(),
+		}.Build())
+
+		playerCharacterMessage := s.getPlayerCharactersMessage(playerID)
+		s.sendTo(playerID, envelopev1.Envelope_builder{
+			Msg: sessionv1.Message_builder{
+				Msg: new(playerCharacterMessage),
 			}.Build(),
 		}.Build())
 	}
@@ -467,6 +492,15 @@ func (s *Session) getPlayerLocationMessage(playerID string) string {
 	}
 
 	return fmt.Sprintf(playerLocationFmt, playerID, playerLocation.GetHall().String())
+}
+
+func (s *Session) getPlayerCharactersMessage(playerID string) string {
+	playerCharacters, success := s.gameLogicManager.GetPlayerCharacter(playerID)
+	if !success {
+		return ""
+	}
+
+	return fmt.Sprintf(playerCharactersFmt, playerID, playerCharacters.String())
 }
 
 func (s *Session) broadcastMessage(msg string) {
