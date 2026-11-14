@@ -13,7 +13,6 @@ import (
 // Rule violations reported back to the player that made the suggestion.
 var (
 	ErrMalformedSuggestion = errors.New("a suggestion needs a character, a weapon and a room")
-	ErrUnknownPlayer       = errors.New("you are not part of this game")
 	ErrNotYourTurn         = errors.New("it is not your turn")
 	ErrAlreadySuggested    = errors.New("you have already made a suggestion this turn")
 	ErrWrongRoom           = errors.New("you can only suggest the room you are currently in")

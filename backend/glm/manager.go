@@ -15,10 +15,17 @@ import (
 	suggestionv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/suggestion/v1"
 )
 
+var (
+	// ErrInvalidTurn is when a player tries to take action out of turn.
+	ErrInvalidTurn = errors.New("not players turn")
+
+	// ErrUnknownPlayer is when a player id isn't in this session.
+	ErrUnknownPlayer = errors.New("you are not part of this game")
+)
+
 const (
 	// text formats for logging.
 	accuseFmt = "player %s has made an accusation: %s with the %s in the %s"
-	moveFmt   = "player %s has moved to %s"
 
 	// number of each type of card in the game.
 	numSuspects = 6
@@ -37,22 +44,41 @@ const (
 	caseFileFmt = "Spoiler alert! case file: suspect %s, room %s, weapon %s"
 )
 
-var errInvalidTurn = errors.New("not players turn")
-
 // GameLogicManager manages the game logic for a session, including the case file, player hands, player locations, and the list of player IDs.
 type GameLogicManager struct {
 	// needs to maintain a case file (suspect, room, weapon)
 	caseFile *glmv1.CaseFile
 
-	// needs to maintain the turn order and current turn
 	turnOrder []string
 	turnIdx   int
 
-	// needs to maintain all the players' hands
 	playerStates map[string]*glmv1.PlayerGameState
 
-	// tracks whether the current player already made a suggestion this turn.
 	hasSuggested bool
+	hasMoved     bool
+
+	rng Rand
+}
+
+// Option is passed to New for GameLogicManager to affect it in someway.
+type Option func(*GameLogicManager)
+
+// New creates a new GameLogicManager with the given inputs.
+func New(opts ...Option) *GameLogicManager {
+	gm := &GameLogicManager{
+		rng: globalRand{},
+	}
+
+	for _, o := range opts {
+		o(gm)
+	}
+
+	return gm
+}
+
+// WithRand is an optional random number generator to use.
+func WithRand(r *rand.Rand) Option {
+	return func(g *GameLogicManager) { g.rng = r }
 }
 
 // InitializeGameState sets up the initial state of the game, including the turn order, player hands, and player locations.
@@ -74,20 +100,7 @@ func (g *GameLogicManager) InitializeGameState(playerIDs []string) {
 func (g *GameLogicManager) AdvanceTurn() {
 	g.turnIdx = (g.turnIdx + 1) % len(g.turnOrder)
 	g.hasSuggested = false
-}
-
-// Suggest handles a player's suggestion and returns a message indicating the suggestion.
-func (g *GameLogicManager) Suggest(suggestion *suggestionv1.SuggestionRequest) string {
-	// Do something with GameLogicManager so the linter doesn't complain.
-	_ = g
-	// TODO: figure out how to handle suggestions
-	return fmt.Sprintf(
-		suggestFmt,
-		suggestion.GetPlayerId(),
-		suggestion.GetCharacter().String(),
-		suggestion.GetWeapon().String(),
-		suggestion.GetRoom().String(),
-	)
+	g.hasMoved = false
 }
 
 // Accuse handles a player's accusation and returns a message indicating the accusation.
@@ -180,12 +193,12 @@ func (g *GameLogicManager) initializePlayerStates(playerIDs []string) {
 		}.Build()
 	}
 
-	g.dealCards()
-	g.setupPlayerLocations()
+	g.dealCards(playerIDs)
+	g.setupPlayerLocations(playerIDs)
 }
 
 // dealCards distributes the cards to the players in a round-robin fashion.
-func (g *GameLogicManager) dealCards() {
+func (g *GameLogicManager) dealCards(playerIDs []string) {
 	// we have 18 cards left, 5 suspects/weapons and 8 rooms
 	allCards := make([]int32, numSuspects+numRooms+numWeapons)
 	for i := range allCards {
@@ -203,11 +216,12 @@ func (g *GameLogicManager) dealCards() {
 	i := 0
 
 	for i < len(allCards) {
-		for _, state := range g.playerStates {
+		for _, playerID := range playerIDs {
 			if i >= len(allCards) {
 				break
 			}
 
+			state := g.playerStates[playerID]
 			card := allCards[i]
 
 			switch {
@@ -265,8 +279,9 @@ func removeCardFromDeck(deck []int32, cardNum int32, cardType int) []int32 {
 }
 
 // setupPlayerLocations places each player in a random starting room.
-func (g *GameLogicManager) setupPlayerLocations() {
-	for _, state := range g.playerStates {
+func (g *GameLogicManager) setupPlayerLocations(playerIDs []string) {
+	for _, playerID := range playerIDs {
+		state := g.playerStates[playerID]
 		state.SetLocation(glmv1.PlayerLocation_builder{
 			Hall: new(cardsv1.Halls(g.rng.IntN(numHalls) + 1)),
 		}.Build())
