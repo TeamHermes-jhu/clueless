@@ -101,7 +101,7 @@ func (g *GameLogicManager) AdvanceTurn() {
 		return
 	}
 	
-	for _, o := range len(g.turnOrder) {
+	for _ := range len(g.turnOrder) {
 		g.turnIdx = (g.turnIdx + 1) % len(g.turnOrder)
 
 		if !g.eliminated[g.turnOrder[g.turnIdx]]{
