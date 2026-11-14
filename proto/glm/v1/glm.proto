@@ -9,6 +9,7 @@ import "cards/v1/cards.proto";
 message PlayerGameState {
   PlayerLocation location = 1;
   PlayerHand hand = 2;
+  cards.v1.Characters character = 3;
 }
 
 message PlayerLocation {
@@ -32,14 +33,4 @@ message PlayerHand {
 
 message CharacterChoices {
   repeated cards.v1.Characters characters = 1;
-}
-
-message CharacterSelectRequest {
-  string player_id = 1;
-  cards.v1.Characters character = 2;
-}
-
-message CharacterSelectResponse {
-  string player_id = 1;
-  bool ok = 2;
 }
