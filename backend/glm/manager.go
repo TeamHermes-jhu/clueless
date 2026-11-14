@@ -116,14 +116,7 @@ func (g *GameLogicManager) AdvanceTurn() {
 
 // PlayersRemaining checks to see how many players are remaining.
 func (g *GameLogicManager) PlayersRemaining() int {
-	count := 0
-
-	for _, playerID := range g.turnOrder {
-		if !g.eliminated[playerID] {
-			count++
-		}
-	}
-
+	count := len(turnOrder) - len(eliminated)
 	return count
 }
 
@@ -170,6 +163,12 @@ func (g *GameLogicManager) Accuse(accusation *suggestionv1.AccusationRequest) (b
 	}
 
 	return correct, nil
+}
+
+// EndGame ends the game when called
+func (g *GameLogicManager) EndGmae() string {
+	// TO DO
+	return
 }
 
 // GetCurrentPlayer returns the ID of the player whose turn it is.
