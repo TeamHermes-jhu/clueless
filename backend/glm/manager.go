@@ -163,7 +163,7 @@ func (g *GameLogicManager) Accuse(accusation *suggestionv1.AccusationRequest) (b
 
 	// if accusation is incorrect, mark the player as eliminated
 	if !correct {
-		g.eliminated[PlayerID] = true
+		g.eliminated[playerID] = true
 	}
 
 	return correct, nil
