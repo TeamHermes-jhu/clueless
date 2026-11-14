@@ -119,7 +119,9 @@ func (g *GameLogicManager) ensurePlayerState(playerID string) *glmv1.PlayerGameS
 
 	state, ok := g.playerStates[playerID]
 	if !ok {
-		state = glmv1.PlayerGameState_builder{}.Build()
+		state = glmv1.PlayerGameState_builder{
+			Hand: glmv1.PlayerHand_builder{}.Build(),
+		}.Build()
 		g.playerStates[playerID] = state
 	}
 

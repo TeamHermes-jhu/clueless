@@ -59,9 +59,6 @@ type GameLogicManager struct {
 	eliminated map[string]struct{}
 
 	rng Rand
-
-	// needs to maintain which player chose which character
-	characters characterSelection
 }
 
 // Option is passed to New for GameLogicManager to affect it in someway.

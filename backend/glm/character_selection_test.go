@@ -10,7 +10,7 @@ import (
 )
 
 func TestSelectCharacter_AssignsFreeCharacter(t *testing.T) {
-	g := &GameLogicManager{}
+	g := New()
 
 	require.NoError(t, g.SelectCharacter("alice", cardsv1.Characters_PLUM))
 
@@ -20,7 +20,7 @@ func TestSelectCharacter_AssignsFreeCharacter(t *testing.T) {
 }
 
 func TestSelectCharacter_RejectsTakenCharacter(t *testing.T) {
-	g := &GameLogicManager{}
+	g := New()
 
 	require.NoError(t, g.SelectCharacter("alice", cardsv1.Characters_PLUM))
 	require.ErrorIs(t, g.SelectCharacter("bob", cardsv1.Characters_PLUM), ErrCharacterTaken)
@@ -34,7 +34,7 @@ func TestSelectCharacter_RejectsTakenCharacter(t *testing.T) {
 }
 
 func TestSelectCharacter_SameCharacterAgainIsNoOp(t *testing.T) {
-	g := &GameLogicManager{}
+	g := New()
 
 	require.NoError(t, g.SelectCharacter("alice", cardsv1.Characters_PLUM))
 	require.NoError(t, g.SelectCharacter("alice", cardsv1.Characters_PLUM))
@@ -43,7 +43,7 @@ func TestSelectCharacter_SameCharacterAgainIsNoOp(t *testing.T) {
 }
 
 func TestSelectCharacter_ChangingFreesPreviousCharacter(t *testing.T) {
-	g := &GameLogicManager{}
+	g := New()
 
 	require.NoError(t, g.SelectCharacter("alice", cardsv1.Characters_PLUM))
 	require.NoError(t, g.SelectCharacter("alice", cardsv1.Characters_GREEN))
@@ -55,7 +55,7 @@ func TestSelectCharacter_ChangingFreesPreviousCharacter(t *testing.T) {
 }
 
 func TestSelectCharacter_RejectsInvalidCharacter(t *testing.T) {
-	g := &GameLogicManager{}
+	g := New()
 
 	require.ErrorIs(t, g.SelectCharacter("alice", cardsv1.Characters(0)), ErrInvalidCharacter)
 	require.ErrorIs(t, g.SelectCharacter("alice", cardsv1.Characters(7)), ErrInvalidCharacter)
@@ -66,7 +66,7 @@ func TestSelectCharacter_RejectsInvalidCharacter(t *testing.T) {
 }
 
 func TestReleaseCharacter_FreesCharacter(t *testing.T) {
-	g := &GameLogicManager{}
+	g := New()
 
 	require.NoError(t, g.SelectCharacter("alice", cardsv1.Characters_PLUM))
 
@@ -78,7 +78,7 @@ func TestReleaseCharacter_FreesCharacter(t *testing.T) {
 }
 
 func TestReleaseCharacter_UnknownPlayerDoesNothing(t *testing.T) {
-	g := &GameLogicManager{}
+	g := New()
 
 	require.NoError(t, g.SelectCharacter("alice", cardsv1.Characters_PLUM))
 
@@ -88,13 +88,13 @@ func TestReleaseCharacter_UnknownPlayerDoesNothing(t *testing.T) {
 }
 
 func TestGetCharacterSelections_EmptyByDefault(t *testing.T) {
-	g := &GameLogicManager{}
+	g := New()
 
 	assert.Empty(t, g.GetCharacterSelections().GetAssignments())
 }
 
 func TestGetCharacterSelections_OrderedByCharacter(t *testing.T) {
-	g := &GameLogicManager{}
+	g := New()
 
 	require.NoError(t, g.SelectCharacter("bob", cardsv1.Characters_PLUM))
 	require.NoError(t, g.SelectCharacter("alice", cardsv1.Characters_WHITE))
@@ -109,7 +109,7 @@ func TestGetCharacterSelections_OrderedByCharacter(t *testing.T) {
 }
 
 func TestAssignRemainingCharacters_FillsGapsInOrder(t *testing.T) {
-	g := &GameLogicManager{}
+	g := New()
 
 	require.NoError(t, g.SelectCharacter("alice", cardsv1.Characters_WHITE))
 
@@ -125,7 +125,7 @@ func TestAssignRemainingCharacters_FillsGapsInOrder(t *testing.T) {
 }
 
 func TestInitializeGameState_KeepsChoicesAndAssignsTheRest(t *testing.T) {
-	g := &GameLogicManager{}
+	g := New()
 	players := []string{"alice", "bob", "carol"}
 
 	require.NoError(t, g.SelectCharacter("alice", cardsv1.Characters_MUSTARD))
