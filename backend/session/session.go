@@ -388,7 +388,7 @@ func (s *Session) accuse(accusation *suggestionv1.AccusationRequest) {
 	playerID := accusation.GetSuggestion().GetPlayerId()
 	
 	// Checks with game logic manager to see if accusation was correct
-	correct, err := s.gameLogicManage.Accuse(accusation)
+	correct, err := s.gameLogicManager.Accuse(accusation)
 
 	// if accusation is invalid, notify player and stop processing
 	if err != nil{
@@ -418,7 +418,7 @@ func (s *Session) accuse(accusation *suggestionv1.AccusationRequest) {
 	))
 
 	// if there are no remaining players broadcast GameOver with no winner
-	if s.gameLogicManage.PlayersRemaining() == 0{
+	if s.gameLogicManager.PlayersRemaining() == 0{
 		s.broadcastMessage("All players have been eliminated. Game Over!")
 
 		return
