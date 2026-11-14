@@ -87,7 +87,6 @@ func WithRand(r *rand.Rand) Option {
 // InitializeGameState sets up the initial state of the game, including the turn order, player hands, and player locations.
 func (g *GameLogicManager) InitializeGameState(playerIDs []string) {
 	g.turnIdx = 0
-	g.playerStates = make(map[string]*glmv1.PlayerGameState)
 
 	g.turnOrder = playerIDs
 
@@ -98,6 +97,7 @@ func (g *GameLogicManager) InitializeGameState(playerIDs []string) {
 	// initialize eliminated tracker
 	g.eliminated = make(map[string]struct{})
 
+	g.assignRemainingCharacters(playerIDs)
 	g.setupGame(playerIDs)
 }
 
@@ -240,11 +240,8 @@ func (g *GameLogicManager) setupCaseFile() {
 }
 
 func (g *GameLogicManager) initializePlayerStates(playerIDs []string) {
-	g.playerStates = make(map[string]*glmv1.PlayerGameState)
 	for _, playerID := range playerIDs {
-		g.playerStates[playerID] = glmv1.PlayerGameState_builder{
-			Hand: glmv1.PlayerHand_builder{}.Build(),
-		}.Build()
+		g.ensurePlayerState(playerID)
 	}
 
 	g.dealCards()
