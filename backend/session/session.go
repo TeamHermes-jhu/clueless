@@ -26,6 +26,9 @@ const (
 	gameTimerFmt      = "%d/6 players. Game starts in %ds"
 	playerLocationFmt = "player %s location: %s"
 	playerHandFmt     = "Your hand: suspects %v, rooms %v, weapons %v"
+
+	suggestPendingFmt = "waiting for %s to disprove your suggestion"
+	suggestNoneFmt    = "no one could disprove your suggestion"
 )
 
 type inboundMessage struct {
@@ -277,10 +280,10 @@ func (s *Session) handleInbound(msg inboundMessage) {
 		return
 	}
 
-	s.handlePlayerTurnAction(&env)
+	s.handlePlayerTurnAction(msg.from, &env)
 }
 
-func (s *Session) handlePlayerTurnAction(env *envelopev1.Envelope) {
+func (s *Session) handlePlayerTurnAction(playerID string, env *envelopev1.Envelope) {
 	if env == nil {
 		return
 	}
@@ -292,7 +295,7 @@ func (s *Session) handlePlayerTurnAction(env *envelopev1.Envelope) {
 		return
 
 	case envelopev1.Envelope_Suggest_case:
-		s.suggest(env.GetSuggest())
+		s.suggest(playerID, env.GetSuggest())
 
 		return
 
@@ -377,9 +380,51 @@ func (s *Session) move(move *sessionv1.Move) {
 	s.broadcastMessage(moveMessage)
 }
 
-func (s *Session) suggest(suggestion *suggestionv1.SuggestionRequest) {
-	suggestMessage := s.gameLogicManager.Suggest(suggestion)
-	s.broadcastMessage(suggestMessage)
+// suggest handles suggestion requests.
+func (s *Session) suggest(playerID string, suggestion *suggestionv1.SuggestionRequest) {
+	result, err := s.gameLogicManager.Suggest(suggestion)
+	if err != nil {
+		s.logger.Info("Rejected suggestion", "player_id", playerID, "reason", err.Error())
+		s.sendError(playerID, err.Error())
+
+		return
+	}
+
+	s.broadcastMessage(result.Announcement)
+
+	if result.Moved != "" {
+		s.broadcastMessage(result.Moved)
+	}
+
+	s.broadcastMessage(result.Resolution)
+
+	// TODO: replace this and suggestResponseMessage with nothing.
+	// logic.disprove should handle making the server -> player disprove call.
+	// we should route the response of that to a disprove function.
+	// then the disprove function should return to the OG player the card result.
+	// Suggest should handle only the request, validate request, pass to disprove.
+	s.sendTo(playerID, envelopev1.Envelope_builder{
+		Msg: sessionv1.Message_builder{
+			Msg: new(suggestResponseMessage(result.DisproverID)),
+		}.Build(),
+	}.Build())
+}
+
+// suggestResponseMessage describes the outcome of a suggestion to the player that made it.
+func suggestResponseMessage(disproverID string) string {
+	if disproverID == "" {
+		return suggestNoneFmt
+	}
+
+	return fmt.Sprintf(suggestPendingFmt, disproverID)
+}
+
+func (s *Session) sendError(playerID, message string) {
+	s.sendTo(playerID, envelopev1.Envelope_builder{
+		Error: sessionv1.Error_builder{
+			Error: new(message),
+		}.Build(),
+	}.Build())
 }
 
 func (s *Session) accuse(accusation *suggestionv1.AccusationRequest) {

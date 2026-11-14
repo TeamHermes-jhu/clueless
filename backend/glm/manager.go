@@ -18,9 +18,8 @@ import (
 
 const (
 	// text formats for logging.
-	suggestFmt = "player %s has suggested: %s with the %s in the %s"
-	accuseFmt  = "player %s has made an accusation: %s with the %s in the %s"
-	moveFmt    = "player %s has moved to %s"
+	accuseFmt = "player %s has made an accusation: %s with the %s in the %s"
+	moveFmt   = "player %s has moved to %s"
 
 	// number of each type of card in the game.
 	numSuspects = 6
@@ -50,11 +49,15 @@ type GameLogicManager struct {
 
 	// needs to maintain all the players' hands
 	playerStates map[string]*glmv1.PlayerGameState
+
+	// tracks whether the current player already made a suggestion this turn.
+	hasSuggested bool
 }
 
 // InitializeGameState sets up the initial state of the game, including the turn order, player hands, and player locations.
 func (g *GameLogicManager) InitializeGameState(playerIDs []string) {
 	g.turnIdx = 0
+	g.hasSuggested = false
 	g.playerStates = make(map[string]*glmv1.PlayerGameState)
 
 	r := rand.Perm(len(playerIDs))
@@ -67,9 +70,10 @@ func (g *GameLogicManager) InitializeGameState(playerIDs []string) {
 	g.setupGame(playerIDs)
 }
 
-// AdvanceTurn updates the current turn index.
+// AdvanceTurn updates the current turn index and resets the per turn action state.
 func (g *GameLogicManager) AdvanceTurn() {
 	g.turnIdx = (g.turnIdx + 1) % len(g.turnOrder)
+	g.hasSuggested = false
 }
 
 // Move updates the player's location and returns a message indicating the move.
@@ -84,20 +88,6 @@ func (g *GameLogicManager) Move(move *sessionv1.Move) string {
 	}
 
 	return fmt.Sprintf(moveFmt, move.GetPlayerId(), to)
-}
-
-// Suggest handles a player's suggestion and returns a message indicating the suggestion.
-func (g *GameLogicManager) Suggest(suggestion *suggestionv1.SuggestionRequest) string {
-	// Do something with GameLogicManager so the linter doesn't complain.
-	_ = g
-	// TODO: figure out how to handle suggestions
-	return fmt.Sprintf(
-		suggestFmt,
-		suggestion.GetPlayerId(),
-		suggestion.GetCharacter().String(),
-		suggestion.GetWeapon().String(),
-		suggestion.GetRoom().String(),
-	)
 }
 
 // Accuse handles a player's accusation and returns a message indicating the accusation.
@@ -158,6 +148,11 @@ func (g *GameLogicManager) GetPlayerLocation(playerID string) *glmv1.PlayerLocat
 	return state.GetLocation()
 }
 
+// GetPlayerCharacter returns the character a player controls on the board.
+func (g *GameLogicManager) GetPlayerCharacter(playerID string) cardsv1.Characters {
+	return g.playerStates[playerID].GetCharacter()
+}
+
 // setupGame initializes the game by setting up the case file, dealing cards, and placing players in their starting rooms.
 func (g *GameLogicManager) setupGame(playerIDs []string) {
 	g.setupCaseFile()
@@ -184,8 +179,12 @@ func (g *GameLogicManager) setupCaseFile() {
 
 func (g *GameLogicManager) initializePlayerStates(playerIDs []string) {
 	g.playerStates = make(map[string]*glmv1.PlayerGameState)
-	for _, playerID := range playerIDs {
-		g.playerStates[playerID] = glmv1.PlayerGameState_builder{}.Build()
+	// TODO: let players pick their character instead of handing them out in join order.
+	for i, playerID := range playerIDs {
+		character := cardsv1.Characters(i%numSuspects + 1)
+		g.playerStates[playerID] = glmv1.PlayerGameState_builder{
+			Character: &character,
+		}.Build()
 	}
 
 	g.initializeHands()

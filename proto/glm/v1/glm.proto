@@ -9,6 +9,7 @@ import "cards/v1/cards.proto";
 message PlayerGameState {
   PlayerLocation location = 1;
   PlayerHand hand = 2;
+  cards.v1.Characters character = 3; // Character the player controls on the board
 }
 
 message PlayerLocation {
