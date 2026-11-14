@@ -148,7 +148,7 @@ func (g *GameLogicManager) Accuse(accusation *suggestionv1.AccusationRequest) (b
 	guess := accusation.GetSuggestion()
 
 	// Get the playerID of player who made accusation
-	playerID := guess.GetPlayerID()
+	playerID := guess.GetPlayerId()
 
 	// Check to see if it is the player's turn, and return an error if it is not their turn
 	if !g.isValidTurn(playerID){
