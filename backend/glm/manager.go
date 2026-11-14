@@ -242,13 +242,7 @@ func (g *GameLogicManager) setupCaseFile() {
 
 func (g *GameLogicManager) initializePlayerStates(playerIDs []string) {
 	for _, playerID := range playerIDs {
-<<<<<<< HEAD
-		g.playerStates[playerID] = glmv1.PlayerGameState_builder{
-			Hand: glmv1.PlayerHand_builder{}.Build(),
-		}.Build()
-=======
 		g.ensurePlayerState(playerID)
->>>>>>> d63e5cc (fix: address pr comments)
 	}
 
 	g.dealCards()
