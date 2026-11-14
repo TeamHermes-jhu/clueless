@@ -51,6 +51,9 @@ type GameLogicManager struct {
 	// needs to maintain all the players' hands
 	playerStates map[string]*glmv1.PlayerGameState
 
+	// tracks Players that are eliminated
+	eliminated map[string]bool
+
 	rng Rand
 }
 
@@ -86,12 +89,38 @@ func (g *GameLogicManager) InitializeGameState(playerIDs []string) {
 		g.turnOrder[i], g.turnOrder[j] = g.turnOrder[j], g.turnOrder[i]
 	})
 
+	// initialize eliminated tracker
+	g.eliminated = make(map[string]bool)
+
 	g.setupGame(playerIDs)
 }
 
 // AdvanceTurn updates the current turn index.
 func (g *GameLogicManager) AdvanceTurn() {
-	g.turnIdx = (g.turnIdx + 1) % len(g.turnOrder)
+	if len(g.turnOrder) == 0 || g.PlayersRemaining() == 0 {
+		return
+	}
+	
+	for i := 0; i < len(g.turnOrder); i++{
+		g.turnIdx = (g.turnIdx + 1) % len(g.turnOrder)
+
+		if !g.eliminated[g.trunOrder[g.turnIdx]]{
+			return
+		}
+	}
+}
+
+// checks to see how many players are remaining
+func(g *GameLogicManager) PlayersRemaining() int {
+	count := 0
+
+	for _, playerID := range g.turnOder{
+		if !g.eliminated[playerID] {
+			count++
+		}
+	}
+	
+	return count
 }
 
 // Suggest handles a player's suggestion and returns a message indicating the suggestion.
@@ -108,18 +137,36 @@ func (g *GameLogicManager) Suggest(suggestion *suggestionv1.SuggestionRequest) s
 	)
 }
 
-// Accuse handles a player's accusation and returns a message indicating the accusation.
-func (g *GameLogicManager) Accuse(accusation *suggestionv1.AccusationRequest) string {
-	// Do something with GameLogicManager so the linter doesn't complain.
-	_ = g
-	// TODO: validation + logic
-	return fmt.Sprintf(
-		accuseFmt,
-		accusation.GetSuggestion().GetPlayerId(),
-		accusation.GetSuggestion().GetCharacter().String(),
-		accusation.GetSuggestion().GetWeapon().String(),
-		accusation.GetSuggestion().GetRoom().String(),
-	)
+// Accuse handles a player's accusation and returns whether accusation was correct and whether there were any errors.
+func (g *GameLogicManager) Accuse(accusation *suggestionv1.AccusationRequest) (bool, error) {
+	// check to see if accusation and suggestion are valid, and return an error if either are missing
+	if accusation == nil || accusation.GetSuggestion() == nil {
+		return false, errors.New("invalid accusation")
+	} 
+
+	// Get the suggestion containing the player's accusation
+	guess := accusation.GetSuggestion()
+
+	// Get the playerID of player who made accusation
+	playerID := guess.GetPlayerID()
+
+	// Check to see if it is the player's turn, and return an error if it is not their turn
+	if !g.isValidTurn(playerID){
+		return false, errInvalidTurn
+	}
+
+	// check to see if character, weapon, and room in the accusation matches the case file
+	correct :=
+		guess.GetCharacter() == g.caseFile.GetCharacter() &&
+		guess.GetWeapon() == g.caseFile.GetWeapon() &&
+		guess.GetRoom() == g.caseFile.GetRoom()
+
+	// if accusation is incorrect, mark the player as eliminated
+	if !correct {
+		g.eliminated[PlayerID] = true
+	}
+
+	return correct, nil
 }
 
 // GetCurrentPlayer returns the ID of the player whose turn it is.
