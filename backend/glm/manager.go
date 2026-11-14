@@ -37,7 +37,11 @@ const (
 	caseFileFmt = "Spoiler alert! case file: suspect %s, room %s, weapon %s"
 )
 
-var errInvalidTurn = errors.New("not players turn")
+// Define reusable errors for invalid game actions.
+var (
+    errInvalidTurn       = errors.New("not players turn")
+    errInvalidAccusation = errors.New("invalid accusation")
+)
 
 // GameLogicManager manages the game logic for a session, including the case file, player hands, player locations, and the list of player IDs.
 type GameLogicManager struct {
@@ -141,7 +145,7 @@ func (g *GameLogicManager) Suggest(suggestion *suggestionv1.SuggestionRequest) s
 func (g *GameLogicManager) Accuse(accusation *suggestionv1.AccusationRequest) (bool, error) {
 	// check to see if accusation and suggestion are valid, and return an error if either are missing.
 	if accusation == nil || accusation.GetSuggestion() == nil {
-		return false, errors.New("invalid accusation")
+		return false, errInvalidAccusation
 	} 
 
 	// Get the suggestion containing the player's accusation.
