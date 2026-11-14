@@ -218,6 +218,8 @@ func (s *Session) handleRegister(req registerRequest) {
 
 	s.players[req.client.id] = req.client
 	req.result <- true
+
+	s.sendCharacterSelections(req.client.id)
 }
 
 func (s *Session) handleUnregister(id string) {
@@ -244,6 +246,12 @@ func (s *Session) handleInbound(msg inboundMessage) {
 		return
 	}
 
+	if env.WhichPayload() == envelopev1.Envelope_SelectCharacter_case {
+		s.selectCharacter(msg.from, env.GetSelectCharacter())
+
+		return
+	}
+
 	if !s.started {
 		s.sendTo(msg.from, envelopev1.Envelope_builder{
 			Error: sessionv1.Error_builder{
@@ -264,6 +272,10 @@ func (s *Session) handleInbound(msg inboundMessage) {
 		s.viewLocations(msg.from)
 
 		return
+	case envelopev1.Envelope_SuggestionResponse_case:
+		s.disprove(msg.from, env.GetSuggestionResponse())
+
+		return
 	default:
 	}
 
@@ -274,6 +286,10 @@ func (s *Session) handleInbound(msg inboundMessage) {
 			}.Build(),
 		}.Build())
 
+		return
+	}
+
+	if s.rejectWhileDisproving(msg.from) {
 		return
 	}
 
@@ -350,6 +366,7 @@ func (s *Session) startGame() {
 	s.started = true
 	s.broadcastMessage("game is starting")
 	s.gameLogicManager.InitializeGameState(s.joinOrder)
+	s.broadcastCharacterSelections()
 
 	for _, playerID := range s.joinOrder {
 		playerHand := s.gameLogicManager.GetPlayerHand(playerID)
@@ -382,9 +399,53 @@ func (s *Session) suggest(suggestion *suggestionv1.SuggestionRequest) {
 	s.broadcastMessage(suggestMessage)
 }
 
+// processes player's accusation and broadcasts the result.
 func (s *Session) accuse(accusation *suggestionv1.AccusationRequest) {
-	accuseMessage := s.gameLogicManager.Accuse(accusation)
-	s.broadcastMessage(accuseMessage)
+	// Get playerID of the player who made the accusation.
+	playerID := accusation.GetSuggestion().GetPlayerId()
+
+	// Checks with game logic manager to see if accusation was correct.
+	isCorrect, err := s.gameLogicManager.Accuse(accusation)
+	// if accusation is invalid, notify player and stop processing.
+	if err != nil {
+		s.sendTo(playerID, envelopev1.Envelope_builder{
+			Error: sessionv1.Error_builder{
+				Error: new(err.Error()),
+			}.Build(),
+		}.Build())
+
+		return
+	}
+
+	// if accusation is correct, announce the winner, reveal solution, and EndGame.
+	if isCorrect {
+		s.broadcastMessage(fmt.Sprintf(
+			"Player %s Wins! %s",
+			playerID,
+			s.gameLogicManager.GetCaseFile(),
+		))
+
+		s.gameLogicManager.EndGame()
+
+		return
+	}
+
+	// if accusation is incorrect, announce that the player has been eliminated.
+	s.broadcastMessage(fmt.Sprintf(
+		"Player %s has made an incorrect accusation and has been eliminated.",
+		playerID,
+	))
+
+	// if there are no remaining players broadcast GameOver with no winner, and EndGame.
+	if s.gameLogicManager.PlayersRemaining() == 0 {
+		s.broadcastMessage("All players have been eliminated. Game Over!")
+
+		s.gameLogicManager.EndGame()
+
+		return
+	}
+
+	s.endTurn()
 }
 
 func (s *Session) endTurn() {
@@ -411,12 +472,14 @@ func (s *Session) getPlayerLocationMessage(playerID string) string {
 func (s *Session) broadcastMessage(msg string) {
 	s.logger.Info("Broadcasting message")
 
-	env := envelopev1.Envelope_builder{
+	s.broadcast(envelopev1.Envelope_builder{
 		Msg: sessionv1.Message_builder{
 			Msg: new(msg),
 		}.Build(),
-	}.Build()
+	}.Build())
+}
 
+func (s *Session) broadcast(env *envelopev1.Envelope) {
 	for id := range s.players {
 		s.sendTo(id, env)
 	}
