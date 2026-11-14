@@ -264,6 +264,10 @@ func (s *Session) handleInbound(msg inboundMessage) {
 		s.viewLocations(msg.from)
 
 		return
+	case envelopev1.Envelope_SuggestionResponse_case:
+		s.disprove(msg.from, env.GetSuggestionResponse())
+
+		return
 	default:
 	}
 
@@ -274,6 +278,10 @@ func (s *Session) handleInbound(msg inboundMessage) {
 			}.Build(),
 		}.Build())
 
+		return
+	}
+
+	if s.rejectWhileDisproving(msg.from) {
 		return
 	}
 

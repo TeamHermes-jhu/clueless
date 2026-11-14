@@ -59,6 +59,8 @@ type GameLogicManager struct {
 	eliminated map[string]struct{}
 
 	rng Rand
+
+	pendingDisprove *disproveState
 }
 
 // Option is passed to New for GameLogicManager to affect it in someway.
