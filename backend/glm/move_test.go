@@ -30,7 +30,7 @@ func TestMove(t *testing.T) {
 				PlayerId: new("1"),
 				Room:     cardsv1.Rooms_BALLROOM.Enum(),
 			}.Build(),
-			want: "not players turn",
+			want: glm.ErrInvalidTurn.Error(),
 		},
 		{
 			name: "invalid player id",
@@ -38,14 +38,14 @@ func TestMove(t *testing.T) {
 				PlayerId: new("0"),
 				Room:     cardsv1.Rooms_BALLROOM.Enum(),
 			}.Build(),
-			want: "invalid player id",
+			want: glm.ErrUnknownPlayer.Error(),
 		},
 		{
 			name: "no location selected",
 			move: sessionv1.Move_builder{
 				PlayerId: new("2"),
 			}.Build(),
-			want: "no location selected",
+			want: glm.ErrNoLocation.Error(),
 		},
 		{
 			name: "not adjacent move",
@@ -53,7 +53,7 @@ func TestMove(t *testing.T) {
 				PlayerId: new("2"),
 				Room:     cardsv1.Rooms_LOUNGE.Enum(),
 			}.Build(),
-			want: "location is not next to the players current location",
+			want: glm.ErrNotAdjacent.Error(),
 		},
 		{
 			name: "valid room move",
@@ -122,5 +122,5 @@ func TestOccupiedHall(t *testing.T) {
 		}.Build(),
 	)
 
-	assert.Equal(t, "hall is occupied by player", got)
+	assert.Equal(t, glm.ErrHallOccupied.Error(), got)
 }
