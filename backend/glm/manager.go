@@ -169,10 +169,9 @@ func (g *GameLogicManager) Accuse(accusation *suggestionv1.AccusationRequest) (b
 	return correct, nil
 }
 
-// EndGame ends the game when called
-func (g *GameLogicManager) EndGame() {
+// EndGame ends the game when called.
+func (*GameLogicManager) EndGame() {
 	// TO DO
-	return
 }
 
 // GetCurrentPlayer returns the ID of the player whose turn it is.
