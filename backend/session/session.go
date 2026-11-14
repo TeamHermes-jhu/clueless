@@ -385,7 +385,7 @@ func (s *Session) suggest(suggestion *suggestionv1.SuggestionRequest) {
 // processes player's accusation and broadcasts the result
 func (s *Session) accuse(accusation *suggestionv1.AccusationRequest) {
 	// Get playerID of the player who made the accusation
-	playerID := accusation.GetSuggestion().GetPlayerID()
+	playerID := accusation.GetSuggestion().GetPlayerId()
 	
 	// Checks with game logic manager to see if accusation was correct
 	correct, err := s.gameLogicManage.Accuse(accusation)
