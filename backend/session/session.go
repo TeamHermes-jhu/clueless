@@ -395,7 +395,7 @@ func (s *Session) accuse(accusation *suggestionv1.AccusationRequest) {
 		s.sendTo(playerID, envelopev1.Envelope_builder{
 			Error: sessionv1.Error_builder{
 				Error: new(err.Error()),
-			}.Build().
+			}.Build(),
 		}.Build())
 
 		return
@@ -414,7 +414,7 @@ func (s *Session) accuse(accusation *suggestionv1.AccusationRequest) {
 	// if accusation is incorrect, announce that the player has been eliminated
 	s.broadcastMessage(fmt.Sprintf(
 		"Player %s has made an incorrect accusation and has been eliminated.",
-		playerID
+		playerID,
 	))
 
 	// if there are no remaining players broadcast GameOver with no winner
