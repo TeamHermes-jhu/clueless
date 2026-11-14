@@ -39,8 +39,8 @@ const (
 
 // Define reusable errors for invalid game actions.
 var (
-    errInvalidTurn       = errors.New("not players turn")
-    errInvalidAccusation = errors.New("invalid accusation")
+	errInvalidTurn       = errors.New("not players turn")
+	errInvalidAccusation = errors.New("invalid accusation")
 )
 
 // GameLogicManager manages the game logic for a session, including the case file, player hands, player locations, and the list of player IDs.
@@ -104,26 +104,26 @@ func (g *GameLogicManager) AdvanceTurn() {
 	if len(g.turnOrder) == 0 || g.PlayersRemaining() == 0 {
 		return
 	}
-	
+
 	for range len(g.turnOrder) {
 		g.turnIdx = (g.turnIdx + 1) % len(g.turnOrder)
 
-		if !g.eliminated[g.turnOrder[g.turnIdx]]{
+		if !g.eliminated[g.turnOrder[g.turnIdx]] {
 			return
 		}
 	}
 }
 
 // PlayersRemaining checks to see how many players are remaining.
-func(g *GameLogicManager) PlayersRemaining() int {
+func (g *GameLogicManager) PlayersRemaining() int {
 	count := 0
 
-	for _, playerID := range g.turnOrder{
+	for _, playerID := range g.turnOrder {
 		if !g.eliminated[playerID] {
 			count++
 		}
 	}
-	
+
 	return count
 }
 
@@ -146,7 +146,7 @@ func (g *GameLogicManager) Accuse(accusation *suggestionv1.AccusationRequest) (b
 	// check to see if accusation and suggestion are valid, and return an error if either are missing.
 	if accusation == nil || accusation.GetSuggestion() == nil {
 		return false, errInvalidAccusation
-	} 
+	}
 
 	// Get the suggestion containing the player's accusation.
 	guess := accusation.GetSuggestion()
@@ -155,13 +155,12 @@ func (g *GameLogicManager) Accuse(accusation *suggestionv1.AccusationRequest) (b
 	playerID := guess.GetPlayerId()
 
 	// Check to see if it is the player's turn, and return an error if it is not their turn.
-	if !g.isValidTurn(playerID){
+	if !g.isValidTurn(playerID) {
 		return false, errInvalidTurn
 	}
 
 	// check to see if character, weapon, and room in the accusation matches the case file.
-	correct :=
-		guess.GetCharacter() == g.caseFile.GetCharacter() &&
+	correct := guess.GetCharacter() == g.caseFile.GetCharacter() &&
 		guess.GetWeapon() == g.caseFile.GetWeapon() &&
 		guess.GetRoom() == g.caseFile.GetRoom()
 
