@@ -82,6 +82,7 @@ export const ENVELOPE_MESSAGE_TYPES = {
   viewLocations: MessageType.ViewLocationsRequest,
   selectCharacter: MessageType.CharacterSelectRequest,
   characterSelection: MessageType.CharacterSelectChoices,
+  suggestionResponse: MessageType.SuggestionResponse
 } as const satisfies { [K in EnvelopeCase]: MessageTypeFor<EnvelopeValue<K>> };
 
 // Converts a received Envelope into its bus event, or null if it has no payload.
