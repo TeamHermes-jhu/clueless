@@ -56,7 +56,7 @@ type GameLogicManager struct {
 	playerStates map[string]*glmv1.PlayerGameState
 
 	// tracks Players that are eliminated.
-	eliminated map[string]bool
+	eliminated map[string]struct{}
 
 	rng Rand
 }
@@ -94,7 +94,7 @@ func (g *GameLogicManager) InitializeGameState(playerIDs []string) {
 	})
 
 	// initialize eliminated tracker
-	g.eliminated = make(map[string]bool)
+	g.eliminated = make(map[string]struct{})
 
 	g.setupGame(playerIDs)
 }
