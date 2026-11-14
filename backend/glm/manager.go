@@ -5,14 +5,13 @@
 package glm
 
 import (
+	"errors"
 	"fmt"
-	"maps"
 	"math/rand/v2"
 	"slices"
 
 	cardsv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/cards/v1"
 	glmv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/glm/v1"
-	sessionv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/session/v1"
 	suggestionv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/suggestion/v1"
 )
 
@@ -32,11 +31,13 @@ const (
 	cardWeapon  = 3
 
 	// number of halls in the game.
-	// numHalls = 12 will be used later.
+	numHalls = 12
 
 	// text formats for game initialization.
 	caseFileFmt = "Spoiler alert! case file: suspect %s, room %s, weapon %s"
 )
+
+var errInvalidTurn = errors.New("not players turn")
 
 // GameLogicManager manages the game logic for a session, including the case file, player hands, player locations, and the list of player IDs.
 type GameLogicManager struct {
@@ -60,12 +61,11 @@ func (g *GameLogicManager) InitializeGameState(playerIDs []string) {
 	g.hasSuggested = false
 	g.playerStates = make(map[string]*glmv1.PlayerGameState)
 
-	r := rand.Perm(len(playerIDs))
+	g.turnOrder = playerIDs
 
-	g.turnOrder = make([]string, len(playerIDs))
-	for i, v := range r {
-		g.turnOrder[v] = playerIDs[i]
-	}
+	g.rng.Shuffle(len(g.turnOrder), func(i, j int) {
+		g.turnOrder[i], g.turnOrder[j] = g.turnOrder[j], g.turnOrder[i]
+	})
 
 	g.setupGame(playerIDs)
 }
@@ -76,18 +76,18 @@ func (g *GameLogicManager) AdvanceTurn() {
 	g.hasSuggested = false
 }
 
-// Move updates the player's location and returns a message indicating the move.
-func (g *GameLogicManager) Move(move *sessionv1.Move) string {
+// Suggest handles a player's suggestion and returns a message indicating the suggestion.
+func (g *GameLogicManager) Suggest(suggestion *suggestionv1.SuggestionRequest) string {
 	// Do something with GameLogicManager so the linter doesn't complain.
 	_ = g
-	// TODO: validate its a good move
-	to := move.GetRoom().String()
-
-	if move.WhichMoveTo() == sessionv1.Move_Hall_case {
-		to = move.GetHall().String()
-	}
-
-	return fmt.Sprintf(moveFmt, move.GetPlayerId(), to)
+	// TODO: figure out how to handle suggestions
+	return fmt.Sprintf(
+		suggestFmt,
+		suggestion.GetPlayerId(),
+		suggestion.GetCharacter().String(),
+		suggestion.GetWeapon().String(),
+		suggestion.GetRoom().String(),
+	)
 }
 
 // Accuse handles a player's accusation and returns a message indicating the accusation.
@@ -157,18 +157,13 @@ func (g *GameLogicManager) GetPlayerCharacter(playerID string) cardsv1.Character
 func (g *GameLogicManager) setupGame(playerIDs []string) {
 	g.setupCaseFile()
 	g.initializePlayerStates(playerIDs)
-	g.dealCards()
-	g.setupPlayerLocations()
 }
 
 // setupCaseFile creates the case file with a random suspect, room, and weapon.
 func (g *GameLogicManager) setupCaseFile() {
-	//nolint:gosec // rand.IntN is used for selecting random cards, not for security-sensitive purposes.
-	suspect := cardsv1.Characters(rand.IntN(numSuspects) + 1)
-	//nolint:gosec // rand.IntN is used for selecting random cards, not for security-sensitive purposes.
-	room := cardsv1.Rooms(rand.IntN(numRooms) + 1)
-	//nolint:gosec // rand.IntN is used for selecting random cards, not for security-sensitive purposes.
-	weapon := cardsv1.Weapons(rand.IntN(numWeapons) + 1)
+	suspect := cardsv1.Characters(g.rng.IntN(numSuspects) + 1)
+	room := cardsv1.Rooms(g.rng.IntN(numRooms) + 1)
+	weapon := cardsv1.Weapons(g.rng.IntN(numWeapons) + 1)
 
 	g.caseFile = glmv1.CaseFile_builder{
 		Character: &suspect,
@@ -179,26 +174,14 @@ func (g *GameLogicManager) setupCaseFile() {
 
 func (g *GameLogicManager) initializePlayerStates(playerIDs []string) {
 	g.playerStates = make(map[string]*glmv1.PlayerGameState)
-	// TODO: let players pick their character instead of handing them out in join order.
-	for i, playerID := range playerIDs {
-		character := cardsv1.Characters(i%numSuspects + 1)
+	for _, playerID := range playerIDs {
 		g.playerStates[playerID] = glmv1.PlayerGameState_builder{
-			Character: &character,
+			Hand: glmv1.PlayerHand_builder{}.Build(),
 		}.Build()
 	}
 
-	g.initializeHands()
-}
-
-func (g *GameLogicManager) initializeHands() {
-	playerIDs := slices.Collect(maps.Keys(g.playerStates))
-	for _, playerID := range playerIDs {
-		g.playerStates[playerID].SetHand(glmv1.PlayerHand_builder{
-			Characters: []cardsv1.Characters{},
-			Rooms:      []cardsv1.Rooms{},
-			Weapons:    []cardsv1.Weapons{},
-		}.Build())
-	}
+	g.dealCards()
+	g.setupPlayerLocations()
 }
 
 // dealCards distributes the cards to the players in a round-robin fashion.
@@ -212,41 +195,48 @@ func (g *GameLogicManager) dealCards() {
 	allCards = removeCardFromDeck(allCards, int32(g.caseFile.GetCharacter()), cardSuspect)
 	allCards = removeCardFromDeck(allCards, int32(g.caseFile.GetRoom()), cardRoom)
 	allCards = removeCardFromDeck(allCards, int32(g.caseFile.GetWeapon()), cardWeapon)
-	// we want to deal them sequentially to players, uniformly randomly (all shuffled together)
 
-	rand.Shuffle(len(allCards), func(i, j int) {
+	g.rng.Shuffle(len(allCards), func(i, j int) {
 		allCards[i], allCards[j] = allCards[j], allCards[i]
 	})
 
-	currentplayerIDxToDeal := 1
+	i := 0
 
-	playerIDs := slices.Collect(maps.Keys(g.playerStates))
+	for i < len(allCards) {
+		for _, state := range g.playerStates {
+			if i >= len(allCards) {
+				break
+			}
 
-	for len(allCards) > 0 {
-		cardToDeal := allCards[0]
-		allCards = allCards[1:]
-		// assign the card to the current player
-		switch {
-		case cardToDeal <= numSuspects:
-			// assign suspect card to current player
-			currentCharacters := g.playerStates[playerIDs[currentplayerIDxToDeal-1]].GetHand().GetCharacters()
-			g.playerStates[playerIDs[currentplayerIDxToDeal-1]].GetHand().SetCharacters(
-				append(currentCharacters, cardsv1.Characters(cardToDeal)))
-		case cardToDeal <= numSuspects+numRooms:
-			// assign room card to current player
-			cardToDeal -= numSuspects
-			currentRooms := g.playerStates[playerIDs[currentplayerIDxToDeal-1]].GetHand().GetRooms()
-			g.playerStates[playerIDs[currentplayerIDxToDeal-1]].GetHand().SetRooms(
-				append(currentRooms, cardsv1.Rooms(cardToDeal)))
-		default:
-			// assign weapon card to current player
-			cardToDeal -= numSuspects + numRooms
-			currentWeapons := g.playerStates[playerIDs[currentplayerIDxToDeal-1]].GetHand().GetWeapons()
-			g.playerStates[playerIDs[currentplayerIDxToDeal-1]].GetHand().SetWeapons(
-				append(currentWeapons, cardsv1.Weapons(cardToDeal)))
+			card := allCards[i]
+
+			switch {
+			case card <= numSuspects:
+				// assign suspect card to current player
+				currentCharacters := state.GetHand().GetCharacters()
+				state.GetHand().SetCharacters(
+					append(currentCharacters, cardsv1.Characters(card)),
+				)
+
+			case card <= numSuspects+numRooms:
+				// assign room card to current player
+				card -= numSuspects
+				currentRooms := state.GetHand().GetRooms()
+				state.GetHand().SetRooms(
+					append(currentRooms, cardsv1.Rooms(card)),
+				)
+
+			default:
+				// assign weapon card to current player
+				card -= numSuspects + numRooms
+				currentWeapons := state.GetHand().GetWeapons()
+				state.GetHand().SetWeapons(
+					append(currentWeapons, cardsv1.Weapons(card)),
+				)
+			}
+
+			i++
 		}
-
-		currentplayerIDxToDeal = (currentplayerIDxToDeal % len(playerIDs)) + 1
 	}
 }
 
@@ -276,12 +266,13 @@ func removeCardFromDeck(deck []int32, cardNum int32, cardType int) []int32 {
 
 // setupPlayerLocations places each player in a random starting room.
 func (g *GameLogicManager) setupPlayerLocations() {
-	playerIDs := slices.Collect(maps.Keys(g.playerStates))
-	for _, playerID := range playerIDs {
-		//nolint:gosec // rand.IntN is used for selecting random rooms, not for security-sensitive purposes.
-		room := cardsv1.Rooms(rand.IntN(numRooms) + 1)
-		g.playerStates[playerID].SetLocation(glmv1.PlayerLocation_builder{
-			Room: &room,
+	for _, state := range g.playerStates {
+		state.SetLocation(glmv1.PlayerLocation_builder{
+			Hall: new(cardsv1.Halls(g.rng.IntN(numHalls) + 1)),
 		}.Build())
 	}
+}
+
+func (g *GameLogicManager) isValidTurn(id string) bool {
+	return g.turnOrder[g.turnIdx] == id
 }

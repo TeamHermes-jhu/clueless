@@ -81,7 +81,7 @@ func New(l *slog.Logger) *Session {
 		unregister:       make(chan string),
 		inbound:          make(chan inboundMessage),
 		stop:             make(chan struct{}),
-		gameLogicManager: &glm.GameLogicManager{},
+		gameLogicManager: glm.New(),
 	}
 
 	s.logger = l.With("session_id", s.id)
