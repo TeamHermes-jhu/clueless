@@ -23,6 +23,7 @@ import type { EndTurn } from './gen/session/v1/turn_indication_pb';
 import type {
   AccusationRequest,
   AccusationResponse,
+  DisproveRequest,
   SuggestionRequest,
   SuggestionResponse,
 } from './gen/suggestion/v1/suggestion_pb';
@@ -49,6 +50,7 @@ export interface ProtoPayloadMap {
   [MessageType.ViewLocationsRequest]: ViewLocationsRequest;
   [MessageType.CharacterSelectRequest]: CharacterSelectRequest;
   [MessageType.CharacterSelectChoices]: CharacterSelectChoices;
+  [MessageType.DisproveRequest]: DisproveRequest;
   [MessageType.StartGame]: StartGame;
 }
 
@@ -88,6 +90,7 @@ export const ENVELOPE_MESSAGE_TYPES = {
   selectCharacter: MessageType.CharacterSelectRequest,
   characterSelection: MessageType.CharacterSelectChoices,
   suggestionResponse: MessageType.SuggestionResponse,
+  disproveRequest: MessageType.DisproveRequest,
   startGame: MessageType.StartGame,
 } as const satisfies { [K in EnvelopeCase]: MessageTypeFor<EnvelopeValue<K>> };
 

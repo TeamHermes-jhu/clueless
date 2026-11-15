@@ -12,13 +12,18 @@ import (
 
 	cardsv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/cards/v1"
 	glmv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/glm/v1"
-	suggestionv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/suggestion/v1"
+)
+
+var (
+	// ErrInvalidTurn is when a player tries to take action out of turn.
+	ErrInvalidTurn = errors.New("not players turn")
+
+	// ErrUnknownPlayer is when a player id isn't in this session.
+	ErrUnknownPlayer = errors.New("you are not part of this game")
 )
 
 const (
 	// text formats for logging.
-	suggestFmt = "player %s has suggested: %s with the %s in the %s"
-	accuseFmt  = "player %s has made an accusation: %s with the %s in the %s"
 
 	// number of each type of card in the game.
 	numSuspects = 6
@@ -48,6 +53,8 @@ type GameLogicManager struct {
 	// needs to maintain a case file (suspect, room, weapon).
 	caseFile *glmv1.CaseFile
 
+	hasSuggested bool
+	hasMoved     bool
 	// needs to maintain the turn order and current turn.
 	turnOrder []string
 	turnIdx   int
@@ -87,6 +94,7 @@ func WithRand(r *rand.Rand) Option {
 // InitializeGameState sets up the initial state of the game, including the turn order, player hands, and player locations.
 func (g *GameLogicManager) InitializeGameState(playerIDs []string) {
 	g.turnIdx = 0
+	g.hasSuggested = false
 
 	g.turnOrder = playerIDs
 
@@ -101,8 +109,12 @@ func (g *GameLogicManager) InitializeGameState(playerIDs []string) {
 	g.setupGame(playerIDs)
 }
 
-// AdvanceTurn updates the current turn index.
+// AdvanceTurn updates the current turn index and resets the per turn action state.
 func (g *GameLogicManager) AdvanceTurn() {
+	g.hasSuggested = false
+	g.hasMoved = false
+	g.pendingDisprove = nil
+
 	if len(g.turnOrder) == 0 || g.PlayersRemaining() == 0 {
 		return
 	}
@@ -124,51 +136,6 @@ func (g *GameLogicManager) AdvanceTurn() {
 func (g *GameLogicManager) PlayersRemaining() int {
 	count := len(g.turnOrder) - len(g.eliminated)
 	return count
-}
-
-// Suggest handles a player's suggestion and returns a message indicating the suggestion.
-func (g *GameLogicManager) Suggest(suggestion *suggestionv1.SuggestionRequest) string {
-	// Do something with GameLogicManager so the linter doesn't complain.
-	_ = g
-	// TODO: figure out how to handle suggestions.
-	return fmt.Sprintf(
-		suggestFmt,
-		suggestion.GetPlayerId(),
-		suggestion.GetCharacter().String(),
-		suggestion.GetWeapon().String(),
-		suggestion.GetRoom().String(),
-	)
-}
-
-// Accuse handles a player's accusation and returns whether accusation was correct and whether there were any errors.
-func (g *GameLogicManager) Accuse(accusation *suggestionv1.AccusationRequest) (bool, error) {
-	// check to see if accusation and suggestion are valid, and return an error if either are missing.
-	if accusation == nil || accusation.GetSuggestion() == nil {
-		return false, errInvalidAccusation
-	}
-
-	// Get the suggestion containing the player's accusation.
-	guess := accusation.GetSuggestion()
-
-	// Get the playerID of player who made accusation.
-	playerID := guess.GetPlayerId()
-
-	// Check to see if it is the player's turn, and return an error if it is not their turn.
-	if !g.isValidTurn(playerID) {
-		return false, errInvalidTurn
-	}
-
-	// check to see if character, weapon, and room in the accusation matches the case file.
-	correct := guess.GetCharacter() == g.caseFile.GetCharacter() &&
-		guess.GetWeapon() == g.caseFile.GetWeapon() &&
-		guess.GetRoom() == g.caseFile.GetRoom()
-
-	// if accusation is incorrect, mark the player as eliminated.
-	if !correct {
-		g.eliminated[playerID] = struct{}{}
-	}
-
-	return correct, nil
 }
 
 // EndGame ends the game when called.
@@ -244,12 +211,12 @@ func (g *GameLogicManager) initializePlayerStates(playerIDs []string) {
 		g.ensurePlayerState(playerID)
 	}
 
-	g.dealCards()
-	g.setupPlayerLocations()
+	g.dealCards(playerIDs)
+	g.setupPlayerLocations(playerIDs)
 }
 
 // dealCards distributes the cards to the players in a round-robin fashion.
-func (g *GameLogicManager) dealCards() {
+func (g *GameLogicManager) dealCards(playerIDs []string) {
 	// we have 18 cards left, 5 suspects/weapons and 8 rooms
 	allCards := make([]int32, numSuspects+numRooms+numWeapons)
 	for i := range allCards {
@@ -267,11 +234,12 @@ func (g *GameLogicManager) dealCards() {
 	i := 0
 
 	for i < len(allCards) {
-		for _, state := range g.playerStates {
+		for _, playerID := range playerIDs {
 			if i >= len(allCards) {
 				break
 			}
 
+			state := g.playerStates[playerID]
 			card := allCards[i]
 
 			switch {
@@ -329,8 +297,9 @@ func removeCardFromDeck(deck []int32, cardNum int32, cardType int) []int32 {
 }
 
 // setupPlayerLocations places each player in a random starting room.
-func (g *GameLogicManager) setupPlayerLocations() {
-	for _, state := range g.playerStates {
+func (g *GameLogicManager) setupPlayerLocations(playerIDs []string) {
+	for _, playerID := range playerIDs {
+		state := g.playerStates[playerID]
 		state.SetLocation(glmv1.PlayerLocation_builder{
 			Hall: new(cardsv1.Halls(g.rng.IntN(numHalls) + 1)),
 		}.Build())

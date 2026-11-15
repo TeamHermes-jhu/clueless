@@ -23,6 +23,7 @@ message Envelope {
     glm.v1.CharacterSelectChoices character_selection = 11;
     suggestion.v1.SuggestionResponse suggestion_response = 12;
     session.v1.ViewCharactersRequest view_characters = 13;
-    session.v1.StartGame start_game = 14;
+    suggestion.v1.DisproveRequest disprove_request = 14;
+    session.v1.StartGame start_game = 15;
   }
 }

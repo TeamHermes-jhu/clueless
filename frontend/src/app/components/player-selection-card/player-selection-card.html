@@ -1,0 +1,16 @@
+<div
+  class="card"
+  role="button"
+  [class.unavailable]="!selectable()"
+  [class.selected]="selected()"
+  [attr.tabindex]="selectable() && !selected() ? 0 : -1"
+  [attr.aria-disabled]="!selectable() || selected()"
+  [attr.aria-label]="selectable() ? name() : name() + ' (unavailable)'"
+  [attr.title]="selectable() ? null : 'Already taken'"
+  (click)="confirmSelection()"
+  (keydown.enter)="confirmSelection()"
+>
+  <img [src]="image()" [alt]="name()" draggable="false" />
+</div>
+
+<p-confirmdialog />

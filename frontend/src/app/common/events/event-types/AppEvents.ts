@@ -25,6 +25,7 @@ export enum MessageType {
   ViewCharactersRequest,
   CharacterSelectRequest,
   CharacterSelectChoices,
+  DisproveRequest,
   StartGame,
 }
 

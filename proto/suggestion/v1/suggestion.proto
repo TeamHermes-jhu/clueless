@@ -22,6 +22,12 @@ message AccusationRequest {
   SuggestionRequest suggestion = 2; // The suggestion being accused
 }
 
+// Message asking a player to disprove a suggestion, listing the cards they may choose from
+message DisproveRequest {
+  SuggestionRequest suggestion = 1; // The suggestion to disprove
+  repeated cards.v1.Card valid_cards = 2; // Cards in the asked player's hand that disprove the suggestion
+}
+
 // Message representing the response to a suggestion
 message SuggestionResponse {
   int32 suggestion_id = 1; // Unique identifier for the suggestion being responded to
