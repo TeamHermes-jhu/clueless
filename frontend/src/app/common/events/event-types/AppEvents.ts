@@ -25,6 +25,7 @@ export enum MessageType {
   ViewCharactersRequest,
   CharacterSelectRequest,
   CharacterSelectChoices,
+  StartGame,
 }
 
 export enum EventProducer {

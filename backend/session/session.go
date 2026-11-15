@@ -382,6 +382,7 @@ func (s *Session) sendTo(id string, env *envelopev1.Envelope) {
 func (s *Session) startGame() {
 	s.logger.Info("Starting game", "players", len(s.players))
 	s.started = true
+	s.sendGameStartMessage()
 	s.broadcastMessage("game is starting")
 	s.gameLogicManager.InitializeGameState(s.joinOrder)
 	s.broadcastCharacterSelections()
@@ -412,6 +413,16 @@ func (s *Session) startGame() {
 
 	turnMessage := s.gameLogicManager.GetTurnMessage()
 	s.broadcastMessage(turnMessage)
+}
+
+func (s *Session) sendGameStartMessage() {
+	sessionID := s.id.String()
+	startGame := envelopev1.Envelope_builder{
+		StartGame: sessionv1.StartGame_builder{
+			SessionId: &sessionID,
+		}.Build(),
+	}.Build()
+	s.broadcast(startGame)
 }
 
 func (s *Session) move(move *sessionv1.Move) {

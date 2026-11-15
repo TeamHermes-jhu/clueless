@@ -69,3 +69,8 @@ message ViewLocationsRequest {
 message ViewCharactersRequest {
   string player_id = 1;
 }
+
+message StartGame {
+  // The ID of the session to start the game for
+  string session_id = 1;
+}

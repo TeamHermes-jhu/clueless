@@ -17,6 +17,7 @@ import type {
   ViewHandRequest,
   ViewLocationsRequest,
   ViewCharactersRequest,
+  StartGame,
 } from './gen/session/v1/session_pb';
 import type { EndTurn } from './gen/session/v1/turn_indication_pb';
 import type {
@@ -48,6 +49,7 @@ export interface ProtoPayloadMap {
   [MessageType.ViewLocationsRequest]: ViewLocationsRequest;
   [MessageType.CharacterSelectRequest]: CharacterSelectRequest;
   [MessageType.CharacterSelectChoices]: CharacterSelectChoices;
+  [MessageType.StartGame]: StartGame;
 }
 
 export type ProtoMessageType = keyof ProtoPayloadMap;
@@ -85,7 +87,8 @@ export const ENVELOPE_MESSAGE_TYPES = {
   viewCharacters: MessageType.ViewCharactersRequest,
   selectCharacter: MessageType.CharacterSelectRequest,
   characterSelection: MessageType.CharacterSelectChoices,
-  suggestionResponse: MessageType.SuggestionResponse
+  suggestionResponse: MessageType.SuggestionResponse,
+  startGame: MessageType.StartGame,
 } as const satisfies { [K in EnvelopeCase]: MessageTypeFor<EnvelopeValue<K>> };
 
 // Converts a received Envelope into its bus event, or null if it has no payload.
