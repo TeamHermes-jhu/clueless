@@ -1,0 +1,10 @@
+# Only the frontend and the shared proto definitions are needed to build on Vercel.
+.git
+.github
+backend
+**/node_modules
+frontend/dist
+frontend/.angular
+frontend/src/app/common/events/event-types/gen
+*.exe
+*.env

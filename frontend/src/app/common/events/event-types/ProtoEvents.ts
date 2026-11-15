@@ -87,7 +87,7 @@ export const ENVELOPE_MESSAGE_TYPES = {
   selectCharacter: MessageType.CharacterSelectRequest,
   characterSelection: MessageType.CharacterSelectChoices,
   suggestionResponse: MessageType.SuggestionResponse,
-  disproveRequest: MessageType.DisproveRequest
+  disproveRequest: MessageType.DisproveRequest,
   startGame: MessageType.StartGame,
 } as const satisfies { [K in EnvelopeCase]: MessageTypeFor<EnvelopeValue<K>> };
 
