@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { create, fromJsonString, toJsonString } from '@bufbuild/protobuf';
 import type { AppEvent } from '../common/events/event-types/AppEvents';
 import { EventProducer, MessageType } from '../common/events/event-types/AppEvents';
@@ -6,6 +6,7 @@ import type { Envelope } from '../common/events/event-types/gen/envelope/v1/enve
 import { EnvelopeSchema } from '../common/events/event-types/gen/envelope/v1/envelope_pb';
 import { SuggestionRequestSchema } from '../common/events/event-types/gen/suggestion/v1/suggestion_pb';
 import { envelopeToEvent } from '../common/events/event-types/ProtoEvents';
+import { PlayerStore } from '../common/data-stores/PlayerStore';
 import { AbstractServiceAdapter } from './AbstractServiceAdapter';
 
 interface StoredSession {
@@ -15,11 +16,10 @@ interface StoredSession {
 
 @Injectable({ providedIn: 'root' })
 export class GoBackendServiceAdapter extends AbstractServiceAdapter {
-  // Kept in sessionStorage so a page refresh can rejoin the same session.
   private static readonly SESSION_KEY = 'clueless.session';
 
-  private readonly currentPlayerId = signal<string | null>(null);
-  readonly playerId = this.currentPlayerId.asReadonly();
+  private readonly playerStore = inject(PlayerStore);
+  readonly playerId = this.playerStore.playerId;
 
   constructor() {
     super('localhost', 8000, '/ws');
@@ -32,7 +32,7 @@ export class GoBackendServiceAdapter extends AbstractServiceAdapter {
   }
 
   joinSession(sessionId: string, username: string): void {
-    this.currentPlayerId.set(username);
+    this.playerStore.setPlayerId(username);
     this.saveSession({ sessionId, username });
     this.connect({ session: sessionId, player: username });
   }
@@ -101,6 +101,13 @@ export class GoBackendServiceAdapter extends AbstractServiceAdapter {
           }));
         },
         EventProducer.CLIENT,
+      )
+      .on(
+        MessageType.CharacterSelectRequest,
+        (selectCharacter) => {
+          this.sendAsPlayer(() => ({ case: 'selectCharacter', value: selectCharacter }));
+        },
+        EventProducer.CLIENT,
       );
   }
 
@@ -116,7 +123,7 @@ export class GoBackendServiceAdapter extends AbstractServiceAdapter {
   // The stored session is likely gone (e.g. server restart), so stop trying to rejoin it.
   protected override onConnectionFailed(err: unknown): void {
     super.onConnectionFailed(err);
-    this.currentPlayerId.set(null);
+    this.playerStore.clear();
     this.clearSession();
   }
 
