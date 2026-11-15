@@ -18,10 +18,10 @@ message Envelope {
     session.v1.Error error = 6;
     session.v1.ViewHandRequest view_hand = 7;
     glm.v1.PlayerHand player_hand = 8;
-    session.v1.ViewCharactersRequest view_characters = 13;
     session.v1.ViewLocationsRequest view_locations = 9;
     glm.v1.CharacterSelectRequest select_character = 10;
     glm.v1.CharacterSelectChoices character_selection = 11;
     suggestion.v1.SuggestionResponse suggestion_response = 12;
+    session.v1.ViewCharactersRequest view_characters = 13;
   }
 }

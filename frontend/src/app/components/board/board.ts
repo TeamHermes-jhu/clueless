@@ -11,13 +11,12 @@ import { Characters, Rooms, Weapons, Halls } from '../../common/events/event-typ
 import { MoveSchema, 
   ViewHandRequestSchema, 
   ViewLocationsRequestSchema,
-  ViewCharactersRequestSchema 
+  ViewCharactersRequestSchema, 
 } from '../../common/events/event-types/gen/session/v1/session_pb';
 import { EndTurnSchema } from '../../common/events/event-types/gen/session/v1/turn_indication_pb';
 import {
   AccusationRequestSchema,
   SuggestionRequestSchema,
-  SuggestionResponseSchema,
 } from '../../common/events/event-types/gen/suggestion/v1/suggestion_pb';
 
 @Component({
@@ -122,7 +121,7 @@ export class Board {
           this.sendEndTurn();
           break;
         case 'respond':
-          this.sendSuggestResponse(command);
+          this.terminalService.sendResponse(`TODO: Implement response handling`);
           break;
         default:
           this.terminalService.sendResponse(`Unknown command: ${commandName}`);
@@ -288,61 +287,6 @@ export class Board {
     }
 
     return true;
-  }
-
-  private sendSuggestResponse(command: string): void {
-    // Implement the logic for sending a suggestion response here
-    const [_, cardType, cardName] = command.split(' ');
-
-    if (!cardType || !cardName) {
-      this.terminalService.sendResponse(`Missing arguments. Expected format respond <cardType> <cardName>`);
-      return;
-    }
-
-    let card: {value: number; case: 'character' | 'weapon' | 'room'} | undefined;
-
-    switch (cardType.toUpperCase()) {
-      case 'CHARACTER':
-        { const cardNameVal = Characters[cardName.toUpperCase() as keyof typeof Characters];
-        if (typeof cardNameVal !== 'number' || cardNameVal === Characters.UNSPECIFIED) {
-          this.terminalService.sendResponse(`Invalid character ${cardName}. Use listsuspects for valid characters`);
-          return;
-        }
-        card = {value: cardNameVal, case: 'character'};
-        break; }
-      case 'WEAPON':
-        { const cardNameVal = Weapons[cardName.toUpperCase() as keyof typeof Weapons];
-        if (typeof cardNameVal !== 'number' || cardNameVal === Weapons.UNSPECIFIED) {
-          this.terminalService.sendResponse(`Invalid weapon ${cardName}. Use listweapons for valid weapons`);
-          return;
-        }
-        card = {value: cardNameVal, case: 'weapon'};
-        break; }
-      case 'ROOM':
-        { const cardNameVal = Rooms[cardName.toUpperCase() as keyof typeof Rooms];
-        if (typeof cardNameVal !== 'number' || cardNameVal === Rooms.UNSPECIFIED) {
-          this.terminalService.sendResponse(`Invalid room ${cardName}. Use listrooms for valid rooms`);
-          return;
-        }
-        card = {value: cardNameVal, case: 'room'};
-        break; }
-      default:
-        this.terminalService.sendResponse(`Invalid card type. Must be CHARACTER, WEAPON, or ROOM`);
-        return;
-    }
-
-    if (!card) {
-      this.terminalService.sendResponse(`Invalid card for type ${cardType.toUpperCase()}`);
-      return;
-    }
-
-    this.eventBus.publish({
-      type: MessageType.SuggestionResponse,
-      producer: EventProducer.CLIENT,
-      payload: create(SuggestionResponseSchema, {
-        card: card
-      }),
-    });
   }
 
   private sendEndTurn(): void {
