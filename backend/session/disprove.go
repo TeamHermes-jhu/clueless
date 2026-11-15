@@ -69,6 +69,7 @@ func (s *Session) disprove(playerID string, resp *suggestionv1.SuggestionRespons
 	}
 
 	var reveal string
+
 	switch result.Reveal.WhichCard() {
 	case suggestionv1.SuggestionResponse_Character_case:
 		reveal = fmt.Sprintf(disproveRevealFmt, playerID, result.Reveal.GetCharacter())
