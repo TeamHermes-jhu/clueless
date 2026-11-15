@@ -8,3 +8,20 @@ services:
     build: frontend/.
     ports:
       - "8080:80"
+
+# Local MongoDB for secrets store
+# Username and password below are throwaway values
+  mongo:
+    image: mongo:8
+    container_name: mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: localdevpassword
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:

@@ -12,11 +12,13 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/TeamHermes-jhu/clueless/backend/internal/secrets"
 	"github.com/TeamHermes-jhu/clueless/backend/server"
 )
 
 const (
 	defaultShutdownTime = 15 * time.Second
+	secretsLoadTimeout  = 10 * time.Second
 )
 
 var serveCmd = &cobra.Command{
@@ -33,9 +35,17 @@ func init() {
 	rootCmd.AddCommand(serveCmd)
 }
 
-// RunServer sets up the server on the port and serves.
+// RunServer loads secrets, sets up the server on the port and serves.
 func RunServer(cmd *cobra.Command, _ []string) {
 	l := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
+	if err := loadSecrets(cmd.Context()); err != nil {
+		l.Error("Error loading secrets", "error", err)
+
+		return
+	}
+
+	l.Info("Secrets loaded")
 
 	addr, err := cmd.Flags().GetString("addr")
 	if err != nil {
@@ -83,4 +93,12 @@ func RunServer(cmd *cobra.Command, _ []string) {
 	}
 
 	l.Info("Server shutdown sucessfully")
+}
+
+// loadSecrets loads the application secrets into the process environment.
+func loadSecrets(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, secretsLoadTimeout)
+	defer cancel()
+
+	return secrets.Bootstrap(ctx, secretsFile, overrideFile)
 }
