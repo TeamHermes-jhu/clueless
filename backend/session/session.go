@@ -192,9 +192,11 @@ func (s *Session) handleJoin(req joinRequest) {
 		return
 	}
 
-	s.players[req.playerID] = nil
+	if !s.hasPlayer(req.playerID) {
+		s.joinOrder = append(s.joinOrder, req.playerID)
+	}
 
-	s.joinOrder = append(s.joinOrder, req.playerID)
+	s.players[req.playerID] = nil
 	req.result <- true
 
 	if len(s.players) == maxPlayers {
