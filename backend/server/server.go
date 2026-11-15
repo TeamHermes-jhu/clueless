@@ -5,6 +5,8 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -23,6 +25,8 @@ const (
 	readTimeout       = 10 * time.Second
 	writeTimeout      = 10 * time.Second
 	idleTimeout       = 60 * time.Second
+
+	defaultAllowedOrigin = "http://localhost:8080"
 )
 
 // Server contains the server object and maintains
@@ -42,7 +46,7 @@ func New(l *slog.Logger) *Server {
 	mux.Use(middleware.RequestID)
 	mux.Use(slogMiddleware(l))
 	mux.Use(middleware.Recoverer)
-	mux.Use(corsMiddleware("http://localhost:8080"))
+	mux.Use(corsMiddleware(allowedOrigins()))
 
 	s := &Server{
 		mux:      mux,
@@ -89,4 +93,20 @@ func (s *Server) Shutdown(ctx context.Context) error {
 func (s *Server) setupRoutes() {
 	s.mux.Post("/join_session", s.joinSessionHandler)
 	s.mux.Get("/ws", s.handleWS)
+}
+
+func allowedOrigins() []string {
+	var origins []string
+
+	for o := range strings.SplitSeq(os.Getenv("ALLOWED_ORIGINS"), ",") {
+		if o = strings.TrimRight(strings.TrimSpace(o), "/"); o != "" {
+			origins = append(origins, o)
+		}
+	}
+
+	if len(origins) == 0 {
+		return []string{defaultAllowedOrigin}
+	}
+
+	return origins
 }
