@@ -69,5 +69,5 @@ message ViewLocationsRequest {
 
 message StartGame {
   // The ID of the session to start the game for
-  bytes session_id = 1;
+  string session_id = 1;
 }

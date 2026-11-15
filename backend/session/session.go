@@ -374,9 +374,10 @@ func (s *Session) startGame() {
 }
 
 func (s *Session) sendGameStartMessage() {
+	sessionID := s.id.String()
 	startGame := envelopev1.Envelope_builder{
 		StartGame: sessionv1.StartGame_builder{
-			SessionId: s.id[:],
+			SessionId: &sessionID,
 		}.Build(),
 	}.Build()
 	s.broadcast(startGame)
