@@ -19,13 +19,14 @@ import (
 
 const (
 	maxPlayers            = 6
-	minimumPlayersToStart = 2
+	minimumPlayersToStart = 3
 
-	startGameDelay = time.Second * 20
+	startGameDelay = time.Second * 120
 
-	gameTimerFmt      = "%d/6 players. Game starts in %ds"
-	playerLocationFmt = "player %s location: %s"
-	playerHandFmt     = "Your hand: suspects %v, rooms %v, weapons %v"
+	gameFullAndAllSelectedMessage = "Game is full and all characters are selected. Starting game."
+	gameTimerFmt                  = "%d/6 players. Game starts in %ds"
+	playerLocationFmt             = "player %s location: %s"
+	playerHandFmt                 = "Your hand: suspects %v, rooms %v, weapons %v"
 
 	suggestPendingFmt = "waiting for %s to disprove your suggestion"
 	suggestNoneFmt    = "no one could disprove your suggestion"
@@ -198,12 +199,6 @@ func (s *Session) handleJoin(req joinRequest) {
 
 	s.players[req.playerID] = nil
 	req.result <- true
-
-	if len(s.players) == maxPlayers {
-		s.startGame()
-
-		return
-	}
 }
 
 func (s *Session) hasPlayer(id string) bool {
