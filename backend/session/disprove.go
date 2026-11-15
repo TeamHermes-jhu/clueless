@@ -12,7 +12,8 @@ const (
 	// disproveRequestFmt asks a player to show a card that disproves a suggestion.
 	disproveRequestFmt = "player %s suggested %s with the %s in the %s. Show a card to disprove it"
 	// disproveGoneFmt tells the suggester that the asked player cannot answer.
-	disproveGoneFmt = "%s is not connected and cannot disprove your suggestion"
+	disproveGoneFmt   = "%s is not connected and cannot disprove your suggestion"
+	disproveRevealFmt = "player %s shows you %v"
 )
 
 // requestDisprove asks one player to show a card that disproves a suggestion, and tells the
@@ -67,10 +68,19 @@ func (s *Session) disprove(playerID string, resp *suggestionv1.SuggestionRespons
 		return
 	}
 
-	// Only the suggester sees the card. Everyone else only sees who disproved it.
-	s.sendTo(result.SuggesterID, envelopev1.Envelope_builder{
-		SuggestionResponse: result.Reveal,
-	}.Build())
+	var reveal string
+	switch result.Reveal.WhichCard() {
+	case suggestionv1.SuggestionResponse_Character_case:
+		reveal = fmt.Sprintf(disproveRevealFmt, playerID, result.Reveal.GetCharacter())
+
+	case suggestionv1.SuggestionResponse_Room_case:
+		reveal = fmt.Sprintf(disproveRevealFmt, playerID, result.Reveal.GetRoom())
+
+	case suggestionv1.SuggestionResponse_Weapon_case:
+		reveal = fmt.Sprintf(disproveRevealFmt, playerID, result.Reveal.GetWeapon())
+	}
+
+	s.sendMessageTo(result.SuggesterID, reveal)
 
 	s.broadcastMessage(result.Message)
 }
