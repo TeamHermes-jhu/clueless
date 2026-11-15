@@ -1,0 +1,9 @@
+<div class="frame">
+  @for (character of characters; track character) {
+    <app-player-selection-card
+      [character]="character"
+      [selectable]="availableCharacters.has(character)"
+      [selected]="character === selectedCharacter()"
+    />
+  }
+</div>
