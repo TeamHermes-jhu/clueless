@@ -16,6 +16,7 @@ import type {
   SessionList,
   ViewHandRequest,
   ViewLocationsRequest,
+  StartGame,
 } from './gen/session/v1/session_pb';
 import type { EndTurn } from './gen/session/v1/turn_indication_pb';
 import type {
