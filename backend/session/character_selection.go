@@ -15,7 +15,7 @@ func (s *Session) selectCharacter(playerID string, req *glmv1.CharacterSelectReq
 		return
 	}
 
-	if err := s.gameLogicManager.SelectCharacter(playerID, req.GetCharacter()); err != nil {
+	if err := s.logic.SelectCharacter(playerID, req.GetCharacter()); err != nil {
 		s.rejectSelection(playerID, err.Error())
 
 		return
@@ -36,7 +36,7 @@ func (s *Session) rejectSelection(playerID, reason string) {
 // broadcastCharacterSelections sends every player the current selections.
 func (s *Session) broadcastCharacterSelections() {
 	env := envelopev1.Envelope_builder{
-		CharacterSelection: s.gameLogicManager.GetCharacterSelections(),
+		CharacterSelection: s.logic.GetCharacterSelections(),
 	}.Build()
 
 	for id := range s.players {
@@ -47,7 +47,7 @@ func (s *Session) broadcastCharacterSelections() {
 // sendCharacterSelections sends one player the current selections, for example when they
 // connect. Nothing is sent while no character has been chosen yet.
 func (s *Session) sendCharacterSelections(playerID string) {
-	update := s.gameLogicManager.GetCharacterSelections()
+	update := s.logic.GetCharacterSelections()
 	if len(update.GetAssignments()) == 0 {
 		return
 	}

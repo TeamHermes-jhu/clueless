@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"slices"
 
+	"google.golang.org/protobuf/proto"
+
+	cardsv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/cards/v1"
 	suggestionv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/suggestion/v1"
 )
 
@@ -29,6 +32,7 @@ var (
 type disproveState struct {
 	suggestion  *suggestionv1.SuggestionRequest
 	disproverID string
+	validCards  []*cardsv1.Card
 }
 
 // DisproveResult is what the session needs after a successful disprove.
@@ -41,12 +45,17 @@ type DisproveResult struct {
 	Reveal *suggestionv1.SuggestionResponse
 }
 
-// BeginDisprove ensures disproverID must show a card for suggestion.
+// BeginDisprove ensures disproverID must show one of validCards for suggestion.
 // Called by suggest turn when it has found the first player after the suggester who holds a matching card?
-func (g *GameLogicManager) BeginDisprove(suggestion *suggestionv1.SuggestionRequest, disproverID string) {
+func (g *GameLogicManager) BeginDisprove(
+	suggestion *suggestionv1.SuggestionRequest,
+	disproverID string,
+	validCards []*cardsv1.Card,
+) {
 	g.pendingDisprove = &disproveState{
 		suggestion:  suggestion,
 		disproverID: disproverID,
+		validCards:  validCards,
 	}
 }
 
@@ -57,6 +66,52 @@ func (g *GameLogicManager) GetPendingDisprover() (string, bool) {
 	}
 
 	return g.pendingDisprove.disproverID, true
+}
+
+// GetDisproveOptions returns the cards the asked player may show, if a suggestion is waiting.
+func (g *GameLogicManager) GetDisproveOptions() []*cardsv1.Card {
+	if g.pendingDisprove == nil {
+		return nil
+	}
+
+	return g.pendingDisprove.validCards
+}
+
+// CancelDisprove drops a pending disprove request, for when the asked player cannot answer
+// anymore. It returns the player that made the suggestion and whether there was anything to
+// cancel.
+func (g *GameLogicManager) CancelDisprove() (string, bool) {
+	if g.pendingDisprove == nil {
+		return "", false
+	}
+
+	suggesterID := g.pendingDisprove.suggestion.GetPlayerId()
+	g.pendingDisprove = nil
+
+	return suggesterID, true
+}
+
+func (g *GameLogicManager) disproveOptions(
+	playerID string,
+	suggestion *suggestionv1.SuggestionRequest,
+) []*cardsv1.Card {
+	var cards []*cardsv1.Card
+
+	hand := g.GetPlayerHand(playerID)
+
+	if character := suggestion.GetCharacter(); slices.Contains(hand.GetCharacters(), character) {
+		cards = append(cards, cardsv1.Card_builder{Character: &character}.Build())
+	}
+
+	if weapon := suggestion.GetWeapon(); slices.Contains(hand.GetWeapons(), weapon) {
+		cards = append(cards, cardsv1.Card_builder{Weapon: &weapon}.Build())
+	}
+
+	if room := suggestion.GetRoom(); slices.Contains(hand.GetRooms(), room) {
+		cards = append(cards, cardsv1.Card_builder{Room: &room}.Build())
+	}
+
+	return cards
 }
 
 // Disprove handles the answer to a disprove request.
@@ -79,7 +134,7 @@ func (g *GameLogicManager) Disprove(playerID string, resp *suggestionv1.Suggesti
 		return nil, ErrMustShowCard
 	}
 
-	if !g.holdsMatchingCard(playerID, pending.suggestion, resp) {
+	if !isValidCard(pending.validCards, resp) {
 		return nil, ErrCardNotAllowed
 	}
 
@@ -95,31 +150,35 @@ func (g *GameLogicManager) Disprove(playerID string, resp *suggestionv1.Suggesti
 	}, nil
 }
 
-// holdsMatchingCard says whether the shown card is part of the suggestion and is in the player's hand.
-func (g *GameLogicManager) holdsMatchingCard(
-	playerID string,
-	suggestion *suggestionv1.SuggestionRequest,
-	resp *suggestionv1.SuggestionResponse,
-) bool {
-	hand := g.GetPlayerHand(playerID)
+func isValidCard(validCards []*cardsv1.Card, resp *suggestionv1.SuggestionResponse) bool {
+	shown := cardFromResponse(resp)
+	if shown == nil {
+		return false
+	}
 
+	return slices.ContainsFunc(validCards, func(card *cardsv1.Card) bool {
+		return proto.Equal(card, shown)
+	})
+}
+
+func cardFromResponse(resp *suggestionv1.SuggestionResponse) *cardsv1.Card {
 	switch resp.WhichCard() {
 	case suggestionv1.SuggestionResponse_Character_case:
-		card := resp.GetCharacter()
+		character := resp.GetCharacter()
 
-		return card == suggestion.GetCharacter() && slices.Contains(hand.GetCharacters(), card)
+		return cardsv1.Card_builder{Character: &character}.Build()
 
 	case suggestionv1.SuggestionResponse_Weapon_case:
-		card := resp.GetWeapon()
+		weapon := resp.GetWeapon()
 
-		return card == suggestion.GetWeapon() && slices.Contains(hand.GetWeapons(), card)
+		return cardsv1.Card_builder{Weapon: &weapon}.Build()
 
 	case suggestionv1.SuggestionResponse_Room_case:
-		card := resp.GetRoom()
+		room := resp.GetRoom()
 
-		return card == suggestion.GetRoom() && slices.Contains(hand.GetRooms(), card)
+		return cardsv1.Card_builder{Room: &room}.Build()
 
 	default:
-		return false
+		return nil
 	}
 }

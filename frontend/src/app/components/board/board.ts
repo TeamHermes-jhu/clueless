@@ -5,12 +5,14 @@ import { Terminal, TerminalService } from 'primeng/terminal';
 import { filter } from 'rxjs';
 import { EventBus } from '../../common/events/event-bus/event-bus';
 import { EventProducer, MessageType } from '../../common/events/event-types/AppEvents';
+import type { Card } from '../../common/events/event-types/gen/cards/v1/cards_pb';
 import { Characters, Rooms, Weapons, Halls } from '../../common/events/event-types/gen/cards/v1/cards_pb';
 import { MoveSchema, ViewHandRequestSchema, ViewLocationsRequestSchema } from '../../common/events/event-types/gen/session/v1/session_pb';
 import { EndTurnSchema } from '../../common/events/event-types/gen/session/v1/turn_indication_pb';
 import {
   AccusationRequestSchema,
   SuggestionRequestSchema,
+  SuggestionResponseSchema,
 } from '../../common/events/event-types/gen/suggestion/v1/suggestion_pb';
 
 @Component({
@@ -26,19 +28,19 @@ export class Board {
   private readonly terminalService = inject(TerminalService);
   private readonly terminal = viewChild.required(Terminal);
   private readonly availableCommands = [
-    'help', 
-    'about', 
-    'clear', 
+    'help',
+    'about',
+    'clear',
     'selectcharacter',
-    'move', 
-    'suggest', 
-    'accuse', 
-    'respond',
-    'endturn', 
-    'viewhand', 
-    'viewlocations', 
-    'listrooms', 
-    'listsuspects', 
+    'move',
+    'suggest',
+    'accuse',
+    'disprove',
+    'endturn',
+    'viewhand',
+    'viewlocations',
+    'listrooms',
+    'listsuspects',
     'listweapons',
     'listhalls'
   ];
@@ -46,6 +48,7 @@ export class Board {
   private readonly suspectList = this.getEnumList(Characters);
   private readonly weaponList = this.getEnumList(Weapons);
   private readonly hallList = this.getEnumList(Halls);
+  private pendingDisprove: { suggestionId: number; validCards: Card[] } | null = null;
 
   constructor() {
     // Subscribe to message events to get messages from server in terminal
@@ -57,6 +60,19 @@ export class Board {
       )
       .subscribe(({ event }) => {
         this.printToTerminal(event.payload.msg);
+      });
+
+    this.eventBus
+      .on(MessageType.DisproveRequest)
+      .pipe(takeUntilDestroyed())
+      .subscribe((disproveRequest) => {
+        this.pendingDisprove = {
+          suggestionId: disproveRequest.suggestion?.suggestionId ?? 0,
+          validCards: disproveRequest.validCards,
+        };
+
+        const options = disproveRequest.validCards.map((card) => this.cardName(card)).join(', ');
+        this.printToTerminal(`You can disprove with: ${options}. Use "disprove <card>".`);
       });
 
     this.terminalService.commandHandler.pipe(takeUntilDestroyed()).subscribe((command) => {
@@ -105,8 +121,8 @@ export class Board {
         case 'selectcharacter':
           this.terminalService.sendResponse(`TODO: Implement character selection`);
           break;
-        case 'respond':
-          this.terminalService.sendResponse(`TODO: Implement response handling`);
+        case 'disprove':
+          this.sendDisprove(command);
           break;
         default:
           this.terminalService.sendResponse(`Unknown command: ${commandName}`);
@@ -262,6 +278,75 @@ export class Board {
     }
 
     return true;
+  }
+
+  private sendDisprove(command: string): void {
+
+    if (!this.pendingDisprove) {
+      this.terminalService.sendResponse('There is nothing to disprove right now.');
+      return;
+    }
+
+    const [, cardArg] = command.split(' ');
+
+    if (!cardArg) {
+      this.terminalService.sendResponse(`Missing card. Expected format "disprove <card>".`);
+      return;
+    }
+
+    const { suggestionId, validCards } = this.pendingDisprove;
+    const card = validCards.find((candidate) => this.cardName(candidate).toLowerCase() === cardArg.toLowerCase());
+
+    if (!card) {
+      this.terminalService.sendResponse(
+        `Invalid card ${cardArg}. Options: ${validCards.map((candidate) => this.cardName(candidate)).join(', ')}`,
+      );
+      return;
+    }
+
+    this.pendingDisprove = null;
+
+    switch (card.card.case) {
+      case 'character':
+        this.publishSuggestionResponse(suggestionId, { case: 'character', value: card.card.value });
+        return;
+      case 'weapon':
+        this.publishSuggestionResponse(suggestionId, { case: 'weapon', value: card.card.value });
+        return;
+      case 'room':
+        this.publishSuggestionResponse(suggestionId, { case: 'room', value: card.card.value });
+        return;
+      default:
+        return;
+    }
+  }
+
+  private publishSuggestionResponse(
+    suggestionId: number,
+    card: { case: 'character'; value: Characters } | { case: 'weapon'; value: Weapons } | { case: 'room'; value: Rooms },
+  ): void {
+    this.eventBus.publish({
+      type: MessageType.SuggestionResponse,
+      producer: EventProducer.CLIENT,
+      payload: create(SuggestionResponseSchema, {
+        suggestionId,
+        hasCard: true,
+        card,
+      }),
+    });
+  }
+
+  private cardName(card: Card): string {
+    switch (card.card.case) {
+      case 'character':
+        return Characters[card.card.value];
+      case 'weapon':
+        return Weapons[card.card.value];
+      case 'room':
+        return Rooms[card.card.value];
+      default:
+        return '';
+    }
   }
 
   private sendEndTurn(): void {

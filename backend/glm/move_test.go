@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/TeamHermes-jhu/clueless/backend/glm"
 	cardsv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/cards/v1"
@@ -19,10 +20,11 @@ func TestMove(t *testing.T) {
 	gm.InitializeGameState([]string{"1", "2", "3"})
 
 	tt := []struct {
-		name  string
-		move  *sessionv1.Move
-		want  string
-		moved bool
+		name    string
+		move    *sessionv1.Move
+		want    string
+		wantErr error
+		moved   bool
 	}{
 		{
 			name: "not players turn",
@@ -30,7 +32,7 @@ func TestMove(t *testing.T) {
 				PlayerId: new("1"),
 				Room:     cardsv1.Rooms_BALLROOM.Enum(),
 			}.Build(),
-			want: "not players turn",
+			wantErr: glm.ErrInvalidTurn,
 		},
 		{
 			name: "invalid player id",
@@ -38,14 +40,14 @@ func TestMove(t *testing.T) {
 				PlayerId: new("0"),
 				Room:     cardsv1.Rooms_BALLROOM.Enum(),
 			}.Build(),
-			want: "invalid player id",
+			wantErr: glm.ErrUnknownPlayer,
 		},
 		{
 			name: "no location selected",
 			move: sessionv1.Move_builder{
 				PlayerId: new("2"),
 			}.Build(),
-			want: "no location selected",
+			wantErr: glm.ErrNoLocation,
 		},
 		{
 			name: "not adjacent move",
@@ -53,7 +55,7 @@ func TestMove(t *testing.T) {
 				PlayerId: new("2"),
 				Room:     cardsv1.Rooms_LOUNGE.Enum(),
 			}.Build(),
-			want: "location is not next to the players current location",
+			wantErr: glm.ErrNotAdjacent,
 		},
 		{
 			name: "valid room move",
@@ -77,13 +79,20 @@ func TestMove(t *testing.T) {
 				}
 			}
 
-			got := gm.Move(test.move)
+			got, err := gm.Move(test.move)
 
-			assert.Equal(t, test.want, got)
+			if test.wantErr != nil {
+				require.Error(t, err)
+				require.ErrorIs(t, err, test.wantErr)
+			}
 
 			if !test.moved {
 				return
 			}
+
+			require.NoError(t, err)
+
+			assert.Equal(t, test.want, got)
 
 			after := gm.GetPlayerLocation(test.move.GetPlayerId())
 
@@ -115,12 +124,13 @@ func TestOccupiedHall(t *testing.T) {
 	moverLoc := gm.GetPlayerLocation(mover)
 	moverLoc.SetRoom(cardsv1.Rooms_STUDY)
 
-	got := gm.Move(
+	got, err := gm.Move(
 		sessionv1.Move_builder{
 			PlayerId: new(mover),
 			Hall:     cardsv1.Halls_ONE.Enum(),
 		}.Build(),
 	)
 
-	assert.Equal(t, "hall is occupied by player", got)
+	require.ErrorIs(t, err, glm.ErrHallOccupied)
+	assert.Empty(t, got)
 }

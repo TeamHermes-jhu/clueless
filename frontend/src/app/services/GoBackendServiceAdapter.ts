@@ -63,6 +63,16 @@ export class GoBackendServiceAdapter extends AbstractServiceAdapter {
         EventProducer.CLIENT,
       )
       .on(
+        MessageType.SuggestionResponse,
+        (response) => {
+          this.sendAsPlayer((playerId) => ({
+            case: 'suggestionResponse',
+            value: { ...response, responderId: playerId },
+          }));
+        },
+        EventProducer.CLIENT,
+      )
+      .on(
         MessageType.AccusationRequest,
         (accusation) => {
           this.sendAsPlayer((playerId) => ({
