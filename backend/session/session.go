@@ -218,6 +218,8 @@ func (s *Session) handleRegister(req registerRequest) {
 
 	s.players[req.client.id] = req.client
 	req.result <- true
+
+	s.sendCharacterSelections(req.client.id)
 }
 
 func (s *Session) handleUnregister(id string) {
@@ -244,6 +246,12 @@ func (s *Session) handleInbound(msg inboundMessage) {
 		return
 	}
 
+	if env.WhichPayload() == envelopev1.Envelope_SelectCharacter_case {
+		s.selectCharacter(msg.from, env.GetSelectCharacter())
+
+		return
+	}
+
 	if !s.started {
 		s.sendTo(msg.from, envelopev1.Envelope_builder{
 			Error: sessionv1.Error_builder{
@@ -264,6 +272,10 @@ func (s *Session) handleInbound(msg inboundMessage) {
 		s.viewLocations(msg.from)
 
 		return
+	case envelopev1.Envelope_SuggestionResponse_case:
+		s.disprove(msg.from, env.GetSuggestionResponse())
+
+		return
 	default:
 	}
 
@@ -274,6 +286,10 @@ func (s *Session) handleInbound(msg inboundMessage) {
 			}.Build(),
 		}.Build())
 
+		return
+	}
+
+	if s.rejectWhileDisproving(msg.from) {
 		return
 	}
 
@@ -351,6 +367,7 @@ func (s *Session) startGame() {
 	s.sendGameStartMessage()
 	s.broadcastMessage("game is starting")
 	s.gameLogicManager.InitializeGameState(s.joinOrder)
+	s.broadcastCharacterSelections()
 
 	for _, playerID := range s.joinOrder {
 		playerHand := s.gameLogicManager.GetPlayerHand(playerID)
@@ -466,12 +483,14 @@ func (s *Session) getPlayerLocationMessage(playerID string) string {
 func (s *Session) broadcastMessage(msg string) {
 	s.logger.Info("Broadcasting message")
 
-	env := envelopev1.Envelope_builder{
+	s.broadcast(envelopev1.Envelope_builder{
 		Msg: sessionv1.Message_builder{
 			Msg: new(msg),
 		}.Build(),
-	}.Build()
+	}.Build())
+}
 
+func (s *Session) broadcast(env *envelopev1.Envelope) {
 	for id := range s.players {
 		s.sendTo(id, env)
 	}

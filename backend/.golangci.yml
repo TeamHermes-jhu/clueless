@@ -72,6 +72,8 @@ linters:
       analyze-types: true
     funcorder:
       struct-method: false
+    funlen:
+      lines: 100
     gochecksumtype:
       default-signifies-exhaustive: false
       include-shared-interfaces: true
