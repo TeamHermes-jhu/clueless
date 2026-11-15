@@ -16,8 +16,8 @@ const (
 )
 
 // requestDisprove asks one player to show a card that disproves a suggestion, and tells the
-// suggester who was asked. The suggestion itself is sent so the asked player knows what to
-// answer about, and their SuggestionResponse comes back to disprove.
+// suggester who was asked. The suggestion is sent along with the cards from the asked player's
+// hand that may be shown, and their SuggestionResponse comes back to disprove.
 //
 // A disconnected player can never answer, so the request is cancelled instead of leaving the
 // game waiting on them forever.
@@ -39,7 +39,10 @@ func (s *Session) requestDisprove(disproverID string, suggestion *suggestionv1.S
 	))
 
 	s.sendTo(disproverID, envelopev1.Envelope_builder{
-		Suggest: suggestion,
+		DisproveRequest: suggestionv1.DisproveRequest_builder{
+			Suggestion: suggestion,
+			ValidCards: s.logic.GetDisproveOptions(),
+		}.Build(),
 	}.Build())
 }
 

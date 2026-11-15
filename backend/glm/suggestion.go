@@ -3,7 +3,6 @@ package glm
 import (
 	"errors"
 	"fmt"
-	"slices"
 
 	cardsv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/cards/v1"
 	glmv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/glm/v1"
@@ -54,7 +53,7 @@ func (g *GameLogicManager) Suggest(suggestion *suggestionv1.SuggestionRequest) (
 		Moved: g.moveFromSuggestion(suggestion.GetCharacter(), suggestion.GetRoom()),
 	}
 
-	disproverID := g.findDisprover(suggestion)
+	disproverID, validCards := g.findDisprover(suggestion)
 	if disproverID == "" {
 		result.Resolution = notDisprovedFmt
 
@@ -64,7 +63,7 @@ func (g *GameLogicManager) Suggest(suggestion *suggestionv1.SuggestionRequest) (
 	result.DisproverID = disproverID
 	result.Resolution = fmt.Sprintf(disproveRequestedFmt, disproverID, playerID)
 
-	g.BeginDisprove(suggestion, disproverID)
+	g.BeginDisprove(suggestion, disproverID, validCards)
 
 	return result, nil
 }
@@ -134,21 +133,24 @@ func (g *GameLogicManager) stateOfCharacter(character cardsv1.Characters) *glmv1
 }
 
 // findDisprover returns the first player after the suggesting player in the turn order that holds
-// one of the suggested cards. It returns an empty string when nobody can disprove the suggestion.
-func (g *GameLogicManager) findDisprover(suggestion *suggestionv1.SuggestionRequest) string {
+// one of the suggested cards, along with the cards of theirs that disprove the suggestion. It
+// returns an empty string when nobody can disprove the suggestion.
+func (g *GameLogicManager) findDisprover(
+	suggestion *suggestionv1.SuggestionRequest,
+) (string, []*cardsv1.Card) {
 	suggesterIdx := g.turnOrderIndex(suggestion.GetPlayerId())
 	if suggesterIdx < 0 {
-		return ""
+		return "", nil
 	}
 
 	for offset := 1; offset < len(g.turnOrder); offset++ {
 		playerID := g.turnOrder[(suggesterIdx+offset)%len(g.turnOrder)]
-		if handDisproves(g.GetPlayerHand(playerID), suggestion) {
-			return playerID
+		if validCards := g.disproveOptions(playerID, suggestion); len(validCards) > 0 {
+			return playerID, validCards
 		}
 	}
 
-	return ""
+	return "", nil
 }
 
 // turnOrderIndex returns the position of a player in the turn order, or -1 when it is not found.
@@ -160,11 +162,4 @@ func (g *GameLogicManager) turnOrderIndex(playerID string) int {
 	}
 
 	return -1
-}
-
-// handDisproves reports whether a hand holds any of the suggested cards.
-func handDisproves(hand *glmv1.PlayerHand, suggestion *suggestionv1.SuggestionRequest) bool {
-	return slices.Contains(hand.GetCharacters(), suggestion.GetCharacter()) ||
-		slices.Contains(hand.GetWeapons(), suggestion.GetWeapon()) ||
-		slices.Contains(hand.GetRooms(), suggestion.GetRoom())
 }

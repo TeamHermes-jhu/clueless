@@ -234,7 +234,6 @@ func (s *Session) handleUnregister(id string) {
 
 	s.players[id] = nil
 
-	// Nobody is left to answer a disprove request this player was asked to answer.
 	if disprover, waiting := s.logic.GetPendingDisprover(); waiting && disprover == id {
 		s.cancelDisprove(id)
 	}
@@ -343,17 +342,11 @@ func (s *Session) viewHand(playerID string) {
 }
 
 func (s *Session) viewLocations(playerID string) {
-	for _, loc := range s.joinOrder {
-		playerLoc := s.getPlayerLocationMessage(loc)
-		s.sendTo(playerID, envelopev1.Envelope_builder{
-			Msg: sessionv1.Message_builder{
-				Msg: new(playerLoc),
-			}.Build(),
-		}.Build())
+	for _, id := range s.joinOrder {
+		s.sendMessageTo(playerID, s.getPlayerLocationMessage(id))
 	}
 }
 
-// sendMessageTo sends a plain text message to one player.
 func (s *Session) sendMessageTo(id, msg string) {
 	s.sendTo(id, envelopev1.Envelope_builder{
 		Msg: sessionv1.Message_builder{
@@ -362,7 +355,6 @@ func (s *Session) sendMessageTo(id, msg string) {
 	}.Build())
 }
 
-// hasLiveClient reports whether a player has a connection to send messages on.
 func (s *Session) hasLiveClient(id string) bool {
 	c, ok := s.players[id]
 
@@ -414,7 +406,12 @@ func (s *Session) startGame() {
 }
 
 func (s *Session) move(move *sessionv1.Move) {
-	moveMessage := s.logic.Move(move)
+	moveMessage, err := s.logic.Move(move)
+	if err != nil {
+		s.sendError(move.GetPlayerId(), err.Error())
+		return
+	}
+
 	s.broadcastMessage(moveMessage)
 }
 

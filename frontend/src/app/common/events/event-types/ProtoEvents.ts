@@ -21,6 +21,7 @@ import type { EndTurn } from './gen/session/v1/turn_indication_pb';
 import type {
   AccusationRequest,
   AccusationResponse,
+  DisproveRequest,
   SuggestionRequest,
   SuggestionResponse,
 } from './gen/suggestion/v1/suggestion_pb';
@@ -46,6 +47,7 @@ export interface ProtoPayloadMap {
   [MessageType.ViewLocationsRequest]: ViewLocationsRequest;
   [MessageType.CharacterSelectRequest]: CharacterSelectRequest;
   [MessageType.CharacterSelectChoices]: CharacterSelectChoices;
+  [MessageType.DisproveRequest]: DisproveRequest;
 }
 
 export type ProtoMessageType = keyof ProtoPayloadMap;
@@ -82,7 +84,8 @@ export const ENVELOPE_MESSAGE_TYPES = {
   viewLocations: MessageType.ViewLocationsRequest,
   selectCharacter: MessageType.CharacterSelectRequest,
   characterSelection: MessageType.CharacterSelectChoices,
-  suggestionResponse: MessageType.SuggestionResponse
+  suggestionResponse: MessageType.SuggestionResponse,
+  disproveRequest: MessageType.DisproveRequest
 } as const satisfies { [K in EnvelopeCase]: MessageTypeFor<EnvelopeValue<K>> };
 
 // Converts a received Envelope into its bus event, or null if it has no payload.

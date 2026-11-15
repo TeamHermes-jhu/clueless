@@ -26,10 +26,10 @@ var (
 )
 
 // Move updates the player's location and returns a message indicating the move.
-func (g *GameLogicManager) Move(move *sessionv1.Move) string {
+func (g *GameLogicManager) Move(move *sessionv1.Move) (string, error) {
 	err := g.validateMove(move)
 	if err != nil {
-		return err.Error()
+		return "", err
 	}
 
 	g.hasMoved = true
@@ -47,7 +47,7 @@ func (g *GameLogicManager) Move(move *sessionv1.Move) string {
 		state.GetLocation().SetHall(move.GetHall())
 	}
 
-	return fmt.Sprintf(moveFmt, move.GetPlayerId(), to)
+	return fmt.Sprintf(moveFmt, move.GetPlayerId(), to), nil
 }
 
 func (g *GameLogicManager) validateMove(move *sessionv1.Move) error {
