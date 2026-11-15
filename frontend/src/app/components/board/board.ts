@@ -298,7 +298,7 @@ export class Board {
       return;
     }
 
-    const cardArg = command.split(' ').slice(1);
+    const [, cardArg] = command.split(' ');
 
     if (!cardArg) {
       this.terminalService.sendResponse(`Missing card. Expected format "disprove <card>".`);

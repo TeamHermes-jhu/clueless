@@ -333,12 +333,7 @@ func (s *Session) handlePlayerTurnAction(env *envelopev1.Envelope) {
 
 func (s *Session) viewHand(playerID string) {
 	playerHand := s.logic.GetPlayerHand(playerID)
-	message := fmt.Sprintf(playerHandFmt, playerHand.GetCharacters(), playerHand.GetRooms(), playerHand.GetWeapons())
-	s.sendTo(playerID, envelopev1.Envelope_builder{
-		Msg: sessionv1.Message_builder{
-			Msg: new(message),
-		}.Build(),
-	}.Build())
+	s.sendMessageTo(playerID, fmt.Sprintf(playerHandFmt, playerHand.GetCharacters(), playerHand.GetRooms(), playerHand.GetWeapons()))
 }
 
 func (s *Session) viewLocations(playerID string) {
