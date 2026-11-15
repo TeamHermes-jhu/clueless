@@ -64,8 +64,7 @@ func (g *GameLogicManager) Suggest(suggestion *suggestionv1.SuggestionRequest) (
 	result.DisproverID = disproverID
 	result.Resolution = fmt.Sprintf(disproveRequestedFmt, disproverID, playerID)
 
-	// TODO: replace the stub with the real disprove request/response exchange.
-	g.disproveRequest(disproverID, suggestion)
+	g.BeginDisprove(suggestion, disproverID)
 
 	return result, nil
 }
@@ -148,8 +147,6 @@ func (g *GameLogicManager) findDisprover(suggestion *suggestionv1.SuggestionRequ
 			return playerID
 		}
 	}
-
-	// call g.disprove here instead of calling handDisproves. Then let disprove reach out to the disprover
 
 	return ""
 }

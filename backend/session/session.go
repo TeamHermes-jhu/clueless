@@ -59,29 +59,29 @@ type Session struct {
 
 	players map[string]*Client
 
-	join             chan joinRequest
-	query            chan playerQuery
-	register         chan registerRequest
-	unregister       chan string
-	inbound          chan inboundMessage
-	stop             chan struct{}
-	joinOrder        []string
-	started          bool
-	gameLogicManager *glm.GameLogicManager
+	join       chan joinRequest
+	query      chan playerQuery
+	register   chan registerRequest
+	unregister chan string
+	inbound    chan inboundMessage
+	stop       chan struct{}
+	joinOrder  []string
+	started    bool
+	logic      *glm.GameLogicManager
 }
 
 // New creates a new session.
 func New(l *slog.Logger) *Session {
 	s := &Session{
-		id:               uuid.New(),
-		players:          make(map[string]*Client),
-		join:             make(chan joinRequest),
-		query:            make(chan playerQuery),
-		register:         make(chan registerRequest),
-		unregister:       make(chan string),
-		inbound:          make(chan inboundMessage),
-		stop:             make(chan struct{}),
-		gameLogicManager: glm.New(),
+		id:         uuid.New(),
+		players:    make(map[string]*Client),
+		join:       make(chan joinRequest),
+		query:      make(chan playerQuery),
+		register:   make(chan registerRequest),
+		unregister: make(chan string),
+		inbound:    make(chan inboundMessage),
+		stop:       make(chan struct{}),
+		logic:      glm.New(),
 	}
 
 	s.logger = l.With("session_id", s.id)
@@ -233,6 +233,11 @@ func (s *Session) handleUnregister(id string) {
 	}
 
 	s.players[id] = nil
+
+	// Nobody is left to answer a disprove request this player was asked to answer.
+	if disprover, waiting := s.logic.GetPendingDisprover(); waiting && disprover == id {
+		s.cancelDisprove(id)
+	}
 }
 
 func (s *Session) handleInbound(msg inboundMessage) {
@@ -282,7 +287,7 @@ func (s *Session) handleInbound(msg inboundMessage) {
 	default:
 	}
 
-	if msg.from != s.gameLogicManager.GetCurrentPlayer() {
+	if msg.from != s.logic.GetCurrentPlayer() {
 		s.sendTo(msg.from, envelopev1.Envelope_builder{
 			Error: sessionv1.Error_builder{
 				Error: new("not your turn"),
@@ -299,7 +304,7 @@ func (s *Session) handleInbound(msg inboundMessage) {
 	s.handlePlayerTurnAction(&env)
 }
 
-func (s *Session) handlePlayerTurnAction(playerID string, env *envelopev1.Envelope) {
+func (s *Session) handlePlayerTurnAction(env *envelopev1.Envelope) {
 	if env == nil {
 		return
 	}
@@ -311,7 +316,7 @@ func (s *Session) handlePlayerTurnAction(playerID string, env *envelopev1.Envelo
 		return
 
 	case envelopev1.Envelope_Suggest_case:
-		s.suggest(playerID, env.GetSuggest())
+		s.suggest(env.GetSuggest())
 
 		return
 
@@ -328,7 +333,7 @@ func (s *Session) handlePlayerTurnAction(playerID string, env *envelopev1.Envelo
 }
 
 func (s *Session) viewHand(playerID string) {
-	playerHand := s.gameLogicManager.GetPlayerHand(playerID)
+	playerHand := s.logic.GetPlayerHand(playerID)
 	message := fmt.Sprintf(playerHandFmt, playerHand.GetCharacters(), playerHand.GetRooms(), playerHand.GetWeapons())
 	s.sendTo(playerID, envelopev1.Envelope_builder{
 		Msg: sessionv1.Message_builder{
@@ -346,6 +351,22 @@ func (s *Session) viewLocations(playerID string) {
 			}.Build(),
 		}.Build())
 	}
+}
+
+// sendMessageTo sends a plain text message to one player.
+func (s *Session) sendMessageTo(id, msg string) {
+	s.sendTo(id, envelopev1.Envelope_builder{
+		Msg: sessionv1.Message_builder{
+			Msg: new(msg),
+		}.Build(),
+	}.Build())
+}
+
+// hasLiveClient reports whether a player has a connection to send messages on.
+func (s *Session) hasLiveClient(id string) bool {
+	c, ok := s.players[id]
+
+	return ok && c != nil
 }
 
 func (s *Session) sendTo(id string, env *envelopev1.Envelope) {
@@ -368,11 +389,11 @@ func (s *Session) startGame() {
 	s.logger.Info("Starting game", "players", len(s.players))
 	s.started = true
 	s.broadcastMessage("game is starting")
-	s.gameLogicManager.InitializeGameState(s.joinOrder)
+	s.logic.InitializeGameState(s.joinOrder)
 	s.broadcastCharacterSelections()
 
 	for _, playerID := range s.joinOrder {
-		playerHand := s.gameLogicManager.GetPlayerHand(playerID)
+		playerHand := s.logic.GetPlayerHand(playerID)
 		playerHandMessage := fmt.Sprintf(playerHandFmt, playerHand.GetCharacters(), playerHand.GetRooms(), playerHand.GetWeapons())
 		s.sendTo(playerID, envelopev1.Envelope_builder{
 			Msg: sessionv1.Message_builder{
@@ -388,21 +409,21 @@ func (s *Session) startGame() {
 		}.Build())
 	}
 
-	turnMessage := s.gameLogicManager.GetTurnMessage()
+	turnMessage := s.logic.GetTurnMessage()
 	s.broadcastMessage(turnMessage)
 }
 
 func (s *Session) move(move *sessionv1.Move) {
-	moveMessage := s.gameLogicManager.Move(move)
+	moveMessage := s.logic.Move(move)
 	s.broadcastMessage(moveMessage)
 }
 
 // suggest handles suggestion requests.
-func (s *Session) suggest(playerID string, suggestion *suggestionv1.SuggestionRequest) {
-	result, err := s.gameLogicManager.Suggest(suggestion)
+func (s *Session) suggest(suggestion *suggestionv1.SuggestionRequest) {
+	result, err := s.logic.Suggest(suggestion)
 	if err != nil {
-		s.logger.Info("Rejected suggestion", "player_id", playerID, "reason", err.Error())
-		s.sendError(playerID, err.Error())
+		s.logger.Info("Rejected suggestion", "player_id", suggestion.GetPlayerId(), "reason", err.Error())
+		s.sendError(suggestion.GetPlayerId(), err.Error())
 
 		return
 	}
@@ -415,25 +436,14 @@ func (s *Session) suggest(playerID string, suggestion *suggestionv1.SuggestionRe
 
 	s.broadcastMessage(result.Resolution)
 
-	// TODO: replace this and suggestResponseMessage with nothing.
-	// logic.disprove should handle making the server -> player disprove call.
-	// we should route the response of that to a disprove function.
-	// then the disprove function should return to the OG player the card result.
-	// Suggest should handle only the request, validate request, pass to disprove.
-	s.sendTo(playerID, envelopev1.Envelope_builder{
-		Msg: sessionv1.Message_builder{
-			Msg: new(suggestResponseMessage(result.DisproverID)),
-		}.Build(),
-	}.Build())
-}
+	// Nobody holds a suggested card, so the suggester hears about it right away.
+	if result.DisproverID == "" {
+		s.sendMessageTo(suggestion.GetPlayerId(), suggestNoneFmt)
 
-// suggestResponseMessage describes the outcome of a suggestion to the player that made it.
-func suggestResponseMessage(disproverID string) string {
-	if disproverID == "" {
-		return suggestNoneFmt
+		return
 	}
 
-	return fmt.Sprintf(suggestPendingFmt, disproverID)
+	s.requestDisprove(result.DisproverID, suggestion)
 }
 
 func (s *Session) sendError(playerID, message string) {
@@ -449,9 +459,7 @@ func (s *Session) accuse(accusation *suggestionv1.AccusationRequest) {
 	// Get playerID of the player who made the accusation.
 	playerID := accusation.GetSuggestion().GetPlayerId()
 
-	// Checks with game logic manager to see if accusation was correct.
-	isCorrect, err := s.gameLogicManager.Accuse(accusation)
-	// if accusation is invalid, notify player and stop processing.
+	result, err := s.logic.Accuse(accusation)
 	if err != nil {
 		s.sendTo(playerID, envelopev1.Envelope_builder{
 			Error: sessionv1.Error_builder{
@@ -462,30 +470,31 @@ func (s *Session) accuse(accusation *suggestionv1.AccusationRequest) {
 		return
 	}
 
-	// if accusation is correct, announce the winner, reveal solution, and EndGame.
-	if isCorrect {
+	if result.Announcement != "" {
+		s.broadcastMessage(result.Announcement)
+	}
+
+	if result.IsCorrect {
 		s.broadcastMessage(fmt.Sprintf(
 			"Player %s Wins! %s",
 			playerID,
-			s.gameLogicManager.GetCaseFile(),
+			s.logic.GetCaseFile(),
 		))
 
-		s.gameLogicManager.EndGame()
+		s.logic.EndGame()
 
 		return
 	}
 
-	// if accusation is incorrect, announce that the player has been eliminated.
 	s.broadcastMessage(fmt.Sprintf(
 		"Player %s has made an incorrect accusation and has been eliminated.",
 		playerID,
 	))
 
-	// if there are no remaining players broadcast GameOver with no winner, and EndGame.
-	if s.gameLogicManager.PlayersRemaining() == 0 {
+	if s.logic.PlayersRemaining() == 0 {
 		s.broadcastMessage("All players have been eliminated. Game Over!")
 
-		s.gameLogicManager.EndGame()
+		s.logic.EndGame()
 
 		return
 	}
@@ -494,14 +503,14 @@ func (s *Session) accuse(accusation *suggestionv1.AccusationRequest) {
 }
 
 func (s *Session) endTurn() {
-	s.gameLogicManager.AdvanceTurn()
+	s.logic.AdvanceTurn()
 
-	turnMessage := s.gameLogicManager.GetTurnMessage()
+	turnMessage := s.logic.GetTurnMessage()
 	s.broadcastMessage(turnMessage)
 }
 
 func (s *Session) getPlayerLocationMessage(playerID string) string {
-	playerLocation := s.gameLogicManager.GetPlayerLocation(playerID)
+	playerLocation := s.logic.GetPlayerLocation(playerID)
 
 	if playerLocation == nil {
 		return ""

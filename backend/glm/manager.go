@@ -12,7 +12,6 @@ import (
 
 	cardsv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/cards/v1"
 	glmv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/glm/v1"
-	suggestionv1 "github.com/TeamHermes-jhu/clueless/backend/internal/gen/suggestion/v1"
 )
 
 var (
@@ -25,7 +24,6 @@ var (
 
 const (
 	// text formats for logging.
-	accuseFmt = "player %s has made an accusation: %s with the %s in the %s"
 
 	// number of each type of card in the game.
 	numSuspects = 6
@@ -54,11 +52,6 @@ var (
 type GameLogicManager struct {
 	// needs to maintain a case file (suspect, room, weapon).
 	caseFile *glmv1.CaseFile
-
-	turnOrder []string
-	turnIdx   int
-
-	playerStates map[string]*glmv1.PlayerGameState
 
 	hasSuggested bool
 	hasMoved     bool
@@ -102,7 +95,6 @@ func WithRand(r *rand.Rand) Option {
 func (g *GameLogicManager) InitializeGameState(playerIDs []string) {
 	g.turnIdx = 0
 	g.hasSuggested = false
-	g.playerStates = make(map[string]*glmv1.PlayerGameState)
 
 	g.turnOrder = playerIDs
 
@@ -119,9 +111,10 @@ func (g *GameLogicManager) InitializeGameState(playerIDs []string) {
 
 // AdvanceTurn updates the current turn index and resets the per turn action state.
 func (g *GameLogicManager) AdvanceTurn() {
-	g.turnIdx = (g.turnIdx + 1) % len(g.turnOrder)
 	g.hasSuggested = false
 	g.hasMoved = false
+	g.pendingDisprove = nil
+
 	if len(g.turnOrder) == 0 || g.PlayersRemaining() == 0 {
 		return
 	}
@@ -143,51 +136,6 @@ func (g *GameLogicManager) AdvanceTurn() {
 func (g *GameLogicManager) PlayersRemaining() int {
 	count := len(g.turnOrder) - len(g.eliminated)
 	return count
-}
-
-// Suggest handles a player's suggestion and returns a message indicating the suggestion.
-func (g *GameLogicManager) Suggest(suggestion *suggestionv1.SuggestionRequest) string {
-	// Do something with GameLogicManager so the linter doesn't complain.
-	_ = g
-	// TODO: figure out how to handle suggestions.
-	return fmt.Sprintf(
-		suggestFmt,
-		suggestion.GetPlayerId(),
-		suggestion.GetCharacter().String(),
-		suggestion.GetWeapon().String(),
-		suggestion.GetRoom().String(),
-	)
-}
-
-// Accuse handles a player's accusation and returns whether accusation was correct and whether there were any errors.
-func (g *GameLogicManager) Accuse(accusation *suggestionv1.AccusationRequest) (bool, error) {
-	// check to see if accusation and suggestion are valid, and return an error if either are missing.
-	if accusation == nil || accusation.GetSuggestion() == nil {
-		return false, errInvalidAccusation
-	}
-
-	// Get the suggestion containing the player's accusation.
-	guess := accusation.GetSuggestion()
-
-	// Get the playerID of player who made accusation.
-	playerID := guess.GetPlayerId()
-
-	// Check to see if it is the player's turn, and return an error if it is not their turn.
-	if !g.isValidTurn(playerID) {
-		return false, errInvalidTurn
-	}
-
-	// check to see if character, weapon, and room in the accusation matches the case file.
-	correct := guess.GetCharacter() == g.caseFile.GetCharacter() &&
-		guess.GetWeapon() == g.caseFile.GetWeapon() &&
-		guess.GetRoom() == g.caseFile.GetRoom()
-
-	// if accusation is incorrect, mark the player as eliminated.
-	if !correct {
-		g.eliminated[playerID] = struct{}{}
-	}
-
-	return correct, nil
 }
 
 // EndGame ends the game when called.
@@ -237,11 +185,6 @@ func (g *GameLogicManager) GetPlayerLocation(playerID string) *glmv1.PlayerLocat
 	}
 
 	return state.GetLocation()
-}
-
-// GetPlayerCharacter returns the character a player controls on the board.
-func (g *GameLogicManager) GetPlayerCharacter(playerID string) cardsv1.Characters {
-	return g.playerStates[playerID].GetCharacter()
 }
 
 // setupGame initializes the game by setting up the case file, dealing cards, and placing players in their starting rooms.

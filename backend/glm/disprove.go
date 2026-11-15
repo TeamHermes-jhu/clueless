@@ -59,6 +59,20 @@ func (g *GameLogicManager) GetPendingDisprover() (string, bool) {
 	return g.pendingDisprove.disproverID, true
 }
 
+// CancelDisprove drops a pending disprove request, for when the asked player cannot answer
+// anymore. It returns the player that made the suggestion and whether there was anything to
+// cancel.
+func (g *GameLogicManager) CancelDisprove() (string, bool) {
+	if g.pendingDisprove == nil {
+		return "", false
+	}
+
+	suggesterID := g.pendingDisprove.suggestion.GetPlayerId()
+	g.pendingDisprove = nil
+
+	return suggesterID, true
+}
+
 // Disprove handles the answer to a disprove request.
 // The asked player shows a card.
 func (g *GameLogicManager) Disprove(playerID string, resp *suggestionv1.SuggestionResponse) (*DisproveResult, error) {
