@@ -35,12 +35,27 @@ const (
 	cardRoom    = 2
 	cardWeapon  = 3
 
-	// number of halls in the game.
-	numHalls = 12
+	// starting hall for characters.
+	greenStartingHall   = 5
+	mustardStartingHall = 11
+	peacockStartingHall = 8
+	plumStartingHall    = 7
+	scarletStartingHall = 2
+	whiteStartingHall   = 6
 
 	// text formats for game initialization.
 	caseFileFmt = "Spoiler alert! case file: suspect %s, room %s, weapon %s"
 )
+
+// startingHalls maps each character to their starting hall.
+var startingHalls = map[cardsv1.Characters]cardsv1.Halls{
+	cardsv1.Characters_WHITE:   whiteStartingHall,
+	cardsv1.Characters_GREEN:   greenStartingHall,
+	cardsv1.Characters_PEACOCK: peacockStartingHall,
+	cardsv1.Characters_PLUM:    plumStartingHall,
+	cardsv1.Characters_SCARLET: scarletStartingHall,
+	cardsv1.Characters_MUSTARD: mustardStartingHall,
+}
 
 // Define reusable errors for invalid game actions.
 var (
@@ -300,8 +315,14 @@ func removeCardFromDeck(deck []int32, cardNum int32, cardType int) []int32 {
 func (g *GameLogicManager) setupPlayerLocations(playerIDs []string) {
 	for _, playerID := range playerIDs {
 		state := g.playerStates[playerID]
+		// get the starting hall for the player's character
+		hall, ok := startingHalls[state.GetCharacter()]
+		if !ok {
+			continue
+		}
+
 		state.SetLocation(glmv1.PlayerLocation_builder{
-			Hall: new(cardsv1.Halls(g.rng.IntN(numHalls) + 1)),
+			Hall: new(hall),
 		}.Build())
 	}
 }

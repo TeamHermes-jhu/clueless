@@ -19,10 +19,11 @@ import (
 
 const (
 	maxPlayers            = 6
-	minimumPlayersToStart = 2
+	minimumPlayersToStart = 3
 
-	startGameDelay = time.Second * 20
+	startGameDelay = time.Second * 120
 
+	gameFullAndAllSelectedMessage = "Game is full and all characters are selected. Starting game."
 	gameTimerFmt        = "%d/6 players. Game starts in %ds"
 	playerCharactersFmt = "Player %s character: %s"
 	playerLocationFmt   = "player %s location: %s"
@@ -199,12 +200,6 @@ func (s *Session) handleJoin(req joinRequest) {
 
 	s.players[req.playerID] = nil
 	req.result <- true
-
-	if len(s.players) == maxPlayers {
-		s.startGame()
-
-		return
-	}
 }
 
 func (s *Session) hasPlayer(id string) bool {

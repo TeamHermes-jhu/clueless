@@ -17,6 +17,7 @@ func TestMove(t *testing.T) {
 	r := rand.New(rand.NewPCG(1, 2))
 	gm := glm.New(glm.WithRand(r))
 
+	// initialize the game state with three players. Player 2 starts in hall six (adjacent to ballroom and kitchen).
 	gm.InitializeGameState([]string{"1", "2", "3"})
 
 	tt := []struct {
@@ -61,9 +62,9 @@ func TestMove(t *testing.T) {
 			name: "valid room move",
 			move: sessionv1.Move_builder{
 				PlayerId: new("2"),
-				Room:     cardsv1.Rooms_LIBRARY.Enum(),
+				Room:     cardsv1.Rooms_KITCHEN.Enum(),
 			}.Build(),
-			want:  "player 2 has moved to " + cardsv1.Rooms_LIBRARY.String(),
+			want:  "player 2 has moved to " + cardsv1.Rooms_KITCHEN.String(),
 			moved: true,
 		},
 	}

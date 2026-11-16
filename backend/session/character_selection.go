@@ -22,6 +22,12 @@ func (s *Session) selectCharacter(playerID string, req *glmv1.CharacterSelectReq
 	}
 
 	s.broadcastCharacterSelections()
+
+	if len(s.logic.GetCharacterSelections().GetAssignments()) == maxPlayers {
+		s.broadcastMessage(gameFullAndAllSelectedMessage)
+
+		s.startGame()
+	}
 }
 
 // rejectSelection tells one player that their request was refused.
