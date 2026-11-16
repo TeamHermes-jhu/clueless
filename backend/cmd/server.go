@@ -28,7 +28,13 @@ var serveCmd = &cobra.Command{
 
 func init() {
 	serveCmd.Flags().String("addr", "", "address to run server on")
-	serveCmd.Flags().String("port", "8000", "port to run server on")
+	// Hosting platforms such as Render inject the port to listen on via $PORT.
+	defaultPort := os.Getenv("PORT")
+	if defaultPort == "" {
+		defaultPort = "8000"
+	}
+
+	serveCmd.Flags().String("port", defaultPort, "port to run server on (defaults to $PORT, then 8000)")
 
 	rootCmd.AddCommand(serveCmd)
 }

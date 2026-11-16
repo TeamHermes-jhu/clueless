@@ -3,15 +3,25 @@ package server
 import (
 	"log/slog"
 	"net/http"
+	"slices"
 	"time"
 
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-func corsMiddleware(allowedOrigin string) func(http.Handler) http.Handler {
+func corsMiddleware(allowedOrigins []string) func(http.Handler) http.Handler {
+	allowAll := slices.Contains(allowedOrigins, "*")
+
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
+			origin := r.Header.Get("Origin")
+
+			w.Header().Add("Vary", "Origin")
+
+			if allowAll || slices.Contains(allowedOrigins, origin) {
+				w.Header().Set("Access-Control-Allow-Origin", origin)
+			}
+
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 

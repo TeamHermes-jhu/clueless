@@ -8,6 +8,9 @@ RUN npm ci
 
 COPY . .
 
+ARG BACKEND_URL=http://localhost:8000
+ENV BACKEND_URL=${BACKEND_URL}
+
 RUN npm run build -- --configuration=production
 
 FROM nginx:stable-alpine AS release-stage

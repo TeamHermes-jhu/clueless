@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { create, fromJsonString, toJsonString } from '@bufbuild/protobuf';
 import { map } from 'rxjs';
+import { BACKEND_HTTP_URL } from '../common/config/backend-url';
 import type { Observable } from 'rxjs';
 import {
   JoinRequestSchema,
@@ -18,7 +19,7 @@ export class JoinSessionService {
     const body = toJsonString(JoinRequestSchema, request);
 
     return this.http
-      .post('http://localhost:8000/join_session', body, {
+      .post(`${BACKEND_HTTP_URL}/join_session`, body, {
         headers: { 'Content-Type': 'application/json' },
         responseType: 'text', // Server writes a JSON string body, not an object.
       })

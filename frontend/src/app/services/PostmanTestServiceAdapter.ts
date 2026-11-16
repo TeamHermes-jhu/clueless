@@ -14,7 +14,7 @@ function isObject(value: unknown): value is JsonObject {
 @Injectable({ providedIn: 'root' })
 export class PostmanTestServiceAdapter extends AbstractServiceAdapter {
   constructor() {
-    super('localhost', 8081, '/ws');
+    super('ws://localhost:8081', '/ws');
   }
 
   protected override parse(raw: unknown): AppEvent | null {
