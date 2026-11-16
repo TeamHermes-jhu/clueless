@@ -7,6 +7,7 @@ package glm
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"math/rand/v2"
 	"slices"
 
@@ -68,6 +69,8 @@ type GameLogicManager struct {
 	// needs to maintain a case file (suspect, room, weapon).
 	caseFile *glmv1.CaseFile
 
+	logger *slog.Logger
+
 	hasSuggested bool
 	hasMoved     bool
 	// needs to maintain the turn order and current turn.
@@ -104,6 +107,11 @@ func New(opts ...Option) *GameLogicManager {
 // WithRand is an optional random number generator to use.
 func WithRand(r *rand.Rand) Option {
 	return func(g *GameLogicManager) { g.rng = r }
+}
+
+// WithLogger add an optional logger.
+func WithLogger(l *slog.Logger) Option {
+	return func(g *GameLogicManager) { g.logger = l }
 }
 
 // InitializeGameState sets up the initial state of the game, including the turn order, player hands, and player locations.
@@ -213,6 +221,10 @@ func (g *GameLogicManager) setupCaseFile() {
 	suspect := cardsv1.Characters(g.rng.IntN(numSuspects) + 1)
 	room := cardsv1.Rooms(g.rng.IntN(numRooms) + 1)
 	weapon := cardsv1.Weapons(g.rng.IntN(numWeapons) + 1)
+
+	if g.logger != nil {
+		g.logger.Info(fmt.Sprintf("The case file is: %s with the %s in the %s", suspect.String(), weapon.String(), room.String())) //nolint:sloglint // for testing
+	}
 
 	g.caseFile = glmv1.CaseFile_builder{
 		Character: &suspect,

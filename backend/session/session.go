@@ -24,10 +24,10 @@ const (
 	startGameDelay = time.Second * 120
 
 	gameFullAndAllSelectedMessage = "Game is full and all characters are selected. Starting game."
-	gameTimerFmt        = "%d/6 players. Game starts in %ds"
-	playerCharactersFmt = "Player %s character: %s"
-	playerLocationFmt   = "player %s location: %s"
-	playerHandFmt       = "Your hand: suspects %v, rooms %v, weapons %v"
+	gameTimerFmt                  = "%d/6 players. Game starts in %ds"
+	playerCharactersFmt           = "Player %s character: %s"
+	playerLocationFmt             = "player %s location: %s"
+	playerHandFmt                 = "Your hand: suspects %v, rooms %v, weapons %v"
 
 	suggestPendingFmt = "waiting for %s to disprove your suggestion"
 	suggestNoneFmt    = "no one could disprove your suggestion"
@@ -83,7 +83,7 @@ func New(l *slog.Logger) *Session {
 		unregister: make(chan string),
 		inbound:    make(chan inboundMessage),
 		stop:       make(chan struct{}),
-		logic:      glm.New(),
+		logic:      glm.New(glm.WithLogger(l)),
 	}
 
 	s.logger = l.With("session_id", s.id)
