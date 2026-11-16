@@ -114,6 +114,16 @@ export class GoBackendServiceAdapter extends AbstractServiceAdapter {
         EventProducer.CLIENT,
       )
       .on(
+        MessageType.ViewCharactersRequest,
+        (viewCharacters) => {
+          this.sendAsPlayer((playerId) => ({
+            case: 'viewCharacters',
+            value: { ...viewCharacters, playerId },
+          }));
+        },
+        EventProducer.CLIENT,
+      )
+      .on(
         MessageType.CharacterSelectRequest,
         (selectCharacter) => {
           this.sendAsPlayer(() => ({ case: 'selectCharacter', value: selectCharacter }));
