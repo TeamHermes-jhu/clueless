@@ -10,9 +10,13 @@
     "lint": "ng lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "relay": "node tools/postman-relay.ts"
+    "relay": "node tools/postman-relay.ts",
+    "proto": "buf generate .. --template buf.gen.yaml"
   },
   "private": true,
+  "engines": {
+    "node": "24.x"
+  },
   "packageManager": "npm@12.2.0",
   "dependencies": {
     "@angular/common": "^22.2.0",

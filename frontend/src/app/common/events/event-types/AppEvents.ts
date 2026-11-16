@@ -22,6 +22,7 @@ export enum MessageType {
   ViewLocationsRequest,
   ViewHandRequest,
   ViewHandResponse,
+  ViewCharactersRequest,
   CharacterSelectRequest,
   CharacterSelectChoices,
   DisproveRequest,

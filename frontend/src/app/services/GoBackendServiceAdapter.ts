@@ -6,6 +6,7 @@ import type { Envelope } from '../common/events/event-types/gen/envelope/v1/enve
 import { EnvelopeSchema } from '../common/events/event-types/gen/envelope/v1/envelope_pb';
 import { SuggestionRequestSchema } from '../common/events/event-types/gen/suggestion/v1/suggestion_pb';
 import { envelopeToEvent } from '../common/events/event-types/ProtoEvents';
+import { BACKEND_WS_URL } from '../common/config/backend-url';
 import { PlayerStore } from '../common/data-stores/PlayerStore';
 import { AbstractServiceAdapter } from './AbstractServiceAdapter';
 
@@ -22,7 +23,7 @@ export class GoBackendServiceAdapter extends AbstractServiceAdapter {
   readonly playerId = this.playerStore.playerId;
 
   constructor() {
-    super('localhost', 8000, '/ws');
+    super(BACKEND_WS_URL, '/ws');
     this.registerCommandHandlers();
 
     const stored = this.loadSession();
@@ -108,6 +109,16 @@ export class GoBackendServiceAdapter extends AbstractServiceAdapter {
           this.sendAsPlayer((playerId) => ({
             case: 'viewLocations',
             value: { ...viewLocations, playerId },
+          }));
+        },
+        EventProducer.CLIENT,
+      )
+      .on(
+        MessageType.ViewCharactersRequest,
+        (viewCharacters) => {
+          this.sendAsPlayer((playerId) => ({
+            case: 'viewCharacters',
+            value: { ...viewCharacters, playerId },
           }));
         },
         EventProducer.CLIENT,

@@ -8,3 +8,6 @@ backend/server/backend
 
 # Protobuf generated code
 backend/internal/gen/
+
+# Vercel CLI project link
+.vercel

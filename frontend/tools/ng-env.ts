@@ -5,7 +5,7 @@ import { existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
 
 // Keys from .env that are exposed to the app as global constants of the same name.
-const DEFINED_KEYS = ['PRIMENG_LICENSE'];
+const DEFINED_KEYS = ['PRIMENG_LICENSE', 'BACKEND_URL'];
 
 if (existsSync('.env')) {
   process.loadEnvFile('.env');

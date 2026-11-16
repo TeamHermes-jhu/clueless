@@ -27,15 +27,14 @@ export abstract class AbstractServiceAdapter implements OnDestroy {
   private readonly isConnected = signal(false);
   readonly connected: Signal<boolean> = this.isConnected;
 
-  private readonly host: string;
-  private readonly port: number;
+  private readonly baseUrl: string;
   private readonly path: string;
 
   private failedAttempts = 0;
 
-  constructor(host: string, port: number, path: string) {
-    this.host = host;
-    this.port = port;
+  // baseUrl is the scheme + host (+ port), e.g. "ws://localhost:8000" or "wss://example.com".
+  constructor(baseUrl: string, path: string) {
+    this.baseUrl = baseUrl.replace(/\/+$/, '');
     this.path = path.startsWith('/') ? path : `/${path}`;
     this.handlers = new EventHandlerRegistry(this.eventBus);
   }
@@ -48,7 +47,7 @@ export abstract class AbstractServiceAdapter implements OnDestroy {
     const queryString = query ? `?${new URLSearchParams(query).toString()}` : '';
 
     this.socket$ = webSocket<unknown>({
-      url: `ws://${this.host}:${this.port}${this.path}${queryString}`,
+      url: `${this.baseUrl}${this.path}${queryString}`,
       binaryType: 'arraybuffer',
       deserializer: (e: MessageEvent<unknown>) => e.data,
       serializer: (value) => (isWireData(value) ? value : JSON.stringify(value)),
