@@ -25,5 +25,7 @@ message Envelope {
     session.v1.ViewCharactersRequest view_characters = 13;
     suggestion.v1.DisproveRequest disprove_request = 14;
     session.v1.StartGame start_game = 15;
+    session.v1.Session session = 16;
+    session.v1.GetSessionInfoRequest get_session_info_request = 17;
   }
 }
