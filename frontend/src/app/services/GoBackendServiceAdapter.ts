@@ -129,6 +129,16 @@ export class GoBackendServiceAdapter extends AbstractServiceAdapter {
           this.sendAsPlayer(() => ({ case: 'selectCharacter', value: selectCharacter }));
         },
         EventProducer.CLIENT,
+      )
+      .on(
+        MessageType.GetSessionInfoRequest,
+        (getSessionInfoRequest) => {
+          this.sendAsPlayer((playerId) => ({
+            case: 'getSessionInfoRequest',
+            value: { ...getSessionInfoRequest, playerId },
+          }));
+        },
+        EventProducer.CLIENT,
       );
   }
 

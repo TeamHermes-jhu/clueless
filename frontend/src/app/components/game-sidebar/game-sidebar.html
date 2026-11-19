@@ -15,9 +15,85 @@
           <svg data-p-icon="bars"></svg>
         </button>
       </p-sidebar-header>
-      <p-sidebar-content>
-        <h1>Gameboard</h1>
-        <img class="sidebar-image" src="/assets/gameboard.png" alt="Image of gameboard">
+      <p-sidebar-content style="overflow-y: auto; padding-top: 4rem;">
+        <h1>Detective Notes</h1>
+
+        <table class="clue-table" id="suspect-table">
+          <thead>
+            <tr>
+              <th>Suspects</th>
+              @for (player of players; track $index) {
+                <th>{{ player }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (suspect of suspects; track suspect; let rowIndex = $index) {
+            <tr>
+              <th class="row-header" [ngClass]="suspectGrid[rowIndex].includes(2) ? 'not-possible' : 'possible'">{{ suspect }}</th>
+              
+              @for (cellState of suspectGrid[rowIndex]; track $index; let colIndex = $index) {
+                <td (click)="toggleCell(rowIndex, colIndex, 'suspect')"
+                    [ngClass]="'state-' + cellState">
+                  {{ stateSymbols[cellState] }}
+                </td>
+              }
+            </tr>
+          }
+          </tbody>
+        </table>
+
+        <table class="clue-table" id="weapon-table">
+          <thead>
+            <tr>
+              <th>Weapons</th>
+              @for (player of players; track $index) {
+                <th>{{ player }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (weapon of weapons; track weapon; let rowIndex = $index) {
+            <tr>
+              <th class="row-header" [ngClass]="weaponGrid[rowIndex].includes(2) ? 'not-possible' : 'possible'">{{ weapon }}</th>
+              
+              @for (cellState of weaponGrid[rowIndex]; track $index; let colIndex = $index) {
+                <td (click)="toggleCell(rowIndex, colIndex, 'weapon')"
+                    [ngClass]="'state-' + cellState">
+                  {{ stateSymbols[cellState] }}
+                </td>
+              }
+            </tr>
+          }
+          </tbody>
+        </table>
+
+        <table class="clue-table" id="room-table">
+          <thead>
+            <tr>
+              <th>Rooms</th>
+              @for (player of players; track $index) {
+                <th>{{ player }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (room of rooms; track room; let rowIndex = $index) {
+            <tr>
+              <th class="row-header" [ngClass]="roomGrid[rowIndex].includes(2) ? 'not-possible' : 'possible'">{{ room }}</th>
+              
+              @for (cellState of roomGrid[rowIndex]; track $index; let colIndex = $index) {
+                <td (click)="toggleCell(rowIndex, colIndex, 'room')"
+                    [ngClass]="'state-' + cellState">
+                  {{ stateSymbols[cellState] }}
+                </td>
+              }
+            </tr>
+          }
+          </tbody>
+        </table>
+
+
       </p-sidebar-content>
     </p-sidebar-panel>
   </p-sidebar-aside>

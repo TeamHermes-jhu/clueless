@@ -34,6 +34,36 @@ p-sidebar-content {
 }
 
 p-sidebar[data-state='collapsed'] h1,
-p-sidebar[data-state='collapsed'] .sidebar-image {
+p-sidebar[data-state='collapsed'] .sidebar-image,
+p-sidebar[data-state='collapsed'] .clue-table {
   display: none;
 }
+
+.clue-table {
+  border-collapse: collapse;
+  user-select: none; /* Prevents highlighting text when clicking fast */
+}
+.clue-table th, .clue-table td {
+  border: 1px solid #333;
+  width: 40px;
+  height: 35px;
+  text-align: center;
+}
+.clue-table .row-header {
+  text-align: left;
+  padding: 0 10px;
+  width: 150px;
+}
+.clue-table td {
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.clue-table .not-possible {
+  background-color: #f0f0f0;
+  text-decoration: line-through;
+}
+
+
+.state-1 { background-color: #ffe6e6; color: #cc0000; } /* e.g., Eliminated (✗) */
+.state-2 { background-color: #e6ffe6; color: #008000; } /* e.g., Confirmed (✓) */

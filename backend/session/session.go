@@ -24,10 +24,10 @@ const (
 	startGameDelay = time.Second * 120
 
 	gameFullAndAllSelectedMessage = "Game is full and all characters are selected. Starting game."
-	gameTimerFmt        = "%d/6 players. Game starts in %ds"
-	playerCharactersFmt = "Player %s character: %s"
-	playerLocationFmt   = "player %s location: %s"
-	playerHandFmt       = "Your hand: suspects %v, rooms %v, weapons %v"
+	gameTimerFmt                  = "%d/6 players. Game starts in %ds"
+	playerCharactersFmt           = "Player %s character: %s"
+	playerLocationFmt             = "player %s location: %s"
+	playerHandFmt                 = "Your hand: suspects %v, rooms %v, weapons %v"
 
 	suggestPendingFmt = "waiting for %s to disprove your suggestion"
 	suggestNoneFmt    = "no one could disprove your suggestion"
@@ -257,6 +257,12 @@ func (s *Session) handleInbound(msg inboundMessage) {
 		return
 	}
 
+	if env.WhichPayload() == envelopev1.Envelope_GetSessionInfoRequest_case {
+		s.viewSessionInfo(msg.from)
+
+		return
+	}
+
 	if !s.started {
 		s.sendTo(msg.from, envelopev1.Envelope_builder{
 			Error: sessionv1.Error_builder{
@@ -333,6 +339,23 @@ func (s *Session) handlePlayerTurnAction(env *envelopev1.Envelope) {
 
 		return
 	}
+}
+
+func (s *Session) viewSessionInfo(playerID string) {
+	sessionID := s.id.String()
+
+	players := make([]string, 0, len(s.joinOrder))
+	for id := range len(s.joinOrder) {
+		players = append(players, s.joinOrder[id])
+	}
+
+	sessionStruct := sessionv1.Session_builder{
+		SessionId: &sessionID,
+		Players:   players,
+	}.Build()
+	s.sendTo(playerID, envelopev1.Envelope_builder{
+		Session: sessionStruct,
+	}.Build())
 }
 
 func (s *Session) viewHand(playerID string) {
