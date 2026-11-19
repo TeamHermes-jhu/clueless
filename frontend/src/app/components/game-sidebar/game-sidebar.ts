@@ -55,13 +55,13 @@ export class GameSidebar {
       'Miss Scarlett',
       'Colonel Mustard',
       'Mrs. White',
-      'Reverend Green',
+      'Mr. Green',
       'Mrs. Peacock',
       'Professor Plum'
     ]
     this.weapons = [
       'Candlestick',
-      'Knife',
+      'Dagger',
       'Lead Pipe',
       'Revolver',
       'Rope',
