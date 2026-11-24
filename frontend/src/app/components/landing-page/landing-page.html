@@ -1,0 +1,20 @@
+<main class="panel">
+  <h1>Clue-Less</h1>
+  <p class="tagline">Just like the real game… but less!</p>
+
+  <input
+    pInputText
+    type="text"
+    placeholder="Enter username"
+    aria-label="Username"
+    [(ngModel)]="username"
+    (keydown.enter)="onJoinClick()"
+  />
+  <button pButton severity="success" [disabled]="!username().trim()" (click)="onJoinClick()">
+    Join
+  </button>
+
+  @if (joinError()) {
+    <p class="error" role="alert">{{ joinError() }}</p>
+  }
+</main>

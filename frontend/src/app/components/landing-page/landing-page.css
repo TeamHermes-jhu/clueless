@@ -1,0 +1,47 @@
+:host {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: url('/assets/landing-page-background.png') center / cover no-repeat;
+}
+
+.panel {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 28rem;
+  margin: 1rem;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-align: center;
+  background: #8b5a2b;
+  border: 1px solid white;
+  border-radius: 17px;
+  box-shadow: 12px 17px 51px rgba(0, 0, 0, 0.22);
+}
+
+h1 {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 3rem;
+  letter-spacing: 0.2em;
+  color: #fff6e0;
+}
+
+.tagline {
+  margin: 0 0 1rem;
+  font-style: italic;
+  color: #fff6e0;
+}
+
+input,
+button {
+  width: 100%;
+}
+
+.error {
+  margin: 0;
+  color: #ffd6d6;
+}

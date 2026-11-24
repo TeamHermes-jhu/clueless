@@ -1,12 +1,2 @@
-@if (onMainPage()) {
-  <h1>Welcome to Clueless!</h1>
-
-  <input type="text" placeholder="Enter username" [(ngModel)]="username" />
-  <button (click)="onJoinClick()">Join</button>
-
-  @if (joinError()) {
-    <p>{{ joinError() }}</p>
-  }
-}
 <p-toast />
 <router-outlet />
