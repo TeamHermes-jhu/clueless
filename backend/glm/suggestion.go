@@ -26,10 +26,11 @@ const (
 
 // SuggestionResult holds everything the session needs to report a suggestion back to the players.
 type SuggestionResult struct {
-	Announcement string
-	Moved        string
-	Resolution   string
-	DisproverID  string
+	Announcement  string
+	Moved         string
+	MovedPlayerID string
+	Resolution    string
+	DisproverID   string
 }
 
 // Suggest validates a suggestion, moves the suggested character into the room and looks for a
@@ -42,6 +43,8 @@ func (g *GameLogicManager) Suggest(suggestion *suggestionv1.SuggestionRequest) (
 	playerID := suggestion.GetPlayerId()
 	g.hasSuggested = true
 
+	movedPlayerID, moved := g.moveFromSuggestion(suggestion.GetCharacter(), suggestion.GetRoom())
+
 	result := &SuggestionResult{
 		Announcement: fmt.Sprintf(
 			suggestFmt,
@@ -50,7 +53,8 @@ func (g *GameLogicManager) Suggest(suggestion *suggestionv1.SuggestionRequest) (
 			suggestion.GetWeapon().String(),
 			suggestion.GetRoom().String(),
 		),
-		Moved: g.moveFromSuggestion(suggestion.GetCharacter(), suggestion.GetRoom()),
+		Moved:         moved,
+		MovedPlayerID: movedPlayerID,
 	}
 
 	disproverID, validCards := g.findDisprover(suggestion)
@@ -105,31 +109,32 @@ func (g *GameLogicManager) checkIsPlayerAllowed(playerID string) error {
 	return nil
 }
 
-// moveFromSuggestion pulls the suggested character into the suggested room and returns a message
-// describing the move. It returns an empty string when no player controls that character.
-func (g *GameLogicManager) moveFromSuggestion(character cardsv1.Characters, room cardsv1.Rooms) string {
-	state := g.stateOfCharacter(character)
+// moveFromSuggestion pulls the suggested character into the suggested room and returns the id of
+// the player that was moved along with a message describing the move. Both are empty when no
+// player controls that character.
+func (g *GameLogicManager) moveFromSuggestion(character cardsv1.Characters, room cardsv1.Rooms) (string, string) {
+	playerID, state := g.stateOfCharacter(character)
 	if state == nil {
-		return ""
+		return "", ""
 	}
 
 	state.SetLocation(glmv1.PlayerLocation_builder{
 		Room: &room,
 	}.Build())
 
-	return fmt.Sprintf(suggestMovedFmt, character.String(), room.String())
+	return playerID, fmt.Sprintf(suggestMovedFmt, character.String(), room.String())
 }
 
-// stateOfCharacter returns the game state of the player controlling a character,
-// or nil when no player controls it.
-func (g *GameLogicManager) stateOfCharacter(character cardsv1.Characters) *glmv1.PlayerGameState {
-	for _, state := range g.playerStates {
+// stateOfCharacter returns the id and game state of the player controlling a character,
+// or a nil state when no player controls it.
+func (g *GameLogicManager) stateOfCharacter(character cardsv1.Characters) (string, *glmv1.PlayerGameState) {
+	for playerID, state := range g.playerStates {
 		if state.GetCharacter() == character {
-			return state
+			return playerID, state
 		}
 	}
 
-	return nil
+	return "", nil
 }
 
 // findDisprover returns the first player after the suggesting player in the turn order that holds

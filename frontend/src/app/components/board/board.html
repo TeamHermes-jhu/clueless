@@ -1,1 +1,43 @@
-<p-terminal prompt="$" />
+<div
+  class="board"
+  [style.grid-template-columns]="tracks"
+  [style.grid-template-rows]="tracks"
+  [style.--board-units]="trackTotal"
+>
+  @for (tile of tiles; track tile.key) {
+    @let isAvailable = available().has(tile.key);
+    <button
+      type="button"
+      [class]="'tile ' + tile.cssClass"
+      [class.available]="isAvailable"
+      [class.selected]="pendingMove() === tile.key"
+      [style.grid-row]="tile.row + 1"
+      [style.grid-column]="tile.col + 1"
+      [disabled]="!isAvailable"
+      [attr.aria-label]="isAvailable ? 'Move to ' + tile.name : tile.name"
+      [attr.title]="tile.name"
+      (click)="moveTo(tile)"
+    >
+      @if (tile.kind === 'hall') {
+        <span class="art" [style.background-image]="'url(' + tile.image + ')'"></span>
+      } @else {
+        <img class="art" [src]="tile.image" [alt]="tile.name" draggable="false" />
+      }
+    </button>
+  }
+
+  @for (icon of icons(); track icon.playerId) {
+    <div
+      class="icon"
+      role="img"
+      [class.me]="icon.isMe"
+      [attr.aria-label]="icon.name"
+      [attr.title]="icon.name"
+      [style.width.%]="iconSize"
+      [style.left.%]="icon.left"
+      [style.top.%]="icon.top"
+      [style.background-color]="icon.color"
+      [style.background-image]="icon.src ? 'url(' + icon.src + ')' : null"
+    ></div>
+  }
+</div>

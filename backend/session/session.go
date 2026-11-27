@@ -19,9 +19,9 @@ import (
 
 const (
 	maxPlayers            = 6
-	minimumPlayersToStart = 3
+	minimumPlayersToStart = 2
 
-	startGameDelay = time.Second * 120
+	startGameDelay = time.Second * 10
 
 	gameFullAndAllSelectedMessage = "Game is full and all characters are selected. Starting game."
 	gameTimerFmt        = "%d/6 players. Game starts in %ds"
@@ -419,8 +419,43 @@ func (s *Session) startGame() {
 		}.Build())
 	}
 
+	s.broadcastStartingLocations()
+
 	turnMessage := s.logic.GetTurnMessage()
 	s.broadcastMessage(turnMessage)
+	s.broadcastTurnIndication()
+}
+
+func (s *Session) broadcastStartingLocations() {
+	for _, playerID := range s.joinOrder {
+		location := s.logic.GetPlayerLocation(playerID)
+		if location == nil {
+			continue
+		}
+
+		move := sessionv1.Move_builder{PlayerId: new(playerID)}.Build()
+		if location.HasRoom() {
+			move.SetRoom(location.GetRoom())
+		} else {
+			move.SetHall(location.GetHall())
+		}
+
+		s.broadcastMove(move)
+	}
+}
+
+func (s *Session) broadcastMove(move *sessionv1.Move) {
+	s.broadcast(envelopev1.Envelope_builder{Move: move}.Build())
+}
+
+func (s *Session) broadcastTurnIndication() {
+	s.broadcast(envelopev1.Envelope_builder{
+		TurnIndication: sessionv1.TurnIndication_builder{
+			CurrentPlayer: sessionv1.Player_builder{
+				PlayerName: new(s.logic.GetCurrentPlayer()),
+			}.Build(),
+		}.Build(),
+	}.Build())
 }
 
 func (s *Session) sendGameStartMessage() {
@@ -441,6 +476,7 @@ func (s *Session) move(move *sessionv1.Move) {
 	}
 
 	s.broadcastMessage(moveMessage)
+	s.broadcastMove(move)
 }
 
 // suggest handles suggestion requests.
@@ -457,6 +493,10 @@ func (s *Session) suggest(suggestion *suggestionv1.SuggestionRequest) {
 
 	if result.Moved != "" {
 		s.broadcastMessage(result.Moved)
+		s.broadcastMove(sessionv1.Move_builder{
+			PlayerId: new(result.MovedPlayerID),
+			Room:     new(suggestion.GetRoom()),
+		}.Build())
 	}
 
 	s.broadcastMessage(result.Resolution)
@@ -532,6 +572,7 @@ func (s *Session) endTurn() {
 
 	turnMessage := s.logic.GetTurnMessage()
 	s.broadcastMessage(turnMessage)
+	s.broadcastTurnIndication()
 }
 
 func (s *Session) getPlayerLocationMessage(playerID string) string {

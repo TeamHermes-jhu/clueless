@@ -2,13 +2,125 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  container-type: size;
+  padding: 1rem;
+  box-sizing: border-box;
   outline: 2px solid black;
   outline-offset: -2px;
 }
 
-p-terminal {
-  flex: 1;
-  height: 80%;
-  margin: 2rem 10rem;
-  overflow: auto;
+.board {
+  --unit: calc(min(100cqw, 100cqh) / var(--board-units));
+  --hall-thickness: calc(0.7 * var(--unit));
+  --hall-overlap: var(--unit);
+  position: relative;
+  display: grid;
+  width: min(100cqw, 100cqh);
+  height: min(100cqw, 100cqh);
+}
+
+.tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+}
+
+.art {
+  display: block;
+  user-select: none;
+  transition:
+    transform 0.5s,
+    filter 0.2s;
+}
+
+.tile.room {
+  z-index: 1;
+}
+
+.tile.room .art {
+  width: 92%;
+  height: 92%;
+  object-fit: contain;
+}
+
+.tile.hall.horizontal {
+  margin-inline: calc(-1 * var(--hall-overlap));
+}
+
+.tile.hall.horizontal .art {
+  width: 100%;
+  height: var(--hall-thickness);
+  background-repeat: repeat-x;
+  background-size: auto 100%;
+  background-position: center;
+}
+
+.tile.hall.vertical {
+  margin-block: calc(-1 * var(--hall-overlap));
+}
+
+.tile.hall.vertical .art {
+  width: var(--hall-thickness);
+  height: 100%;
+  background-repeat: repeat-y;
+  background-size: 100% auto;
+  background-position: center;
+}
+
+.tile.available .art {
+  filter: drop-shadow(3px 0 0 #22c55e) drop-shadow(-3px 0 0 #22c55e)
+    drop-shadow(0 3px 0 #22c55e) drop-shadow(0 -3px 0 #22c55e);
+}
+
+.tile.available {
+  cursor: pointer;
+}
+
+.tile.available:hover .art,
+.tile.available:focus-visible .art {
+  transform: scale(1.05);
+}
+
+.tile.selected .art {
+  transform: scale(1.08);
+}
+
+.tile.available:active .art {
+  transform: scale(0.95);
+}
+
+.tile:disabled {
+  cursor: default;
+}
+
+.tile:focus-visible {
+  outline: none;
+}
+
+.icon {
+  position: absolute;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  z-index: 2;
+  transition:
+    left 0.6s ease,
+    top 0.6s ease;
+}
+
+.icon.me {
+  box-shadow:
+    0 0 0 2px white,
+    0 2px 8px rgba(0, 0, 0, 0.6);
+  z-index: 3;
 }

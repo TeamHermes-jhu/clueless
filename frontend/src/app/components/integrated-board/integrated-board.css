@@ -15,7 +15,18 @@ app-landmark {
   flex-shrink: 0;
 }
 
-app-board {
+.play-area {
+  display: flex;
   flex: 1;
   min-height: 0;
+}
+
+app-board {
+  flex: 1;
+  min-width: 0;
+}
+
+app-game-terminal {
+  width: 35%;
+  min-width: 20rem;
 }

@@ -25,5 +25,6 @@ message Envelope {
     session.v1.ViewCharactersRequest view_characters = 13;
     suggestion.v1.DisproveRequest disprove_request = 14;
     session.v1.StartGame start_game = 15;
+    session.v1.TurnIndication turn_indication = 16;
   }
 }

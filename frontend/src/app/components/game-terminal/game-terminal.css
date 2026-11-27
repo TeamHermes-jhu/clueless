@@ -1,0 +1,11 @@
+:host {
+  display: flex;
+  outline: 2px solid black;
+  outline-offset: -2px;
+}
+
+p-terminal {
+  flex: 1;
+  margin: 1rem;
+  overflow: auto;
+}
